@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>代州黄酒 · 售后分流台（体验版）</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <header class="topbar">
+    <div class="brand">
+      <span class="logo">🍶</span>
+      <div>
+        <h1>代州黄酒 · 售后分流台</h1>
+        <p class="sub">四 Agent 流水线：读单 → 查规则 → 写回复 → 独立风控</p>
+      </div>
+    </div>
+    <span class="badge">体验版 · 不接抖店 · 不自动退款</span>
+  </header>
+
+  <main class="layout">
+    <!-- 左：输入 -->
+    <section class="card form-card">
+      <h2>① 提交一条售后单</h2>
+      <p class="hint">读者无需账号，3 分钟内获得一份真实模型生成的处理单。所有字段可直接点下方示例填入。</p>
+
+      <label>商品
+        <select id="product">
+          <option>代州黄酒·六年陈（¥68/500ml）</option>
+          <option>代州黄酒·十年陈（¥128/500ml）</option>
+          <option>代州黄酒·礼盒装（¥158/2瓶）</option>
+          <option>代州黄酒·坛装（¥198/1.5L）</option>
+          <option>代州黄酒·品鉴小瓶（¥59/6瓶）</option>
+        </select>
+      </label>
+
+      <label>订单状态
+        <select id="order_status">
+          <option>已签收</option>
+          <option>运输中</option>
+          <option>未发货</option>
+          <option>已申请售后待处理</option>
+        </select>
+      </label>
+
+      <label>案件类型提示（可选）
+        <select id="case_type_hint">
+          <option value="auto">让 AI 自动判断</option>
+          <option value="damage">破损漏液</option>
+          <option value="logistics">物流延迟</option>
+          <option value="taste">口感预期不符</option>
+          <option value="wrongship">错发/少发</option>
+          <option value="other">其他（升级人工）</option>
+        </select>
+      </label>
+
+      <label>客诉内容（买家原话）
+        <textarea id="complaint" rows="3" placeholder="例如：收到外箱压坏，一瓶漏液，已拍照"></textarea>
+      </label>
+
+      <label>物流状态
+        <textarea id="logistics" rows="2" placeholder="例如：物流显示外箱破损，已签收12小时"></textarea>
+      </label>
+
+      <label>历史沟通（可选）
+        <textarea id="history" rows="2" placeholder="例如：首次联系，此前无售后"></textarea>
+      </label>
+
+      <details class="rules-box">
+        <summary>店铺规则（可选，留空则用内置默认规则）</summary>
+        <textarea id="custom_rules" rows="3" placeholder="可粘贴自有规则文本；留空时 Agent 2/4 使用系统内置默认知识库"></textarea>
+      </details>
+
+      <div class="examples">
+        <span class="ex-label">填入示例：</span>
+        <button type="button" class="ex" data-ex="damage_photo">破损·有照片</button>
+        <button type="button" class="ex" data-ex="leak_nophoto">漏液·无照片</button>
+        <button type="button" class="ex" data-ex="logistics">物流延迟</button>
+        <button type="button" class="ex" data-ex="taste">口感不符</button>
+        <button type="button" class="ex" data-ex="wrongship">错发少发</button>
+        <button type="button" class="ex danger" data-ex="safety">喝后不适·升级</button>
+      </div>
+
+      <button id="runBtn" class="run">试跑一条售后单</button>
+      <p id="status" class="status"></p>
+    </section>
+
+    <!-- 右：流水线 + 处理单 -->
+    <section class="card result-card">
+      <h2>② 四 Agent 流水线</h2>
+      <div class="pipeline">
+        <div class="node" id="node-agent1" data-state="idle">
+          <span class="num">1</span>
+          <div class="node-body"><strong>订单事实员</strong><small>读单·整理事实</small><em class="node-sum"></em></div>
+        </div>
+        <div class="node" id="node-agent2" data-state="idle">
+          <span class="num">2</span>
+          <div class="node-body"><strong>政策补偿员</strong><small>查规则·给方案</small><em class="node-sum"></em></div>
+        </div>
+        <div class="node" id="node-agent3" data-state="idle">
+          <span class="num">3</span>
+          <div class="node-body"><strong>客服沟通员</strong><small>写可发送回复</small><em class="node-sum"></em></div>
+        </div>
+        <div class="node" id="node-agent4" data-state="idle">
+          <span class="num">4</span>
+          <div class="node-body"><strong>独立风控审核员</strong><small>独立复核·放行/升级</small><em class="node-sum"></em></div>
+        </div>
+      </div>
+
+      <div id="sheet" class="sheet empty">
+        <div class="placeholder">提交售后单后，处理单会显示在这里。<br/>AI 不给结论性执行动作——最后那一下，由你点。</div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="foot">
+    代州黄酒 × AI 实验场 · 四 Agent 售后分流台（体验版）· 模型：MiniMax-Text-01
+  </footer>
+
+  <script src="app.js"></script>
+</body>
+</html>

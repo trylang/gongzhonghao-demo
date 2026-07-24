@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>代州黄酒 · 内置默认知识库（可借鉴模板）</title>
+<style>
+  :root{
+    --wine:#8B3A2E; --wine-dark:#6E2B22; --cream:#FAF4E8; --cream-2:#F3E9D5;
+    --ink:#3B2A22; --ink-soft:#7A6A5E; --line:#E4D5BC; --gold:#B8863B;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:"PingFang SC","Microsoft YaHei",sans-serif;background:var(--cream);color:var(--ink);line-height:1.7}
+  .wrap{max-width:960px;margin:0 auto;padding:32px 20px 64px}
+  header{margin-bottom:8px}
+  .badge{display:inline-block;background:var(--wine);color:#fff;font-size:12px;padding:3px 10px;border-radius:99px;letter-spacing:1px}
+  h1{font-size:26px;margin:12px 0 6px;color:var(--wine-dark)}
+  .sub{color:var(--ink-soft);font-size:14px;margin-bottom:20px}
+  .notice{background:var(--cream-2);border-left:4px solid var(--gold);padding:12px 16px;border-radius:0 8px 8px 0;font-size:13.5px;color:var(--ink);margin-bottom:24px}
+  .notice b{color:var(--wine-dark)}
+  .tabs{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:20px}
+  .tab{border:1px solid var(--line);background:#fff;color:var(--ink);padding:9px 18px;border-radius:99px;font-size:14px;cursor:pointer;transition:.15s}
+  .tab:hover{border-color:var(--wine)}
+  .tab.active{background:var(--wine);border-color:var(--wine);color:#fff}
+  .panel{display:none;background:#fff;border:1px solid var(--line);border-radius:14px;padding:26px 26px 30px;box-shadow:0 2px 10px rgba(110,43,34,.05)}
+  .panel.active{display:block}
+  .panel h2{font-size:19px;color:var(--wine-dark);margin-bottom:4px}
+  .ver{font-size:12.5px;color:var(--ink-soft);margin-bottom:16px}
+  .ver code{background:var(--cream-2);padding:1px 8px;border-radius:6px;color:var(--wine-dark);font-size:12px}
+  h3{font-size:15.5px;color:var(--wine);margin:22px 0 10px;padding-left:10px;border-left:3px solid var(--gold)}
+  table{width:100%;border-collapse:collapse;font-size:13px;margin:8px 0 4px}
+  th{background:var(--cream-2);color:var(--wine-dark);text-align:left;padding:8px 10px;border:1px solid var(--line);white-space:nowrap}
+  td{padding:8px 10px;border:1px solid var(--line);vertical-align:top}
+  tr:nth-child(even) td{background:#FCF9F2}
+  .tag{display:inline-block;font-size:11.5px;padding:1px 8px;border-radius:99px;white-space:nowrap}
+  .tag.approve{background:#F6E3DE;color:#8B3A2E}
+  .tag.auto{background:#E8EFE3;color:#4A6741}
+  .tag.esc{background:#F3E0C0;color:#8A6220}
+  ul{padding-left:22px;font-size:13.5px}
+  li{margin:4px 0}
+  .quote{background:var(--cream-2);border-radius:10px;padding:12px 16px;font-size:13.5px;margin:8px 0;color:var(--ink)}
+  .quote .st{font-weight:600;color:var(--wine-dark);display:block;margin-bottom:4px;font-size:13px}
+  footer{margin-top:28px;font-size:12.5px;color:var(--ink-soft);text-align:center}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <span class="badge">内置默认知识库 · huangjiu-default-v1.0</span>
+    <h1>代州黄酒 · 售后知识库模板</h1>
+    <p class="sub">四份模板 = Agent 分析售后单的全部依据。商家未上传自家规则时，以下内容自动生效。</p>
+    <div class="notice">
+      <b>怎么用：</b>这四份是可直接借鉴的样例。下载后把金额、时效、审批门槛改成自家实际标准，重新上传发布，即可替换默认版本。<b>已发布的商家规则永远优先于本模板。</b>
+    </div>
+  </header>
+
+  <div class="tabs">
+    <button class="tab active" data-p="p1">① 售后处理规则</button>
+    <button class="tab" data-p="p2">② 商品与物流资料</button>
+    <button class="tab" data-p="p3">③ 客服话术库</button>
+    <button class="tab" data-p="p4">④ 历史典型案例</button>
+  </div>
+
+  <!-- ① 售后处理规则 -->
+  <section class="panel active" id="p1">
+    <h2>售后处理规则</h2>
+    <p class="ver">版本 <code>huangjiu-default-v1.0</code> ｜ Agent 2 建议方案、Agent 4 审核时引用的规则来源</p>
+
+    <h3>破损漏液（damage）</h3>
+    <table>
+      <tr><th>规则</th><th>触发条件</th><th>允许动作</th><th>金额上限</th><th>所需凭证</th><th>审批</th></tr>
+      <tr><td>DAM-01</td><td>签收24h内报破损，照片齐全</td><td>补发同款</td><td>单件实付</td><td>外箱+瓶身照片</td><td><span class="tag approve">主管审批</span></td></tr>
+      <tr><td>DAM-02</td><td>报破损但无照片</td><td>请求补证</td><td>0</td><td>—</td><td><span class="tag auto">无需审批</span></td></tr>
+      <tr><td>DAM-03</td><td>签收超72h首次报破损</td><td>升级人工</td><td>—</td><td>—</td><td><span class="tag esc">升级</span></td></tr>
+      <tr><td>DAM-04</td><td>破损+宴请急用，照片齐全</td><td>优先补发可加急</td><td>实付+加急运费≤¥15</td><td>同DAM-01</td><td><span class="tag approve">主管审批</span></td></tr>
+      <tr><td>DAM-05</td><td>整箱≥3瓶破损</td><td>升级人工（物流理赔）</td><td>—</td><td>照片+物流记录</td><td><span class="tag esc">升级</span></td></tr>
+    </table>
+
+    <h3>物流延迟（logistics_delay）</h3>
+    <table>
+      <tr><th>规则</th><th>触发条件</th><th>允许动作</th><th>金额上限</th><th>审批</th></tr>
+      <tr><td>LOG-01</td><td>发货后48h无揽收</td><td>催查+安抚</td><td>0</td><td><span class="tag auto">无需审批</span></td></tr>
+      <tr><td>LOG-02</td><td>轨迹停滞≥3天</td><td>催查+给时效范围，可发券</td><td>券≤¥10</td><td><span class="tag auto">无需审批</span></td></tr>
+      <tr><td>LOG-03</td><td>客户急用时效紧张</td><td>只给时效范围/申请加急</td><td>加急费≤¥15</td><td><span class="tag approve">主管审批</span></td></tr>
+      <tr><td>LOG-04</td><td>停滞≥7天疑似丢件</td><td>升级人工</td><td>—</td><td><span class="tag esc">升级</span></td></tr>
+    </table>
+
+    <h3>口感预期不符（taste）</h3>
+    <table>
+      <tr><th>规则</th><th>触发条件</th><th>允许动作</th><th>金额上限</th><th>审批</th></tr>
+      <tr><td>TAS-01</td><td>未开封，签收7天内</td><td>七天无理由退货</td><td>订单实付</td><td><span class="tag approve">主管审批</span></td></tr>
+      <tr><td>TAS-02</td><td>已开封反馈口感不符</td><td>一次性安抚券（90天限1次）</td><td>券≤¥15</td><td><span class="tag auto">无需审批</span></td></tr>
+      <tr><td>TAS-03</td><td>浑浊/沉淀</td><td>先科普，仍不满按TAS-01/02</td><td>—</td><td><span class="tag auto">无需审批</span></td></tr>
+    </table>
+
+    <h3>错发/少发（wrong_item）</h3>
+    <table>
+      <tr><th>规则</th><th>触发条件</th><th>允许动作</th><th>金额上限</th><th>审批</th></tr>
+      <tr><td>ERR-01</td><td>错发，有照片</td><td>补发正确商品；≤¥50免退回</td><td>订单实付</td><td><span class="tag approve">主管审批</span></td></tr>
+      <tr><td>ERR-02</td><td>少发</td><td>核对称重记录后补发</td><td>缺件金额</td><td><span class="tag approve">主管审批</span></td></tr>
+      <tr><td>ERR-03</td><td>错发/少发无凭证</td><td>请求补证</td><td>0</td><td><span class="tag auto">无需审批</span></td></tr>
+    </table>
+
+    <h3>强制升级（escalate）</h3>
+    <ul>
+      <li><b>ESC-01</b> 食品安全 / 饮后不适 / 异味变质 — 不给医疗建议、不争辩</li>
+      <li><b>ESC-02</b> 同一用户 30 天内 ≥3 次同类售后 — 不直接拒绝也不直接补偿</li>
+      <li><b>ESC-03</b> 要求平台外转账 / 私下交易</li>
+      <li><b>ESC-04</b> 单笔退款/补偿 &gt; ¥200</li>
+      <li><b>ESC-05</b> 提及投诉监管、媒体曝光、诉讼</li>
+      <li><b>ESC-06</b> 涉及未成年人饮酒相关内容</li>
+    </ul>
+  </section>
+
+  <!-- ② 商品与物流资料 -->
+  <section class="panel" id="p2">
+    <h2>商品与物流资料</h2>
+    <p class="ver">版本 <code>huangjiu-default-v1.0</code> ｜ Agent 1 核对商品事实、Agent 2 判断补发可行性与时效</p>
+
+    <h3>SKU 清单</h3>
+    <table>
+      <tr><th>SKU</th><th>商品</th><th>规格</th><th>包装</th><th>酒精度</th><th>易碎</th><th>保质期</th><th>参考价</th></tr>
+      <tr><td>DZ-500-6Y</td><td>六年陈</td><td>500ml/瓶</td><td>玻璃瓶+珍珠棉+五层瓦楞箱</td><td>12%vol</td><td>是</td><td>36个月</td><td>¥68</td></tr>
+      <tr><td>DZ-500-10Y</td><td>十年陈</td><td>500ml/瓶</td><td>玻璃瓶+木盒+五层瓦楞箱</td><td>14%vol</td><td>是</td><td>36个月</td><td>¥128</td></tr>
+      <tr><td>DZ-GIFT-2</td><td>礼盒装</td><td>500ml×2瓶</td><td>硬质礼盒+内衬泡沫</td><td>12%vol</td><td>是</td><td>36个月</td><td>¥158</td></tr>
+      <tr><td>DZ-TAN-1500</td><td>坛装</td><td>1.5L/坛</td><td>陶坛+木架+加固箱</td><td>13%vol</td><td>极易碎</td><td>36个月</td><td>¥198</td></tr>
+      <tr><td>DZ-MINI-6</td><td>品鉴小瓶</td><td>125ml×6瓶</td><td>PET小瓶+卡槽盒</td><td>12%vol</td><td>否</td><td>24个月</td><td>¥59</td></tr>
+    </table>
+
+    <h3>发货与物流</h3>
+    <table>
+      <tr><th>项目</th><th>内容</th></tr>
+      <tr><td>发货仓</td><td>山西忻州·代县仓（单仓发全国）</td></tr>
+      <tr><td>发货时效</td><td>付款后 48 小时内发出（大促期 72 小时）</td></tr>
+      <tr><td>承运商</td><td>中通 / 邮政；坛装仅走德邦（不可加急）</td></tr>
+      <tr><td>送达时效</td><td>华北 2–3 天 ｜ 华东/华中 3–4 天 ｜ 华南/西南 4–5 天 ｜ 西北/东北 4–6 天 ｜ 偏远 6–8 天</td></tr>
+      <tr><td>不发货地区</td><td>港澳台及海外暂不发货</td></tr>
+    </table>
+
+    <h3>不可承诺事项（Agent 3 禁用）</h3>
+    <ul>
+      <li>不承诺"当日达 / 次日达 / 明天一定到"</li>
+      <li>不承诺"绝不破损"；不承诺具体签收日期，只给区间</li>
+      <li>坛装商品不承诺加急</li>
+      <li>不承诺"开封后无条件退货"</li>
+      <li>禁止任何保健、养生、疗效类表述</li>
+    </ul>
+  </section>
+
+  <!-- ③ 客服话术库 -->
+  <section class="panel" id="p3">
+    <h2>客服话术库</h2>
+    <p class="ver">版本 <code>huangjiu-default-v1.0</code> ｜ 决定 Agent 3 的语气与措辞边界，话术不能推翻处理规则</p>
+
+    <h3>品牌语气</h3>
+    <ul>
+      <li>称呼：您 / 酒友（老客户）；自称"我们"</li>
+      <li>先共情 → 再给方案 → 最后明确下一步；一条回复 ≤3 句话 + 1 个下一步动作</li>
+    </ul>
+
+    <h3>禁用词</h3>
+    <table>
+      <tr><th>类别</th><th>禁用词</th></tr>
+      <tr><td>绝对化承诺</td><td>保证、一定、肯定、马上到、最快、绝不</td></tr>
+      <tr><td>功效类</td><td>养生、保健、治疗、去湿、补气血、对身体好</td></tr>
+      <tr><td>责任推诿</td><td>这不是我们的问题、快递的事找快递、您自己签收的</td></tr>
+      <tr><td>交易风险</td><td>加微信、私下转账、走其他渠道</td></tr>
+    </table>
+
+    <h3>六类场景模板</h3>
+    <div class="quote"><span class="st">1. 首次安抚（破损）</span>真的很抱歉让您收到了破损的酒，这确实是我们不愿看到的。您别着急，我们优先给您处理。为了尽快核实，麻烦您提供一下外箱和瓶身的照片，收到后我们第一时间跟进。</div>
+    <div class="quote"><span class="st">2. 索证</span>为了尽快给您安排处理，麻烦您拍两张照片发给我们：一张外箱整体、一张破损/漏液部位。收到照片后我们会优先核实补发方案，不会让您多跑流程。</div>
+    <div class="quote"><span class="st">3. 补发通知（须主管批准后使用）</span>您的照片我们已核实，符合运输破损补发标准。补发的一瓶今天从代县仓发出，预计 X–X 天送达（以物流更新为准）。单号出来后第一时间发您，给您添麻烦了。</div>
+    <div class="quote"><span class="st">4. 退款确认（须主管批准后使用）</span>已为您提交退款申请，金额 ¥XX，将按平台流程原路退回，一般 1–3 个工作日到账（以平台为准）。这次给您添麻烦了，欢迎您以后再来试试我们的其他批次。</div>
+    <div class="quote"><span class="st">5. 婉拒</span>非常理解您的心情。不过按照店铺售后规则，这种情况暂时无法办理退款/补发（原因：XXX）。我们可以为您提供 XXX（替代方案）。如果您觉得不合适，我可以帮您转给店长再看一次。</div>
+    <div class="quote"><span class="st">6. 升级人工</span>您反馈的情况我们非常重视，已经第一时间转给店长专项处理。请您留意消息，我们会在今天内给您回复。这期间建议先保留好商品和包装，方便后续核实。</div>
+  </section>
+
+  <!-- ④ 历史典型案例 -->
+  <section class="panel" id="p4">
+    <h2>历史典型案例（已脱敏）</h2>
+    <p class="ver">版本 <code>huangjiu-default-v1.0</code> ｜ 仅作相似参考，不能覆盖当前规则；Agent 3 不得据此自行推导赔付</p>
+    <table>
+      <tr><th>编号</th><th>案件摘要</th><th>引用规则</th><th>最终人工决定</th><th>原因</th></tr>
+      <tr><td>CASE-001</td><td>签收12h报一瓶破损，当天补齐照片</td><td>DAM-01</td><td>批准补发1瓶（¥68），免退回</td><td>照片清晰、时间在窗口内</td></tr>
+      <tr><td>CASE-002</td><td>称漏液但拒绝拍照，要求全额退¥158</td><td>DAM-02</td><td>拒绝直接退款，提供退货退款通道</td><td>无凭证不满足直接退款条件</td></tr>
+      <tr><td>CASE-003</td><td>物流停滞4天，婚宴2天后举行</td><td>LOG-02/03</td><td>加急补发1单（店长特批）</td><td>特批案例，不得泛化为常规方案</td></tr>
+      <tr><td>CASE-004</td><td>称饮后胃部不适，要求赔偿</td><td>ESC-01</td><td>店长电话沟通+留样送检</td><td>食安类全程人工，不做书面责任表态</td></tr>
+      <tr><td>CASE-005</td><td>30天内第3次破损索赔，照片疑似重复</td><td>ESC-02</td><td>拒绝补偿，平台异常报备</td><td>照片EXIF与前次一致，判定异常索赔</td></tr>
+      <tr><td>CASE-006</td><td>错发十年陈（下单六年陈）</td><td>ERR-01</td><td>不退回不补差价，致歉+赠10元券</td><td>退回物流成本大于差价</td></tr>
+      <tr><td>CASE-007</td><td>坛装陶坛裂缝渗酒</td><td>DAM-01/05</td><td>全额退款¥198+德邦运输理赔</td><td>坛装破损无法部分补救</td></tr>
+      <tr><td>CASE-008</td><td>称口感和上次不一样，已开封半瓶</td><td>TAS-02</td><td>发15元券+批次差异科普</td><td>批次风味差异属正常，不构成质量问题</td></tr>
+    </table>
+    <h3>上传自家案例前</h3>
+    <ul>
+      <li>必须脱敏：删除姓名、手机号、地址、订单号原文</li>
+      <li>标注最终人工决定与原因，便于 Agent 2 参考"人是怎么判的"</li>
+    </ul>
+  </section>
+
+  <footer>内置默认知识库仅为体验兜底 ｜ 商家发布自有规则后自动降级为参考样例 ｜ 代州黄酒 × AI 实验场</footer>
+</div>
+<script>
+  document.querySelectorAll('.tab').forEach(t=>{
+    t.addEventListener('click',()=>{
+      document.querySelectorAll('.tab').forEach(x=>x.classList.remove('active'));
+      document.querySelectorAll('.panel').forEach(x=>x.classList.remove('active'));
+      t.classList.add('active');
+      document.getElementById(t.dataset.p).classList.add('active');
+    });
+  });
+</script>
+</body>
+</html>

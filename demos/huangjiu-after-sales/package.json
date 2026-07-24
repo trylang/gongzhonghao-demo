@@ -1,0 +1,13 @@
+{
+  "name": "daizhou-huangjiu-after-sales",
+  "version": "1.0.0",
+  "description": "代州黄酒 · 抖店售后分流台（四 Agent 体验版 Demo）",
+  "type": "module",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node server.js"
+  },
+  "engines": {
+    "node": ">=18"
+  }
+}
