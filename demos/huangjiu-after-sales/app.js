@@ -321,55 +321,67 @@ function renderKbChips() {
 
 // ---------- 知识库弹窗：详情 + 补充 ----------
 function renderKbBody(tpl) {
-  if (tpl.id === "policy") {
-    let h = `<p class="kb-desc">${esc(tpl.desc)}</p><div class="kb-table-wrap"><table class="kb-table"><thead><tr><th>rule_id</th><th>适用</th><th>条件</th><th>动作</th><th>金额上限</th><th>所需凭证</th><th>审批</th></tr></thead><tbody>`;
-    tpl.rules.forEach((r) => {
-      h += `<tr><td><b>${esc(r.rule_id)}</b></td><td>${esc(r.case_type)}</td><td>${esc(r.condition)}</td><td>${esc(r.action)}</td><td>${esc(r.amount)}</td><td>${esc((r.evidence || []).join("、") || "—")}</td><td>${r.approval ? "需审批" : "否"}</td></tr>`;
-      if (r.exception) h += `<tr class="kb-sub"><td colspan="7">例外：${esc(r.exception)}</td></tr>`;
-    });
-    return h + "</tbody></table></div>";
+  try {
+    if (tpl.id === "policy") {
+      const rules = tpl.rules || [];
+      let h = `<p class="kb-desc">${esc(tpl.desc)}</p><div class="kb-table-wrap"><table class="kb-table"><thead><tr><th>rule_id</th><th>适用</th><th>条件</th><th>动作</th><th>金额上限</th><th>所需凭证</th><th>审批</th></tr></thead><tbody>`;
+      rules.forEach((r) => {
+        h += `<tr><td><b>${esc(r.rule_id)}</b></td><td>${esc(r.case_type)}</td><td>${esc(r.condition)}</td><td>${esc(r.action)}</td><td>${esc(r.amount ?? "—")}</td><td>${esc((r.evidence || []).join("、") || "—")}</td><td>${r.approval ? "需审批" : "否"}</td></tr>`;
+        if (r.exception) h += `<tr class="kb-sub"><td colspan="7">例外：${esc(r.exception)}</td></tr>`;
+      });
+      return h + "</tbody></table></div>";
+    }
+    if (tpl.id === "product") {
+      const products = tpl.products || [];
+      let h = `<p class="kb-desc">${esc(tpl.desc)}</p><div class="kb-table-wrap"><table class="kb-table"><thead><tr><th>SKU</th><th>名称</th><th>规格</th><th>包装</th><th>酒精度</th><th>易碎</th><th>参考价</th></tr></thead><tbody>`;
+      products.forEach((p) => {
+        h += `<tr><td>${esc(p.sku)}</td><td><b>${esc(p.name)}</b></td><td>${esc(p.spec)}</td><td>${esc(p.package)}</td><td>${esc(p.abv)}</td><td>${esc(p.fragile ? "是" + (p.fragile_level ? "·" + p.fragile_level : "") : "否")}</td><td>¥${esc(p.ref_price ?? "—")}</td></tr>`;
+        if (p.carrier_restriction) h += `<tr class="kb-sub"><td colspan="7">物流限制：${esc(p.carrier_restriction)}</td></tr>`;
+      });
+      h += "</tbody></table></div>";
+      const lg = tpl.logistics;
+      if (lg) {
+        h += `<div class="kb-block"><b>仓库：</b>${esc(lg.warehouse)} ｜ <b>出库：</b>${esc(lg.dispatch_sla_hours)}h（大促${esc(lg.dispatch_sla_hours_promo)}h）｜ <b>承运：</b>${esc((lg.carriers || []).join("、"))}</div>`;
+        h += `<div class="kb-block"><b>分区时效(天)：</b>${Object.entries(lg.delivery_eta_days || {}).map(([k, v]) => esc(k) + " " + esc(v)).join(" ｜ ")}</div>`;
+        h += `<div class="kb-block"><b>禁运：</b>${esc((lg.no_ship_regions || []).join("、"))}</div>`;
+      }
+      return h;
+    }
+    if (tpl.id === "voice") {
+      const v = tpl.voice || {};
+      const templates = tpl.templates || [];
+      let h = `<p class="kb-desc">${esc(tpl.desc)}</p>`;
+      h += `<div class="kb-block"><b>称呼：</b>${esc((v.address_forms || []).join("、"))}</div>`;
+      h += `<div class="kb-block"><b>语气：</b>${esc(v.tone || "—")}</div>`;
+      h += `<div class="kb-block"><b>风格：</b>${esc((v.style_rules || []).join("；"))}</div>`;
+      h += `<div class="kb-block kb-forbidden"><b>禁用词：</b>${(v.forbidden_words || []).map((w) => `<span class="fw">${esc(w)}</span>`).join("")}</div>`;
+      h += `<div class="kb-subtitle">回复模板</div><div class="kb-templates">`;
+      templates.forEach((t) => {
+        h += `<div class="kb-tpl"><div class="kb-tpl-meta">${esc(t.stage)}${t.requires_approval_first ? " · 须主管批准后使用" : ""}</div><div class="kb-tpl-text">${esc(t.text || "—")}</div></div>`;
+      });
+      return h + "</div>";
+    }
+    if (tpl.id === "cases") {
+      const cases = tpl.cases || [];
+      const usageRules = tpl.usageRules || [];
+      let h = `<p class="kb-desc">${esc(tpl.desc)}</p><div class="kb-cases">`;
+      cases.forEach((c) => {
+        h += `<div class="kb-case"><div class="kb-case-head"><b>${esc(c.case_id)}</b>${c.special_approval ? ' <span class="tag-spec">曾为特批</span>' : ""}</div><div>${esc(c.summary)}</div><div class="kb-case-meta">依据：${esc((c.rules_cited || []).join("、"))} ｜ 决定：${esc(c.final_decision)} ｜ 原因：${esc(c.reason)}</div></div>`;
+      });
+      h += "</div>";
+      h += `<div class="kb-subtitle">使用规则</div><ul class="kb-usage">${usageRules.map((u) => `<li>${esc(u)}</li>`).join("")}</ul>`;
+      return h;
+    }
+    return `<p class="kb-desc" style="color:var(--red)">未知模板类型：${esc(tpl.id)}</p>`;
+  } catch (e) {
+    return `<p class="kb-desc" style="color:var(--red)">渲染详情时出错：${esc(e.message)}<br/>模板ID：${esc(tpl?.id)}</p>`;
   }
-  if (tpl.id === "product") {
-    let h = `<p class="kb-desc">${esc(tpl.desc)}</p><div class="kb-table-wrap"><table class="kb-table"><thead><tr><th>SKU</th><th>名称</th><th>规格</th><th>包装</th><th>酒精度</th><th>易碎</th><th>参考价</th></tr></thead><tbody>`;
-    tpl.products.forEach((p) => {
-      h += `<tr><td>${esc(p.sku)}</td><td><b>${esc(p.name)}</b></td><td>${esc(p.spec)}</td><td>${esc(p.package)}</td><td>${esc(p.abv)}</td><td>${esc(p.fragile ? "是" + (p.fragile_level ? "·" + p.fragile_level : "") : "否")}</td><td>¥${esc(p.ref_price)}</td></tr>`;
-      if (p.carrier_restriction) h += `<tr class="kb-sub"><td colspan="7">物流限制：${esc(p.carrier_restriction)}</td></tr>`;
-    });
-    h += "</tbody></table></div>";
-    const lg = tpl.logistics;
-    h += `<div class="kb-block"><b>仓库：</b>${esc(lg.warehouse)} ｜ <b>出库：</b>${esc(lg.dispatch_sla_hours)}h（大促${esc(lg.dispatch_sla_hours_promo)}h）｜ <b>承运：</b>${esc(lg.carriers.join("、"))}</div>`;
-    h += `<div class="kb-block"><b>分区时效(天)：</b>${Object.entries(lg.delivery_eta_days).map(([k, v]) => esc(k) + " " + esc(v)).join(" ｜ ")}</div>`;
-    h += `<div class="kb-block"><b>禁运：</b>${esc(lg.no_ship_regions.join("、"))}</div>`;
-    return h;
-  }
-  if (tpl.id === "voice") {
-    const v = tpl.voice;
-    let h = `<p class="kb-desc">${esc(tpl.desc)}</p>`;
-    h += `<div class="kb-block"><b>称呼：</b>${esc(v.address_forms.join("、"))}</div>`;
-    h += `<div class="kb-block"><b>语气：</b>${esc(v.tone)}</div>`;
-    h += `<div class="kb-block"><b>风格：</b>${esc(v.style_rules.join("；"))}</div>`;
-    h += `<div class="kb-block kb-forbidden"><b>禁用词：</b>${v.forbidden_words.map((w) => `<span class="fw">${esc(w)}</span>`).join("")}</div>`;
-    h += `<div class="kb-subtitle">回复模板</div><div class="kb-templates">`;
-    tpl.templates.forEach((t) => {
-      h += `<div class="kb-tpl"><div class="kb-tpl-meta">${esc(t.stage)}${t.requires_approval_first ? " · 须主管批准后使用" : ""}</div><div class="kb-tpl-text">${esc(t.text)}</div></div>`;
-    });
-    return h + "</div>";
-  }
-  if (tpl.id === "cases") {
-    let h = `<p class="kb-desc">${esc(tpl.desc)}</p><div class="kb-cases">`;
-    tpl.cases.forEach((c) => {
-      h += `<div class="kb-case"><div class="kb-case-head"><b>${esc(c.case_id)}</b>${c.special_approval ? ' <span class="tag-spec">曾为特批</span>' : ""}</div><div>${esc(c.summary)}</div><div class="kb-case-meta">依据：${esc((c.rules_cited || []).join("、"))} ｜ 决定：${esc(c.final_decision)} ｜ 原因：${esc(c.reason)}</div></div>`;
-    });
-    h += "</div>";
-    h += `<div class="kb-subtitle">使用规则</div><ul class="kb-usage">${tpl.usageRules.map((u) => `<li>${esc(u)}</li>`).join("")}</ul>`;
-    return h;
-  }
-  return "";
 }
 
 function renderKbOverview() {
-  if (!KB_VIEW) return "<p>知识库加载中…</p>";
-  return KB_VIEW.templates.map((t) => {
+  if (!KB_VIEW) return "<p class=\"kb-desc\">知识库加载中…</p>";
+  const templates = KB_VIEW.templates || [];
+  return templates.map((t) => {
     const used = (t.usedBy || []).map((a) => AGENT_NAME[a] || a).join("、") || "—";
     let teaser = "";
     if (t.id === "policy" && t.rules) teaser = `共 ${t.rules.length} 条规则，覆盖破损、物流、口感、错发与强制升级。`;
@@ -387,33 +399,50 @@ function renderKbOverview() {
 
 function openKbModal(tplId, overview = false) {
   const modal = $("kbModal");
-  if (overview) {
+  // 先打开弹窗骨架，避免空窗
+  modal.classList.add("open");
+  modal.setAttribute("aria-hidden", "false");
+
+  if (overview || !tplId) {
+    $("kbBack").style.display = "none";
     $("kbTitle").textContent = "内置知识库总览";
     $("kbUsedBy").textContent = "四份模板 · 可点击查看详情 · 可补充内容 · 商家规则永远优先";
     $("kbBody").style.display = "none";
+    $("kbBody").innerHTML = "";
     $("kbOverview").style.display = "block";
     $("kbOverview").innerHTML = renderKbOverview();
     $("kbSuppBox").style.display = "none";
     modal.dataset.tpl = "";
-    modal.classList.add("open");
-    modal.setAttribute("aria-hidden", "false");
     return;
   }
-  const tpl = KB_VIEW?.templates.find((t) => t.id === tplId);
-  if (!tpl) return;
+
+  const tpl = KB_VIEW?.templates?.find((t) => t.id === tplId);
+  if (!tpl) {
+    $("kbBack").style.display = "inline-flex";
+    $("kbTitle").textContent = "知识库模板";
+    $("kbUsedBy").textContent = "未找到模板（" + esc(tplId) + "）";
+    $("kbBody").style.display = "block";
+    $("kbBody").innerHTML = `<p class="kb-desc" style="color:var(--red)">未找到该模板数据，请刷新页面重试。</p>`;
+    $("kbOverview").style.display = "none";
+    $("kbSuppBox").style.display = "block";
+    $("kbSupp").value = "";
+    modal.dataset.tpl = "";
+    return;
+  }
+
+  $("kbBack").style.display = "inline-flex";
   $("kbTitle").textContent = tpl.title;
   const used = (tpl.usedBy || []).map((a) => AGENT_NAME[a] || a).join("、");
-  $("kbUsedBy").textContent = "被以下 Agent 使用：" + (used || "—");
+  $("kbUsedBy").textContent = "被以下 Agent 使用：" + (used || "—") + " · 点击标题旁 ✕ 关闭";
   $("kbBody").style.display = "block";
   $("kbBody").innerHTML = renderKbBody(tpl);
   $("kbOverview").style.display = "none";
   $("kbSuppBox").style.display = "block";
-  $("kbSupp").value = supplements[tplId] || "";
+  $("kbSupp").value = supplements[tpl.id] || "";
   $("kbSaved").textContent = "";
-  modal.dataset.tpl = tplId;
-  modal.classList.add("open");
-  modal.setAttribute("aria-hidden", "false");
+  modal.dataset.tpl = tpl.id;
 }
+
 function closeKbModal() {
   const modal = $("kbModal");
   modal.classList.remove("open");
@@ -421,6 +450,7 @@ function closeKbModal() {
 }
 
 $("kbOverviewBtn").addEventListener("click", () => openKbModal(null, true));
+$("kbBack").addEventListener("click", () => openKbModal(null, true));
 $("kbClose").addEventListener("click", closeKbModal);
 $("kbModal").addEventListener("click", (e) => {
   if (e.target.id === "kbModal") closeKbModal();
