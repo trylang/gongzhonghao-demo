@@ -1,0 +1,20 @@
+# Render Blueprint — gongzhonghao-demo 单体仓库
+# 约定：每个 demo 放在 demos/<name>/ 下，各自是一个独立 Render 服务（独立 URL）。
+# 新增 demo 时：在 demos/ 下加一个文件夹（自带 package.json + server.js），
+# 然后在本文件 services: 下加一段同样的配置（改 name / rootDir 即可）。
+# 部署：Render 连接本仓库后，自动按此文件创建/更新各服务。
+
+services:
+  - type: web
+    name: huangjiu-content-generator
+    runtime: node
+    plan: free
+    branch: main
+    rootDir: demos/content-generator
+    buildCommand: "echo 'no build needed'"
+    startCommand: "node server.js"
+    healthCheckPath: "/"
+    envVars:
+      - key: MINIMAX_API_KEY
+        sync: false   # 部署时 Render 提示填入，不进代码库
+    # 注意：PORT 由 Render 自动注入，server.js 用 process.env.PORT 读取，勿在此固定

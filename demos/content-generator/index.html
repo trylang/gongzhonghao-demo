@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>代州黄酒 · AI 内容营销实验场</title>
+<link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <header class="site-header">
+    <div class="wrap">
+      <p class="kicker">AI 内容营销实验场 · 一个人 + AI = 一个内容营销部</p>
+      <h1>代州黄酒 · 一次生成四渠道文案</h1>
+      <p class="subtitle">
+        过去这需要文案、视频编导、电商运营三个人；现在你填一次卖点，
+        <strong>小红书 / 抖音 / 公众号 / 淘宝详情页</strong> 四套真文案，由模型实时写好。
+      </p>
+    </div>
+  </header>
+
+  <main class="wrap">
+
+    <!-- 服务端状态 -->
+    <section class="card status-card">
+      <h2>① 服务状态</h2>
+      <p class="server-hint">
+        API Key 存储在服务端（环境变量），前端无法获取，安全可靠。
+        本页面通过后端代理调用 MiniMax 大模型。
+      </p>
+      <span class="server-status" id="serverStatus">检测中…</span>
+    </section>
+
+    <!-- 输入区 -->
+    <section class="card form-card">
+      <h2>② 告诉 AI 你的产品</h2>
+      <div class="form-grid">
+        <label class="field">
+          <span>产品名称</span>
+          <input type="text" id="prodName" value="代州黄酒" />
+        </label>
+        <label class="field">
+          <span>目标人群</span>
+          <input type="text" id="audience" value="25-45 岁注重生活品质、有送礼与自饮需求的人群" />
+        </label>
+        <label class="field field-wide">
+          <span>核心卖点（用逗号或换行分隔，越具体越好）</span>
+          <textarea id="sellingPoints" rows="3">非遗古法酿造,微甜不上头,北方黄酒代表,琥珀色泽,宴请送礼有面子</textarea>
+        </label>
+        <label class="field">
+          <span>品牌调性</span>
+          <select id="tone">
+            <option value="文化厚重">文化厚重（讲历史、讲非遗）</option>
+            <option value="年轻种草">年轻种草（轻松、有网感）</option>
+            <option value="电商促销">电商促销（直给卖点、促转化）</option>
+          </select>
+        </label>
+      </div>
+      <div class="actions">
+        <button class="btn primary big" id="generateBtn" type="button">⚡ 一键生成四渠道文案</button>
+        <button class="btn ghost" id="copyAllBtn" type="button" disabled>复制全部</button>
+        <button class="btn ghost" id="wechatBtn" type="button" disabled>📋 公众号格式</button>
+        <span class="gen-status" id="genStatus"></span>
+      </div>
+    </section>
+
+    <!-- 结果区 -->
+    <section class="results" id="results" aria-live="polite"></section>
+
+    <p class="foot-note">
+      本页面所有文案均由 MiniMax 大模型（MiniMax-Text-01）实时生成，非预置模板。
+      它想证明一件事：<strong>一个人 + AI，真的能完成过去一个内容营销小组的活。</strong>
+    </p>
+  </main>
+
+  <!-- 公众号格式预览弹窗 -->
+  <div class="modal-mask" id="wxModal" style="display:none;">
+    <div class="modal">
+      <div class="modal-head">
+        <h3>📋 公众号可用格式预览</h3>
+        <button class="modal-close" id="wxClose" type="button" aria-label="关闭">×</button>
+      </div>
+      <div class="modal-body" id="wxPreview"></div>
+      <div class="modal-foot">
+        <button class="btn primary" id="wxCopy" type="button">一键复制（粘贴到公众号即可保留格式）</button>
+        <span class="wx-msg" id="wxMsg"></span>
+      </div>
+    </div>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>
