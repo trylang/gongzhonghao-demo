@@ -8,15 +8,26 @@ const $ = (id) => document.getElementById(id);
 const runBtn = $("runBtn");
 const statusEl = $("status");
 
-// ---------- 知识库视图（来自 /api/kb）与人工补充 ----------
+// ---------- 知识库视图（来自 /api/kb 或内联 fallback）与人工补充 ----------
 let KB_VIEW = null;
 const supplements = { policy: "", product: "", voice: "", cases: "" };
 const AGENT_NAME = { agent1: "订单事实员", agent2: "政策补偿员", agent3: "客服沟通员", agent4: "独立风控审核员" };
 
+function loadInlineKb() {
+  const el = document.getElementById("kb-view-data");
+  if (!el) return null;
+  try { return JSON.parse(el.textContent); } catch (e) { return null; }
+}
+
+// 页面加载即读内联 fallback 并渲染标签（无需等网络）
+KB_VIEW = loadInlineKb();
+if (KB_VIEW) renderKbChips();
+
+// 随后异步获取后端最新视图（可能与内联一致，也可能已更新）
 fetch("/api/kb")
   .then((r) => (r.ok ? r.json() : null))
   .then((d) => { if (d) { KB_VIEW = d; renderKbChips(); } })
-  .catch(() => {/* KB 不可见不影响主流程 */});
+  .catch(() => {/* 内联已兜底，静默忽略 */});
 
 // ---------- 示例数据 ----------
 const EXAMPLES = {
@@ -356,16 +367,49 @@ function renderKbBody(tpl) {
   return "";
 }
 
-function openKbModal(tplId) {
+function renderKbOverview() {
+  if (!KB_VIEW) return "<p>知识库加载中…</p>";
+  return KB_VIEW.templates.map((t) => {
+    const used = (t.usedBy || []).map((a) => AGENT_NAME[a] || a).join("、") || "—";
+    let teaser = "";
+    if (t.id === "policy" && t.rules) teaser = `共 ${t.rules.length} 条规则，覆盖破损、物流、口感、错发与强制升级。`;
+    if (t.id === "product" && t.products) teaser = `共 ${t.products.length} 个 SKU，含包装/易碎/时效/禁运说明。`;
+    if (t.id === "voice" && t.templates) teaser = `品牌语气 + ${t.templates.length} 个回复模板 + ${t.voice?.forbidden_words?.length || 0} 个禁用词。`;
+    if (t.id === "cases" && t.cases) teaser = `共 ${t.cases.length} 条脱敏案例，仅作参考，不覆盖规则。`;
+    return `<div class="kb-card" data-tpl="${esc(t.id)}">
+      <div class="kb-card-title">📚 ${esc(t.title)}</div>
+      <div class="kb-card-desc">${esc(t.desc || "")}</div>
+      <div class="kb-card-meta">使用 Agent：${esc(used)}</div>
+      <div class="kb-card-teaser">${esc(teaser)}</div>
+    </div>`;
+  }).join("");
+}
+
+function openKbModal(tplId, overview = false) {
+  const modal = $("kbModal");
+  if (overview) {
+    $("kbTitle").textContent = "内置知识库总览";
+    $("kbUsedBy").textContent = "四份模板 · 可点击查看详情 · 可补充内容 · 商家规则永远优先";
+    $("kbBody").style.display = "none";
+    $("kbOverview").style.display = "block";
+    $("kbOverview").innerHTML = renderKbOverview();
+    $("kbSuppBox").style.display = "none";
+    modal.dataset.tpl = "";
+    modal.classList.add("open");
+    modal.setAttribute("aria-hidden", "false");
+    return;
+  }
   const tpl = KB_VIEW?.templates.find((t) => t.id === tplId);
   if (!tpl) return;
   $("kbTitle").textContent = tpl.title;
   const used = (tpl.usedBy || []).map((a) => AGENT_NAME[a] || a).join("、");
   $("kbUsedBy").textContent = "被以下 Agent 使用：" + (used || "—");
+  $("kbBody").style.display = "block";
   $("kbBody").innerHTML = renderKbBody(tpl);
+  $("kbOverview").style.display = "none";
+  $("kbSuppBox").style.display = "block";
   $("kbSupp").value = supplements[tplId] || "";
   $("kbSaved").textContent = "";
-  const modal = $("kbModal");
   modal.dataset.tpl = tplId;
   modal.classList.add("open");
   modal.setAttribute("aria-hidden", "false");
@@ -376,13 +420,22 @@ function closeKbModal() {
   modal.setAttribute("aria-hidden", "true");
 }
 
+$("kbOverviewBtn").addEventListener("click", () => openKbModal(null, true));
 $("kbClose").addEventListener("click", closeKbModal);
-$("kbModal").addEventListener("click", (e) => { if (e.target.id === "kbModal") closeKbModal(); });
+$("kbModal").addEventListener("click", (e) => {
+  if (e.target.id === "kbModal") closeKbModal();
+  // 总览卡片点击 -> 打开详情
+  const card = e.target.closest(".kb-card");
+  if (card) {
+    const id = card.dataset.tpl;
+    if (id) openKbModal(id);
+  }
+});
 $("kbSave").addEventListener("click", () => {
   const id = $("kbModal").dataset.tpl;
   if (!id) return;
   supplements[id] = $("kbSupp").value.trim();
-  $("kbSaved").textContent = "✅ 已保存，将随下次分析发送给对应 Agent";
+  $("kbSaved").textContent = "✅ 已保存，将在下次试跑时随该模板发给对应 Agent";
 });
 
 runBtn.addEventListener("click", run);

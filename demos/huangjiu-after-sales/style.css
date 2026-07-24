@@ -142,6 +142,25 @@ select:focus, textarea:focus { outline: 2px solid var(--amber); border-color: va
 /* 表单内联提示 */
 label .opt { font-weight: 400; font-size: 11.5px; color: var(--ink-soft); margin-left: 4px; }
 
+.pipeline-head { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 8px; }
+.kb-overview-btn {
+  border: 1px solid var(--amber); background: #fff7ec; color: var(--brown-d);
+  padding: 6px 12px; border-radius: 999px; font-size: 12.5px; cursor: pointer; transition: .15s;
+}
+.kb-overview-btn:hover { background: var(--amber); color: #fff; }
+
+/* 知识库总览卡片 */
+.kb-overview { display: grid; gap: 12px; }
+.kb-card {
+  border: 1px solid var(--line); border-radius: 12px; padding: 13px 15px; background: #fffdf9;
+  cursor: pointer; transition: .15s;
+}
+.kb-card:hover { border-color: var(--amber); box-shadow: 0 4px 12px rgba(200,137,63,.12); }
+.kb-card-title { font-weight: 700; color: var(--brown-d); font-size: 14px; margin-bottom: 4px; }
+.kb-card-desc { font-size: 12.5px; color: var(--ink); line-height: 1.55; margin-bottom: 6px; }
+.kb-card-meta { font-size: 11.5px; color: var(--brown); margin-bottom: 3px; }
+.kb-card-teaser { font-size: 11.5px; color: var(--ink-soft); }
+
 /* 流水线节点里的知识库标签 */
 .kb-chips { display: flex; flex-wrap: wrap; gap: 5px; align-items: center; margin-top: 6px; }
 .chip-label { font-size: 11px; color: var(--ink-soft); }

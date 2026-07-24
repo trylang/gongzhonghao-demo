@@ -105,7 +105,9 @@
 
     <!-- 右：流水线 + 处理单 -->
     <section class="card result-card">
-      <h2>② 四 Agent 流水线</h2>
+      <h2 class="pipeline-head">② 四 Agent 流水线
+        <button type="button" id="kbOverviewBtn" class="kb-overview-btn">📚 查看内置知识库</button>
+      </h2>
       <div class="pipeline">
         <div class="node" id="node-agent1" data-state="idle">
           <span class="num">1</span>
@@ -146,17 +148,113 @@
         <button id="kbClose" class="modal-close" aria-label="关闭">✕</button>
       </div>
       <div id="kbBody" class="modal-body"></div>
-      <div class="modal-supp">
+      <div id="kbOverview" class="modal-body" style="display:none"></div>
+      <div class="modal-supp" id="kbSuppBox">
         <label>补充内容（将随本次分析发送给用到该模板的 Agent；留空则不影响）</label>
         <textarea id="kbSupp" rows="3" placeholder="例如：本店破损补发上限为 ¥99；或：十年陈实际由绍兴仓发出，时效 2-3 天"></textarea>
         <div class="modal-supp-actions">
           <span id="kbSaved" class="kb-saved"></span>
-          <button id="kbSave" class="ex" type="button">保存补充</button>
+          <button id="kbSave" class="ex" type="button">保存到本次分析</button>
         </div>
       </div>
     </div>
   </div>
 
+  <!-- 内联默认知识库视图：页面一加载就有，无需等 /api/kb；后端返回后会刷新 -->
+  <script id="kb-view-data" type="application/json">
+{
+  "version": "huangjiu-default-v1.0",
+  "agentMapping": {
+    "agent1": ["product"],
+    "agent2": ["policy", "product", "cases"],
+    "agent3": ["voice", "cases"],
+    "agent4": ["policy", "product", "cases"]
+  },
+  "templates": [
+    {
+      "id": "policy", "title": "售后处理规则",
+      "desc": "退款/补发/赔付/升级的判定依据：每条带 rule_id、适用场景、条件、允许动作、金额上限、所需凭证、是否需主管审批。",
+      "rules": [
+        { "rule_id": "DAM-01", "case_type": "damage", "condition": "签收24小时内报破损/漏液，已提供外箱+瓶身照片", "action": "reship", "amount": "单件实付", "evidence": ["外箱照片", "破损瓶身照片"], "approval": true, "exception": "照片明显非本单商品时升级人工" },
+        { "rule_id": "DAM-02", "case_type": "damage", "condition": "报破损/漏液但未提供照片", "action": "request_evidence", "amount": "0", "evidence": [], "approval": false, "exception": "客户明确拒绝拍照则升级人工" },
+        { "rule_id": "DAM-03", "case_type": "damage", "condition": "签收超过72小时后首次报破损", "action": "escalate", "amount": "—", "evidence": [], "approval": true },
+        { "rule_id": "DAM-04", "case_type": "damage", "condition": "破损且客户宴请/急用，照片齐全", "action": "reship_expedited", "amount": "实付+加急运费≤15", "evidence": ["外箱照片", "破损瓶身照片"], "approval": true, "exception": "不得承诺具体送达时间，只给时效范围" },
+        { "rule_id": "DAM-05", "case_type": "damage", "condition": "整箱多瓶破损（≥3瓶）", "action": "escalate", "amount": "—", "evidence": ["照片", "物流破损记录"], "approval": true, "exception": "可能为运输事故，需走物流理赔" },
+        { "rule_id": "LOG-01", "case_type": "logistics_delay", "condition": "发货后48小时无揽收记录", "action": "track_and_comfort", "amount": "0", "evidence": [], "approval": false },
+        { "rule_id": "LOG-02", "case_type": "logistics_delay", "condition": "物流轨迹停滞≥3天", "action": "track_with_eta_range", "amount": "≤10元券", "evidence": [], "approval": false, "exception": "停滞≥7天按疑似丢件升级（LOG-04）" },
+        { "rule_id": "LOG-03", "case_type": "logistics_delay", "condition": "客户急用且时效紧张", "action": "eta_range_only_or_expedite", "amount": "加急≤15", "evidence": [], "approval": true, "exception": "不承诺具体日期" },
+        { "rule_id": "LOG-04", "case_type": "logistics_delay", "condition": "疑似丢件（停滞≥7天或物流确认异常）", "action": "escalate", "amount": "—", "evidence": ["物流异常记录"], "approval": true },
+        { "rule_id": "TAS-01", "case_type": "taste", "condition": "未开封，签收7天内", "action": "return_refund_7d", "amount": "订单实付", "evidence": ["未开封照片"], "approval": true },
+        { "rule_id": "TAS-02", "case_type": "taste", "condition": "已开封，反馈口感不符", "action": "coupon_only", "amount": "≤15元券", "evidence": [], "approval": false, "exception": "同一用户90天内仅1次" },
+        { "rule_id": "TAS-03", "case_type": "taste", "condition": "反馈酒体浑浊/有沉淀", "action": "educate_then_fallback", "amount": "—", "evidence": [], "approval": false, "exception": "伴随异味/变质描述则按食安升级（ESC-01）" },
+        { "rule_id": "ERR-01", "case_type": "wrong_item", "condition": "收到商品与订单不符（错发），有照片", "action": "reship_correct_item", "amount": "订单实付", "evidence": ["收到商品照片"], "approval": true, "exception": "错发商品>50元需协商退回" },
+        { "rule_id": "ERR-02", "case_type": "wrong_item", "condition": "数量少于订单（少发）", "action": "reship_missing_after_check", "amount": "缺件金额", "evidence": ["开箱照片（如有）", "仓库出库称重记录"], "approval": true, "exception": "称重记录与订单一致则升级人工" },
+        { "rule_id": "ERR-03", "case_type": "wrong_item", "condition": "错发/少发但无任何凭证", "action": "request_evidence", "amount": "0", "evidence": [], "approval": false },
+        { "rule_id": "ESC-01", "case_type": "escalate", "condition": "涉及食品安全、饮后身体不适、异味变质", "action": "escalate", "amount": "—", "evidence": [], "approval": true, "exception": "不给医疗建议、不争辩、不做书面责任表态" },
+        { "rule_id": "ESC-02", "case_type": "escalate", "condition": "同一用户30天内≥3次同类售后申请", "action": "escalate", "amount": "—", "evidence": [], "approval": true, "exception": "不直接拒绝、不直接补偿" },
+        { "rule_id": "ESC-03", "case_type": "escalate", "condition": "客户要求平台外转账/私下交易", "action": "escalate", "amount": "—", "evidence": [], "approval": true, "exception": "坚持平台内处理" },
+        { "rule_id": "ESC-04", "case_type": "escalate", "condition": "单笔退款/补偿金额>200元", "action": "escalate", "amount": "—", "evidence": [], "approval": true },
+        { "rule_id": "ESC-05", "case_type": "escalate", "condition": "客户提及投诉监管部门、媒体曝光、诉讼", "action": "escalate", "amount": "—", "evidence": [], "approval": true },
+        { "rule_id": "ESC-06", "case_type": "escalate", "condition": "涉及未成年人饮酒相关内容", "action": "escalate", "amount": "—", "evidence": [], "approval": true, "exception": "回复不得出现任何鼓励饮酒话术" }
+      ]
+    },
+    {
+      "id": "product", "title": "商品与物流资料",
+      "desc": "SKU、规格、包装、酒精度、是否易碎、参考价；仓库与分区时效、禁运区域。",
+      "products": [
+        { "sku": "DZ-500-6Y", "name": "代州黄酒·六年陈", "spec": "500ml/瓶", "package": "玻璃瓶+珍珠棉+五层瓦楞箱", "abv": "12%vol", "fragile": true, "ref_price": 68 },
+        { "sku": "DZ-500-10Y", "name": "代州黄酒·十年陈", "spec": "500ml/瓶", "package": "玻璃瓶+木盒+五层瓦楞箱", "abv": "14%vol", "fragile": true, "ref_price": 128 },
+        { "sku": "DZ-GIFT-2", "name": "代州黄酒·礼盒装", "spec": "500ml×2瓶", "package": "硬质礼盒+内衬泡沫", "abv": "12%vol", "fragile": true, "ref_price": 158 },
+        { "sku": "DZ-TAN-1500", "name": "代州黄酒·坛装", "spec": "1.5L/坛", "package": "陶坛+木架+加固箱", "abv": "13%vol", "fragile": true, "ref_price": 198, "fragile_level": "extreme", "carrier_restriction": "仅德邦，不可加急" },
+        { "sku": "DZ-MINI-6", "name": "代州黄酒·品鉴小瓶", "spec": "125ml×6瓶", "package": "PET小瓶+卡槽盒", "abv": "12%vol", "fragile": false, "ref_price": 59 }
+      ],
+      "logistics": {
+        "warehouse": "山西忻州·代县仓", "dispatch_sla_hours": "48", "dispatch_sla_hours_promo": "72",
+        "carriers": ["中通", "邮政", "德邦（坛装专用）"],
+        "delivery_eta_days": { "华北": "2-3", "华东/华中": "3-4", "华南/西南": "4-5", "西北/东北": "4-6", "偏远地区": "6-8" },
+        "no_ship_regions": ["港澳台及海外"]
+      }
+    },
+    {
+      "id": "voice", "title": "客服话术库",
+      "desc": "品牌语气、称呼、禁用词清单、各阶段回复模板（部分须主管批准后使用）。",
+      "voice": {
+        "address_forms": ["您", "酒友（老客户）"],
+        "tone": "温和、诚恳、不卑不亢；先共情、再方案、后下一步",
+        "style_rules": ["短句为主", "一条回复≤3句话+1个明确下一步"],
+        "forbidden_words": ["保证", "一定", "肯定", "马上到", "最快", "绝不", "养生", "保健", "治疗", "去湿", "补气血", "对身体好", "这不是我们的问题", "快递的事找快递", "您自己签收的", "加微信", "私下转账", "走其他渠道"]
+      },
+      "templates": [
+        { "stage": "first_comfort", "case_type": "damage", "text": "真的很抱歉让您收到了破损的酒，这确实是我们不愿看到的。您别着急，我们优先给您处理。为了尽快核实，麻烦您提供一下外箱和瓶身的照片，收到后我们第一时间跟进。" },
+        { "stage": "request_evidence", "case_type": "any", "text": "为了尽快给您安排处理，麻烦您拍两张照片发给我们：一张外箱整体、一张破损/漏液部位。收到照片后我们会优先核实补发方案，不会让您多跑流程。" },
+        { "stage": "reship_notice", "case_type": "any", "requires_approval_first": true, "text": "您的照片我们已核实，符合运输破损补发标准。补发的一瓶今天从代县仓发出，预计 X–X 天送达（以物流更新为准）。单号出来后第一时间发您，给您添麻烦了。" },
+        { "stage": "refund_confirm", "case_type": "any", "requires_approval_first": true, "text": "已为您提交退款申请，金额 ¥XX，将按平台流程原路退回，一般 1–3 个工作日到账（以平台为准）。这次给您添麻烦了，欢迎您以后再来试试我们的其他批次。" },
+        { "stage": "polite_decline", "case_type": "any", "text": "非常理解您的心情。不过按照店铺售后规则，这种情况暂时无法办理退款/补发（原因：XXX）。我们可以为您提供 XXX（替代方案）。如果您觉得不合适，我可以帮您转给店长再看一次。" },
+        { "stage": "escalate_notice", "case_type": "any", "text": "您反馈的情况我们非常重视，已经第一时间转给店长专项处理。请您留意消息，我们会在今天内给您回复。这期间建议先保留好商品和包装，方便后续核实。" }
+      ]
+    },
+    {
+      "id": "cases", "title": "历史典型案例",
+      "desc": "脱敏已批准案例，仅作相似参考，不得覆盖现行规则；special_approval 案例不得泛化为常规方案。",
+      "cases": [
+        { "case_id": "CASE-001", "summary": "签收12小时报一瓶破损，当天补齐外箱+瓶身照片", "rules_cited": ["DAM-01"], "final_decision": "批准补发1瓶（¥68），免退回", "reason": "照片清晰、时间在窗口内，符合补发标准" },
+        { "case_id": "CASE-002", "summary": "称漏液但拒绝拍照，要求直接全额退款¥158", "rules_cited": ["DAM-02"], "final_decision": "拒绝直接退款，改为提供退货退款通道", "reason": "无凭证不满足直接退款条件，但保留平台退货权利" },
+        { "case_id": "CASE-003", "summary": "物流停滞4天，客户婚宴2天后举行", "rules_cited": ["LOG-02", "LOG-03"], "final_decision": "加急补发1单，原单到货后协商退回", "reason": "特殊场合特批，超出默认规则，店长签字承担成本", "special_approval": true },
+        { "case_id": "CASE-004", "summary": "客户称饮后胃部不适，要求赔偿", "rules_cited": ["ESC-01"], "final_decision": "店长电话沟通+留样送检，平台介入处理", "reason": "食安类不走常规售后，全程人工" },
+        { "case_id": "CASE-005", "summary": "同一账号30天内第3次申请破损，照片疑似重复使用", "rules_cited": ["ESC-02"], "final_decision": "拒绝补偿，提交平台异常售后报备", "reason": "照片EXIF与前次一致，判定为异常索赔" },
+        { "case_id": "CASE-006", "summary": "收到十年陈但下单的是六年陈（发货贴错标）", "rules_cited": ["ERR-01"], "final_decision": "不退回、不补差价，致歉并赠10元券", "reason": "错发商品价值更高，退回物流成本大于差价" },
+        { "case_id": "CASE-007", "summary": "坛装酒收到时陶坛裂缝渗酒", "rules_cited": ["DAM-01", "DAM-05"], "final_decision": "全额退款¥198，并向德邦发起运输理赔", "reason": "坛装破损无法部分补救，同时走物流理赔" },
+        { "case_id": "CASE-008", "summary": "客户称口感和上次不一样，已开封半瓶", "rules_cited": ["TAS-02"], "final_decision": "发放15元券，附批次差异科普说明", "reason": "发酵酒批次间存在正常风味差异，不构成质量问题" }
+      ],
+      "usageRules": [
+        "案例仅作相似参考，判定依据以已发布规则为准",
+        "special_approval=true 的案例不得被泛化为常规方案，引用时必须标注'曾为特批'",
+        "Agent 3 不得从案例自行推导赔付金额"
+      ]
+    }
+  ]
+}
+  </script>
   <script src="app.js"></script>
 </body>
 </html>
