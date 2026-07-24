@@ -8,6 +8,16 @@ const $ = (id) => document.getElementById(id);
 const runBtn = $("runBtn");
 const statusEl = $("status");
 
+// ---------- 知识库视图（来自 /api/kb）与人工补充 ----------
+let KB_VIEW = null;
+const supplements = { policy: "", product: "", voice: "", cases: "" };
+const AGENT_NAME = { agent1: "订单事实员", agent2: "政策补偿员", agent3: "客服沟通员", agent4: "独立风控审核员" };
+
+fetch("/api/kb")
+  .then((r) => (r.ok ? r.json() : null))
+  .then((d) => { if (d) { KB_VIEW = d; renderKbChips(); } })
+  .catch(() => {/* KB 不可见不影响主流程 */});
+
 // ---------- 示例数据 ----------
 const EXAMPLES = {
   damage_photo: {
@@ -50,7 +60,9 @@ document.querySelectorAll(".ex").forEach((b) => {
     $("order_status").value = ex.order_status;
     $("case_type_hint").value = ex.case_type_hint;
     $("complaint").value = ex.complaint;
+    $("logistics_sel").value = "";      // 示例直接填文本框，下拉回到"自定义"
     $("logistics").value = ex.logistics;
+    $("history_sel").value = "";
     $("history").value = ex.history;
   });
 });
@@ -91,6 +103,14 @@ function resetNodes() {
   ["node-agent1", "node-agent2", "node-agent3", "node-agent4"].forEach((id) => setNode(id, "idle", ""));
 }
 
+// 合并"下拉快捷选 + 文本框自填"：选了下拉则作为前缀，文本为补充
+function mergeField(selId, txtId) {
+  const s = $(selId).value.trim();
+  const t = $(txtId).value.trim();
+  if (s && t) return s + "；" + t;
+  return s || t;
+}
+
 // ---------- 主流程 ----------
 async function run() {
   const payload = {
@@ -98,9 +118,10 @@ async function run() {
     order_status: $("order_status").value,
     case_type_hint: $("case_type_hint").value,
     complaint: $("complaint").value.trim(),
-    logistics: $("logistics").value.trim(),
-    history: $("history").value.trim(),
+    logistics: mergeField("logistics_sel", "logistics"),
+    history: mergeField("history_sel", "history"),
     custom_rules: $("custom_rules").value.trim(),
+    supplements,
   };
   if (!payload.complaint) { statusEl.textContent = "请先填写客诉内容。"; statusEl.style.color = "var(--red)"; return; }
 
@@ -261,5 +282,107 @@ function downloadMd(t) {
   a.click();
   URL.revokeObjectURL(a.href);
 }
+
+// ---------- 知识库标签（每个 Agent 节点展示其用到的模板） ----------
+function renderKbChips() {
+  if (!KB_VIEW) return;
+  ["agent1", "agent2", "agent3", "agent4"].forEach((a) => {
+    const ids = KB_VIEW.agentMapping[a] || [];
+    const body = document.querySelector(`#node-${a} .node-body`);
+    if (!body) return;
+    let box = body.querySelector(".kb-chips");
+    if (!box) { box = document.createElement("div"); box.className = "kb-chips"; body.appendChild(box); }
+    box.innerHTML = "";
+    const lab = document.createElement("span");
+    lab.className = "chip-label";
+    lab.textContent = "知识库：";
+    box.appendChild(lab);
+    KB_VIEW.templates.filter((t) => ids.includes(t.id)).forEach((t) => {
+      const b = document.createElement("button");
+      b.type = "button";
+      b.className = "chip";
+      b.textContent = t.title;
+      b.addEventListener("click", () => openKbModal(t.id));
+      box.appendChild(b);
+    });
+  });
+}
+
+// ---------- 知识库弹窗：详情 + 补充 ----------
+function renderKbBody(tpl) {
+  if (tpl.id === "policy") {
+    let h = `<p class="kb-desc">${esc(tpl.desc)}</p><div class="kb-table-wrap"><table class="kb-table"><thead><tr><th>rule_id</th><th>适用</th><th>条件</th><th>动作</th><th>金额上限</th><th>所需凭证</th><th>审批</th></tr></thead><tbody>`;
+    tpl.rules.forEach((r) => {
+      h += `<tr><td><b>${esc(r.rule_id)}</b></td><td>${esc(r.case_type)}</td><td>${esc(r.condition)}</td><td>${esc(r.action)}</td><td>${esc(r.amount)}</td><td>${esc((r.evidence || []).join("、") || "—")}</td><td>${r.approval ? "需审批" : "否"}</td></tr>`;
+      if (r.exception) h += `<tr class="kb-sub"><td colspan="7">例外：${esc(r.exception)}</td></tr>`;
+    });
+    return h + "</tbody></table></div>";
+  }
+  if (tpl.id === "product") {
+    let h = `<p class="kb-desc">${esc(tpl.desc)}</p><div class="kb-table-wrap"><table class="kb-table"><thead><tr><th>SKU</th><th>名称</th><th>规格</th><th>包装</th><th>酒精度</th><th>易碎</th><th>参考价</th></tr></thead><tbody>`;
+    tpl.products.forEach((p) => {
+      h += `<tr><td>${esc(p.sku)}</td><td><b>${esc(p.name)}</b></td><td>${esc(p.spec)}</td><td>${esc(p.package)}</td><td>${esc(p.abv)}</td><td>${esc(p.fragile ? "是" + (p.fragile_level ? "·" + p.fragile_level : "") : "否")}</td><td>¥${esc(p.ref_price)}</td></tr>`;
+      if (p.carrier_restriction) h += `<tr class="kb-sub"><td colspan="7">物流限制：${esc(p.carrier_restriction)}</td></tr>`;
+    });
+    h += "</tbody></table></div>";
+    const lg = tpl.logistics;
+    h += `<div class="kb-block"><b>仓库：</b>${esc(lg.warehouse)} ｜ <b>出库：</b>${esc(lg.dispatch_sla_hours)}h（大促${esc(lg.dispatch_sla_hours_promo)}h）｜ <b>承运：</b>${esc(lg.carriers.join("、"))}</div>`;
+    h += `<div class="kb-block"><b>分区时效(天)：</b>${Object.entries(lg.delivery_eta_days).map(([k, v]) => esc(k) + " " + esc(v)).join(" ｜ ")}</div>`;
+    h += `<div class="kb-block"><b>禁运：</b>${esc(lg.no_ship_regions.join("、"))}</div>`;
+    return h;
+  }
+  if (tpl.id === "voice") {
+    const v = tpl.voice;
+    let h = `<p class="kb-desc">${esc(tpl.desc)}</p>`;
+    h += `<div class="kb-block"><b>称呼：</b>${esc(v.address_forms.join("、"))}</div>`;
+    h += `<div class="kb-block"><b>语气：</b>${esc(v.tone)}</div>`;
+    h += `<div class="kb-block"><b>风格：</b>${esc(v.style_rules.join("；"))}</div>`;
+    h += `<div class="kb-block kb-forbidden"><b>禁用词：</b>${v.forbidden_words.map((w) => `<span class="fw">${esc(w)}</span>`).join("")}</div>`;
+    h += `<div class="kb-subtitle">回复模板</div><div class="kb-templates">`;
+    tpl.templates.forEach((t) => {
+      h += `<div class="kb-tpl"><div class="kb-tpl-meta">${esc(t.stage)}${t.requires_approval_first ? " · 须主管批准后使用" : ""}</div><div class="kb-tpl-text">${esc(t.text)}</div></div>`;
+    });
+    return h + "</div>";
+  }
+  if (tpl.id === "cases") {
+    let h = `<p class="kb-desc">${esc(tpl.desc)}</p><div class="kb-cases">`;
+    tpl.cases.forEach((c) => {
+      h += `<div class="kb-case"><div class="kb-case-head"><b>${esc(c.case_id)}</b>${c.special_approval ? ' <span class="tag-spec">曾为特批</span>' : ""}</div><div>${esc(c.summary)}</div><div class="kb-case-meta">依据：${esc((c.rules_cited || []).join("、"))} ｜ 决定：${esc(c.final_decision)} ｜ 原因：${esc(c.reason)}</div></div>`;
+    });
+    h += "</div>";
+    h += `<div class="kb-subtitle">使用规则</div><ul class="kb-usage">${tpl.usageRules.map((u) => `<li>${esc(u)}</li>`).join("")}</ul>`;
+    return h;
+  }
+  return "";
+}
+
+function openKbModal(tplId) {
+  const tpl = KB_VIEW?.templates.find((t) => t.id === tplId);
+  if (!tpl) return;
+  $("kbTitle").textContent = tpl.title;
+  const used = (tpl.usedBy || []).map((a) => AGENT_NAME[a] || a).join("、");
+  $("kbUsedBy").textContent = "被以下 Agent 使用：" + (used || "—");
+  $("kbBody").innerHTML = renderKbBody(tpl);
+  $("kbSupp").value = supplements[tplId] || "";
+  $("kbSaved").textContent = "";
+  const modal = $("kbModal");
+  modal.dataset.tpl = tplId;
+  modal.classList.add("open");
+  modal.setAttribute("aria-hidden", "false");
+}
+function closeKbModal() {
+  const modal = $("kbModal");
+  modal.classList.remove("open");
+  modal.setAttribute("aria-hidden", "true");
+}
+
+$("kbClose").addEventListener("click", closeKbModal);
+$("kbModal").addEventListener("click", (e) => { if (e.target.id === "kbModal") closeKbModal(); });
+$("kbSave").addEventListener("click", () => {
+  const id = $("kbModal").dataset.tpl;
+  if (!id) return;
+  supplements[id] = $("kbSupp").value.trim();
+  $("kbSaved").textContent = "✅ 已保存，将随下次分析发送给对应 Agent";
+});
 
 runBtn.addEventListener("click", run);

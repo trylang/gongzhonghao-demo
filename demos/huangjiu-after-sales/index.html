@@ -58,11 +58,29 @@
         <textarea id="complaint" rows="3" placeholder="例如：收到外箱压坏，一瓶漏液，已拍照"></textarea>
       </label>
 
-      <label>物流状态
+      <label>物流状态<span class="opt">（可下拉选，也可直接填）</span>
+        <select id="logistics_sel">
+          <option value="">— 自定义填写 —</option>
+          <option value="未发货：尚未出库">未发货</option>
+          <option value="运输中，物流有正常更新">运输中·轨迹正常</option>
+          <option value="运输中，物流轨迹已停滞≥3天">运输中·轨迹停滞≥3天</option>
+          <option value="已签收，外箱完好">已签收·外箱完好</option>
+          <option value="已签收，外箱有明显挤压/破损">已签收·外箱破损</option>
+          <option value="已签收12小时内">已签收12小时内</option>
+          <option value="已签收超过72小时">已签收超过72小时</option>
+        </select>
         <textarea id="logistics" rows="2" placeholder="例如：物流显示外箱破损，已签收12小时"></textarea>
       </label>
 
-      <label>历史沟通（可选）
+      <label>历史沟通（可选）<span class="opt">（可下拉选，也可直接填）</span>
+        <select id="history_sel">
+          <option value="">— 自定义填写 —</option>
+          <option value="首次联系，此前无售后">首次联系·无历史</option>
+          <option value="近期多次提出同类售后">近期多次同类</option>
+          <option value="此前已升级过一次">已升级过一次</option>
+          <option value="客户情绪激动/措辞激烈">客户情绪激动</option>
+          <option value="客户要求私下转账/脱离平台">要求私下交易</option>
+        </select>
         <textarea id="history" rows="2" placeholder="例如：首次联系，此前无售后"></textarea>
       </label>
 
@@ -116,6 +134,28 @@
   <footer class="foot">
     代州黄酒 × AI 实验场 · 四 Agent 售后分流台（体验版）· 模型：MiniMax-Text-01
   </footer>
+
+  <!-- 知识库模板详情 / 补充弹窗 -->
+  <div id="kbModal" class="modal" aria-hidden="true">
+    <div class="modal-box">
+      <div class="modal-head">
+        <div>
+          <h3 id="kbTitle">知识库模板</h3>
+          <p id="kbUsedBy" class="kb-usedby"></p>
+        </div>
+        <button id="kbClose" class="modal-close" aria-label="关闭">✕</button>
+      </div>
+      <div id="kbBody" class="modal-body"></div>
+      <div class="modal-supp">
+        <label>补充内容（将随本次分析发送给用到该模板的 Agent；留空则不影响）</label>
+        <textarea id="kbSupp" rows="3" placeholder="例如：本店破损补发上限为 ¥99；或：十年陈实际由绍兴仓发出，时效 2-3 天"></textarea>
+        <div class="modal-supp-actions">
+          <span id="kbSaved" class="kb-saved"></span>
+          <button id="kbSave" class="ex" type="button">保存补充</button>
+        </div>
+      </div>
+    </div>
+  </div>
 
   <script src="app.js"></script>
 </body>
