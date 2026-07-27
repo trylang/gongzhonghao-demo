@@ -32,3 +32,13 @@ services:
       - key: MINIMAX_API_KEY
         sync: false   # 部署时 Render 提示填入，不进代码库
     # 注意：PORT 由 Render 自动注入，server.js 用 process.env.PORT 读取，勿在此固定
+
+  - type: web
+    name: self-maintaining-apis-reader
+    runtime: node
+    plan: free
+    branch: main
+    rootDir: demos/self-maintaining-apis-reader
+    buildCommand: "echo 'no build needed'"
+    startCommand: "node server.js"
+    healthCheckPath: "/"
