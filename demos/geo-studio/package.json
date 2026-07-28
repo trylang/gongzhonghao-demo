@@ -1,0 +1,13 @@
+{
+  "name": "geo-studio",
+  "version": "1.0.0",
+  "description": "GEO Studio — GEO 内容优化器 + 搜索流量依赖自检表（公众号配套小工具）",
+  "type": "module",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node server.js"
+  },
+  "engines": {
+    "node": ">=18"
+  }
+}

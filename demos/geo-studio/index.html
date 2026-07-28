@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>GEO Studio · AI 搜索时代的内容工具</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <header class="topbar">
+    <div class="brand">🔎 GEO Studio</div>
+    <div class="tabs">
+      <button class="tab active" data-tab="geo">① GEO 内容优化器</button>
+      <button class="tab" data-tab="audit">② 搜索流量依赖自检表</button>
+    </div>
+  </header>
+
+  <main>
+    <!-- ============ Tab 1：GEO 内容优化器 ============ -->
+    <section id="geo" class="panel active">
+      <h1>GEO 内容优化器</h1>
+      <p class="lead">把你的产品 / 服务描述，改写成<strong>更容易被 AI 搜索（Kimi、豆包、元宝、文心一言、ChatGPT）引用</strong>的结构。事实清晰、有明确观点、分段标题化。</p>
+
+      <label class="field">
+        <span>原始描述（产品卖点 / 服务介绍 / 推文草稿）</span>
+        <textarea id="geo-input" rows="7" placeholder="例：我们做代州黄酒，纯粮酿造，口感醇厚，适合送礼和自饮，老字号传承。""></textarea>
+      </label>
+
+      <label class="field">
+        <span>使用场景</span>
+        <select id="geo-scene">
+          <option value="ecommerce">电商商品页</option>
+          <option value="wechat">公众号推文</option>
+          <option value="local">本地服务介绍</option>
+          <option value="general">通用</option>
+        </select>
+      </label>
+
+      <div class="actions">
+        <button id="geo-run" class="btn primary">⚡ 改写成更易被引用</button>
+        <span id="geo-status" class="status"></span>
+      </div>
+
+      <div id="geo-output" class="output hidden">
+        <div class="output-head">
+          <h2>改写结果</h2>
+          <button id="geo-copy" class="btn ghost">📋 复制</button>
+        </div>
+        <div id="geo-result" class="result"></div>
+      </div>
+    </section>
+
+    <!-- ============ Tab 2：搜索流量依赖自检表 ============ -->
+    <section id="audit" class="panel">
+      <h1>搜索流量依赖自检表</h1>
+      <p class="lead">勾选你在用的获客渠道，填上各自的流量占比，一键看清楚：你的流量有多少来自「被点击」、多少来自「被引用」、多少可能在三个月内腰斩。</p>
+
+      <div id="channel-list" class="channel-list"></div>
+
+      <label class="field">
+        <span>没列出的渠道？自己加（逗号分隔，如：什么值得买, 线下门店）</span>
+        <input id="audit-extra" type="text" placeholder="可选" />
+      </label>
+
+      <div class="actions">
+        <button id="audit-run" class="btn primary">📊 生成诊断清单</button>
+        <span id="audit-status" class="status"></span>
+      </div>
+
+      <div id="audit-output" class="output hidden">
+        <h2>诊断结果</h2>
+        <div id="audit-chart" class="chart"></div>
+        <div id="audit-risk" class="risk"></div>
+        <div id="audit-checklist" class="checklist"></div>
+        <button id="audit-copy" class="btn ghost">📋 复制诊断报告</button>
+      </div>
+    </section>
+  </main>
+
+  <footer class="foot">
+    配套文章《当 43% 的人不再"搜"而是"问"》· 纯前端诊断，你的输入不会上传（GEO 改写走服务端代理，不留存）
+  </footer>
+
+  <script src="app.js"></script>
+</body>
+</html>

@@ -42,3 +42,16 @@ services:
     buildCommand: "echo 'no build needed'"
     startCommand: "node server.js"
     healthCheckPath: "/"
+
+  - type: web
+    name: geo-studio
+    runtime: node
+    plan: free
+    branch: main
+    rootDir: demos/geo-studio
+    buildCommand: "echo 'no build needed'"
+    startCommand: "node server.js"
+    healthCheckPath: "/"
+    envVars:
+      - key: MINIMAX_API_KEY
+        sync: false   # 部署时 Render 提示填入，不进代码库
