@@ -3,14 +3,14 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>代州黄酒 · AI 内容营销实验场</title>
+<title>AI 内容营销生成器</title>
 <link rel="stylesheet" href="style.css" />
 </head>
 <body>
   <header class="site-header">
     <div class="wrap">
-      <p class="kicker">AI 内容营销实验场 · 一个人 + AI = 一个内容营销部</p>
-      <h1>代州黄酒 · 一次生成四渠道文案</h1>
+      <p class="kicker">AI 内容营销生成器 · 一个人 + AI = 一个内容营销部</p>
+      <h1>AI 内容营销 · 一次生成四渠道文案</h1>
       <p class="subtitle">
         过去这需要文案、视频编导、电商运营三个人；现在你填一次卖点，
         <strong>小红书 / 抖音 / 公众号 / 淘宝详情页</strong> 四套真文案，由模型实时写好。
@@ -36,22 +36,24 @@
       <div class="form-grid">
         <label class="field">
           <span>产品名称</span>
-          <input type="text" id="prodName" value="代州黄酒" />
+          <input type="text" id="prodName" value="你的产品名称" placeholder="例如：智能保温杯" />
         </label>
         <label class="field">
           <span>目标人群</span>
-          <input type="text" id="audience" value="25-45 岁注重生活品质、有送礼与自饮需求的人群" />
+          <input type="text" id="audience" value="25-45 岁注重生活品质的人群" placeholder="例如：职场白领、宝妈、户外运动爱好者" />
         </label>
         <label class="field field-wide">
           <span>核心卖点（用逗号或换行分隔，越具体越好）</span>
-          <textarea id="sellingPoints" rows="3">非遗古法酿造,微甜不上头,北方黄酒代表,琥珀色泽,宴请送礼有面子</textarea>
+          <textarea id="sellingPoints" rows="3" placeholder="例如：高品质材料,智能温控,便携设计,超长续航,精美包装适合送礼">高品质材料,智能温控,便携设计,超长续航</textarea>
         </label>
         <label class="field">
           <span>品牌调性</span>
           <select id="tone">
-            <option value="文化厚重">文化厚重（讲历史、讲非遗）</option>
+            <option value="文化厚重">文化厚重（讲历史、讲传承）</option>
             <option value="年轻种草">年轻种草（轻松、有网感）</option>
             <option value="电商促销">电商促销（直给卖点、促转化）</option>
+            <option value="专业权威">专业权威（讲数据、讲技术）</option>
+            <option value="温馨亲切">温馨亲切（讲生活、讲情感）</option>
           </select>
         </label>
       </div>

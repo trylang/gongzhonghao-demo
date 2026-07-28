@@ -1,4 +1,4 @@
-// ===== 代州黄酒 · AI 内容营销实验场 =====
+// ===== AI 内容营销生成器 =====
 // 前端 + 后端代理模式：Key 存服务端环境变量，前端调 /api/generate
 
 const API_ENDPOINT = "/api/generate";
@@ -10,9 +10,9 @@ const CHANNELS = [
     name: "小红书",
     cls: "xhs",
     system:
-      "你是代州黄酒的新媒体种草文案专家，深谙小红书平台调性。请写一篇小红书风格种草笔记：" +
-      "1）一个带 emoji 的吸睛标题；2）口语化、有场景感的正文（用 emoji 分段，像真人分享，不要硬广感）；" +
-      "3）5-8 个相关话题标签（# 开头，含 #代州黄酒 等）。只输出笔记正文，不要任何解释或前后缀。",
+      "你是新媒体种草文案专家，深谙小红书平台调性。请写一篇小红书风格种草笔记：" +
+      "1）一个带 emoji 的吸睛标题（不超过 20 字）；2）口语化、有场景感的正文（用 emoji 分段，像真人分享，不要硬广感）；" +
+      "3）5-8 个相关话题标签（# 开头）。只输出笔记正文，不要任何解释或前后缀。",
     userTpl: (ctx) =>
       `产品：${ctx.prodName}\n目标人群：${ctx.audience}\n核心卖点：${ctx.points}\n品牌调性：${ctx.tone}\n\n请按上述要求写一篇小红书种草笔记。`,
   },
@@ -21,7 +21,7 @@ const CHANNELS = [
     name: "抖音",
     cls: "dy",
     system:
-      "你是短视频脚本专家。请为代州黄酒写一段抖音口播脚本，结构清晰：" +
+      "你是短视频脚本专家。请为产品写一段抖音口播脚本，结构清晰：" +
       "【开场钩子】一句话留住人；【产品介绍】讲清是什么；【卖点放大】把核心卖点讲透；【行动号召】引导下单/关注。" +
       "每部分给出『画面』提示和『台词』。节奏快、口语化、有网感。只输出脚本内容，不要解释。",
     userTpl: (ctx) =>
@@ -32,9 +32,9 @@ const CHANNELS = [
     name: "公众号",
     cls: "gzh",
     system:
-      "你是公众号内容编辑。请为代州黄酒写一篇公众号推文框架：" +
-      "1）一个引发点击的标题；2）一段引发共鸣的引言；3）3 个小标题，每个下面写 2-3 句要点；" +
-      "4）一个自然收尾的引导。文风有文化厚度但不晦涩，能体现代州黄酒的历史与价值。只输出内容，不要解释。",
+      "你是公众号内容编辑。请为产品写一篇公众号推文框架：" +
+      "1）一个引发点击的标题（不超过 20 字，简洁有力）；2）一段引发共鸣的引言；3）3 个小标题，每个下面写 2-3 句要点；" +
+      "4）一个自然收尾的引导。文风根据品牌调性调整，不要晦涩。只输出内容，不要解释。",
     userTpl: (ctx) =>
       `产品：${ctx.prodName}\n目标人群：${ctx.audience}\n核心卖点：${ctx.points}\n品牌调性：${ctx.tone}\n\n请写一篇公众号推文框架。`,
   },
@@ -43,9 +43,9 @@ const CHANNELS = [
     name: "淘宝详情页",
     cls: "tb",
     system:
-      "你是电商详情页文案专家。请为代州黄酒写淘宝详情页文案：" +
-      "1）一个主标题；2）5 条核心卖点（每条：卖点名 + 一句话解释）；3）3 条促销/信任背书话术；" +
-      "4）一段品牌故事（突出非遗、口感、送礼场景）。文案要直给、有转化力。只输出内容，不要解释。",
+      "你是电商详情页文案专家。请为产品写淘宝详情页文案：" +
+      "1）一个主标题（不超过 20 字）；2）5 条核心卖点（每条：卖点名 + 一句话解释）；3）3 条促销/信任背书话术；" +
+      "4）一段品牌故事（突出产品特色、使用场景）。文案要直给、有转化力。只输出内容，不要解释。",
     userTpl: (ctx) =>
       `产品：${ctx.prodName}\n目标人群：${ctx.audience}\n核心卖点：${ctx.points}\n品牌调性：${ctx.tone}\n\n请写淘宝详情页文案。`,
   },
@@ -62,9 +62,9 @@ const serverStatus = $("serverStatus");
 // ---- 收集表单 ----
 function collectCtx() {
   return {
-    prodName: $("prodName").value.trim() || "代州黄酒",
-    audience: $("audience").value.trim() || "广泛人群",
-    points: $("sellingPoints").value.trim() || "非遗古法酿造",
+    prodName: $("prodName").value.trim() || "你的产品名称",
+    audience: $("audience").value.trim() || "目标人群",
+    points: $("sellingPoints").value.trim() || "核心卖点",
     tone: $("tone").value,
   };
 }
@@ -221,7 +221,7 @@ function buildWeChatHtml() {
   }
   return (
     `<section style="font-family:-apple-system,'PingFang SC','Microsoft YaHei',sans-serif;color:#3d3835;line-height:1.8;">` +
-    `<h1 style="text-align:center;color:#a65d4c;">代州黄酒 · AI 内容营销方案</h1>` +
+    `<h1 style="text-align:center;color:#a65d4c;">AI 内容营销方案</h1>` +
     `<p style="color:#6b635e;">以下文案由 AI 实时生成，覆盖小红书 / 抖音 / 公众号 / 淘宝详情页四渠道，可分别取用。</p>` +
     body +
     `</section>`

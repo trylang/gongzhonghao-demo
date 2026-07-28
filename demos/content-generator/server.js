@@ -1,5 +1,5 @@
 /**
- * 代州黄酒 · AI 内容营销生成器 — 代理服务器
+ * AI 内容营销生成器 — 代理服务器
  *
  * 用法：
  *   1. 复制 .env.example 为 .env，填入你的 MINIMAX_API_KEY
@@ -174,8 +174,8 @@ const server = http.createServer((req, res) => {
 });
 
 server.listen(PORT, () => {
-  console.log(`\n  🍶 代州黄酒 AI 内容营销生成器`);
-  console.log(`  ─────────────────────────────`);
+  console.log(`\n  🚀 AI 内容营销生成器`);
+  console.log(`  ───────────────────`);
   console.log(`  Local:  http://localhost:${PORT}`);
   console.log(`  API Key: ${API_KEY ? "✅ 已配置" : "❌ 未配置（请在 .env 中设置 MINIMAX_API_KEY）"}\n`);
 });
