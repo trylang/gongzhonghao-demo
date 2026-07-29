@@ -43,8 +43,66 @@ function parseJSON(text) {
   const a = t.indexOf("["), o = t.indexOf("{");
   const start = a >= 0 && (o < 0 || a < o) ? a : o;
   if (start < 0) throw new Error("模型未返回 JSON");
-  const end = t.lastIndexOf(t[start] === "[" ? "]" : "}");
-  return JSON.parse(t.slice(start, end + 1));
+  const open = t[start], close = open === "[" ? "]" : "}";
+  const end = t.lastIndexOf(close);
+  const raw = end > start ? t.slice(start, end + 1) : t.slice(start);
+  try { return JSON.parse(raw); } catch (_) {}
+  // 修复 1：转义字符串值内部的裸换行 / 制表符 / 未转义引号
+  const fixed = repairJSONStrings(raw);
+  try { return JSON.parse(fixed); } catch (_) {}
+  // 修复 2：输出被截断时，在全文上抠出所有完整对象
+  const objs = extractCompleteObjects(repairJSONStrings(t.slice(start)));
+  if (objs.length) return open === "[" ? objs : objs[0];
+  throw new Error("AI 返回内容格式异常，请再点一次重试");
+}
+
+function repairJSONStrings(s) {
+  let out = "", inStr = false;
+  for (let i = 0; i < s.length; i++) {
+    const c = s[i];
+    if (!inStr) {
+      if (c === '"') inStr = true;
+      out += c;
+      continue;
+    }
+    if (c === "\\") { out += c + (s[i + 1] || ""); i++; continue; }
+    if (c === '"') {
+      // 看下一个非空白字符：是 , } ] : 才算字符串真正结束，否则是内容里的引号
+      let j = i + 1;
+      while (j < s.length && /\s/.test(s[j])) j++;
+      const nxt = s[j];
+      if (nxt === undefined || nxt === "," || nxt === "}" || nxt === "]" || nxt === ":") {
+        inStr = false; out += c;
+      } else {
+        out += '\\"';
+      }
+      continue;
+    }
+    if (c === "\n") { out += "\\n"; continue; }
+    if (c === "\r") continue;
+    if (c === "\t") { out += "\\t"; continue; }
+    out += c;
+  }
+  return out;
+}
+
+function extractCompleteObjects(s) {
+  const res = [];
+  let depth = 0, st = -1, inStr = false;
+  for (let i = 0; i < s.length; i++) {
+    const c = s[i];
+    if (inStr) { if (c === "\\") i++; else if (c === '"') inStr = false; continue; }
+    if (c === '"') { inStr = true; continue; }
+    if (c === "{") { if (depth === 0) st = i; depth++; }
+    else if (c === "}") {
+      depth--;
+      if (depth === 0 && st >= 0) {
+        try { res.push(JSON.parse(s.slice(st, i + 1))); } catch (_) {}
+        st = -1;
+      }
+    }
+  }
+  return res;
 }
 
 /* ---------- 步骤一：提炼痛点 ---------- */
@@ -61,7 +119,7 @@ $("btn-extract").onclick = async () => {
       `你是消费品营销洞察分析师。用户给你一批真实用户评论和产品信息。请提炼出最多 8 个真实痛点/在意点，按重要性排序。
 严格输出 JSON 数组，不要输出其他内容，每项格式：
 {"pain":"痛点概括（15字内）","evidence":["评论原话摘录1","评论原话摘录2"],"hook":"针对这个痛点的一句卖点话术"}
-要求：evidence 必须来自评论原文（可截取）；痛点覆盖产品、包装、物流、服务、信息缺失等多维度；hook 要口语化、能直接用在文案里。`,
+要求：evidence 必须来自评论原文（可截取）；痛点覆盖产品、包装、物流、服务、信息缺失等多维度；hook 要口语化、能直接用在文案里。所有字符串值内部禁止出现英文双引号和换行，引用语气请用中文引号「」。`,
       `产品：${product}\n\n用户评论：\n${comments}`,
       2000
     );
@@ -126,7 +184,7 @@ $("btn-variants").onclick = async () => {
         const text = await callAI(
           `你是短视频/图文带货文案专家。基于产品与真实痛点，从「${g.name}」角度（${g.desc}）产出 5 组素材。
 严格输出 JSON 数组，每项：{"angle":"具体角度（8字内）","title":"图文标题（22字内，带钩子）","cover":"首图/封面文案（12字内）","script":"口播脚本开头两句（口语化）"}
-不要输出 JSON 以外的内容。5 组角度互不重复。`,
+不要输出 JSON 以外的内容。5 组角度互不重复。所有字符串值内部禁止出现英文双引号和换行，引用语气请用中文引号「」。`,
           `产品：${product}\n真实痛点：${painDesc}`,
           1800
         );

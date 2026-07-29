@@ -31,7 +31,41 @@ function parseJSON(text) {
   let t = text.replace(/```json|```/g, "").trim();
   const start = t.indexOf("{");
   if (start < 0) throw new Error("模型未返回 JSON");
-  return JSON.parse(t.slice(start, t.lastIndexOf("}") + 1));
+  const end = t.lastIndexOf("}");
+  const raw = end > start ? t.slice(start, end + 1) : t.slice(start);
+  try { return JSON.parse(raw); } catch (_) {}
+  const fixed = repairJSONStrings(raw);
+  try { return JSON.parse(fixed); } catch (_) {}
+  throw new Error("AI 返回内容格式异常，请再点一次重试");
+}
+
+function repairJSONStrings(s) {
+  let out = "", inStr = false;
+  for (let i = 0; i < s.length; i++) {
+    const c = s[i];
+    if (!inStr) {
+      if (c === '"') inStr = true;
+      out += c;
+      continue;
+    }
+    if (c === "\\") { out += c + (s[i + 1] || ""); i++; continue; }
+    if (c === '"') {
+      let j = i + 1;
+      while (j < s.length && /\s/.test(s[j])) j++;
+      const nxt = s[j];
+      if (nxt === undefined || nxt === "," || nxt === "}" || nxt === "]" || nxt === ":") {
+        inStr = false; out += c;
+      } else {
+        out += '\\"';
+      }
+      continue;
+    }
+    if (c === "\n") { out += "\\n"; continue; }
+    if (c === "\r") continue;
+    if (c === "\t") { out += "\\t"; continue; }
+    out += c;
+  }
+  return out;
 }
 
 async function generate() {
@@ -51,7 +85,7 @@ async function generate() {
  "sellingPoints":[{"icon":"一个emoji","title":"卖点标题（8字内）","detail":"细节说明（40字内，具体、有画面感）"}],
  "steps":[{"name":"步骤名","story":"这一步在做什么、为什么重要（50字内，讲给外行听）","secret":"一句行家才知道的门道（25字内）"}]
 }
-要求：sellingPoints 4-6 个；steps 严格按用户给的顺序逐步展开；语言口语化、不吹嘘、有真实感。`,
+要求：sellingPoints 4-6 个；steps 严格按用户给的顺序逐步展开；语言口语化、不吹嘘、有真实感。所有字符串值内部禁止出现英文双引号和换行，引用语气请用中文引号「」。`,
       `产品名：${name}\n产品介绍：${desc}\n工艺流程（按序）：\n${steps}`,
       3000
     );
