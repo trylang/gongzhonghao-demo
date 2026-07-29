@@ -1,0 +1,13 @@
+{
+  "name": "product-storyteller",
+  "version": "1.0.0",
+  "description": "产品会说话 — 输入产品介绍和工艺流程，生成可下载的互动讲解页",
+  "type": "module",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node server.js"
+  },
+  "engines": {
+    "node": ">=18"
+  }
+}

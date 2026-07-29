@@ -1,0 +1,118 @@
+:root {
+  --bg: #f7f1e8;
+  --card: #fffdf9;
+  --ink: #3d3835;
+  --muted: #8a7f76;
+  --accent: #a04226;
+  --accent-soft: #f3e2d8;
+  --line: #e8ddd0;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+  font-family: -apple-system, "PingFang SC", "Microsoft YaHei", sans-serif;
+  background: var(--bg);
+  color: var(--ink);
+  line-height: 1.7;
+}
+.hero { text-align: center; padding: 40px 20px 24px; }
+.hero h1 { font-size: 26px; color: var(--accent); }
+.hero .sub { margin-top: 8px; font-size: 15px; }
+.hero .tip { margin-top: 6px; font-size: 13px; color: var(--muted); }
+main { max-width: 720px; margin: 0 auto; padding: 0 16px 60px; }
+.card {
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  padding: 22px 20px;
+  margin-bottom: 20px;
+  box-shadow: 0 2px 10px rgba(120, 80, 40, 0.05);
+}
+.card h2 { font-size: 18px; margin-bottom: 10px; }
+.step-no { color: var(--accent); margin-right: 4px; }
+label { display: block; font-size: 13px; color: var(--muted); margin: 12px 0 4px; }
+input[type="text"], textarea {
+  width: 100%;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  padding: 10px 12px;
+  font-size: 14px;
+  font-family: inherit;
+  background: #fff;
+  color: var(--ink);
+}
+input:focus, textarea:focus { outline: 2px solid var(--accent-soft); border-color: var(--accent); }
+.btn-row { display: flex; gap: 10px; margin-top: 16px; flex-wrap: wrap; }
+.btn { border: none; border-radius: 10px; padding: 11px 20px; font-size: 14px; cursor: pointer; font-family: inherit; }
+.btn.primary { background: var(--accent); color: #fff; }
+.btn.primary:hover { background: #8a3820; }
+.btn.primary:disabled { background: #c9a99b; cursor: wait; }
+.btn.ghost { background: var(--accent-soft); color: var(--accent); }
+.status { margin-top: 10px; font-size: 13px; color: var(--muted); min-height: 18px; }
+.status.error { color: #c0392b; }
+.hidden { display: none; }
+.tip { font-size: 13px; color: var(--muted); }
+
+/* ---------- 生成的讲解页预览（story-*） ---------- */
+.story {
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  overflow: hidden;
+}
+.story-hero {
+  background: linear-gradient(135deg, #a04226, #7a2f18);
+  color: #fff;
+  text-align: center;
+  padding: 36px 20px;
+}
+.story-hero h1 { font-size: 24px; }
+.story-hero .tagline { margin-top: 8px; font-size: 14px; opacity: 0.92; }
+.story-section { padding: 24px 18px; }
+.story-section > h2 { font-size: 17px; color: var(--accent); margin-bottom: 14px; text-align: center; }
+.sp-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 10px; }
+.sp-card {
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  padding: 14px 12px;
+  background: #fff;
+  cursor: pointer;
+  transition: box-shadow 0.15s;
+}
+.sp-card:hover { box-shadow: 0 3px 12px rgba(120, 80, 40, 0.12); }
+.sp-card .sp-icon { font-size: 22px; }
+.sp-card .sp-title { font-weight: 600; font-size: 14px; margin-top: 6px; }
+.sp-card .sp-detail { font-size: 12.5px; color: var(--muted); margin-top: 6px; display: none; }
+.sp-card.open .sp-detail { display: block; }
+.sp-card .sp-more { font-size: 11px; color: var(--accent); margin-top: 6px; }
+
+/* 工艺时间线 */
+.timeline { position: relative; margin-left: 14px; }
+.timeline::before {
+  content: "";
+  position: absolute; left: 7px; top: 6px; bottom: 6px;
+  width: 2px; background: var(--accent-soft);
+}
+.tl-step { position: relative; padding: 0 0 18px 30px; cursor: pointer; }
+.tl-step::before {
+  content: "";
+  position: absolute; left: 0; top: 5px;
+  width: 16px; height: 16px; border-radius: 50%;
+  background: var(--accent); border: 3px solid var(--accent-soft);
+}
+.tl-step .tl-name { font-weight: 600; font-size: 15px; }
+.tl-step .tl-body { display: none; margin-top: 6px; }
+.tl-step.open .tl-body { display: block; }
+.tl-step .tl-story { font-size: 13.5px; }
+.tl-step .tl-secret {
+  font-size: 12.5px; color: var(--accent);
+  background: var(--accent-soft);
+  border-radius: 8px; padding: 6px 10px; margin-top: 6px;
+}
+.tl-step .tl-more { font-size: 11px; color: var(--accent); }
+.story-footer { text-align: center; padding: 18px; font-size: 12px; color: var(--muted); border-top: 1px solid var(--line); }
+footer { text-align: center; padding: 24px; font-size: 12px; color: var(--muted); }
+footer a { color: var(--accent); }
+@media (max-width: 480px) {
+  .hero h1 { font-size: 22px; }
+  .card { padding: 16px 14px; }
+}

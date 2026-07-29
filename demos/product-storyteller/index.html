@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>产品会说话 — 互动讲解页生成器</title>
+<link rel="stylesheet" href="style.css" />
+</head>
+<body>
+<header class="hero">
+  <h1>🗣️ 产品会说话</h1>
+  <p class="sub">输入产品介绍 + 工艺流程 → 生成会讲故事的互动讲解页</p>
+  <p class="tip">适合食品酿造、制造、非遗手工等"工艺即卖点"的行业。生成后可下载 HTML，挂到详情页或发给客户。</p>
+</header>
+
+<main>
+  <section class="card" id="input-card">
+    <h2><span class="step-no">①</span> 填产品信息</h2>
+    <label>产品名称</label>
+    <input id="pname" type="text" placeholder="例：代州黄酒" />
+    <label>产品介绍 / 卖点（随便写，AI 会帮你组织）</label>
+    <textarea id="pdesc" rows="4" placeholder="例：山西代县传统黄酒，选用本地黍米，无添加剂，低度数适口……"></textarea>
+    <label>工艺流程（每行一步，写名字就行，细节 AI 来补）</label>
+    <textarea id="psteps" rows="6" placeholder="例：&#10;选米&#10;浸泡&#10;蒸饭&#10;落缸&#10;冬酿 180 天&#10;压榨过滤"></textarea>
+    <div class="btn-row">
+      <button class="btn ghost" id="btn-sample">📋 用代州黄酒示例试试</button>
+      <button class="btn primary" id="btn-gen">生成互动讲解页 →</button>
+    </div>
+    <div class="status" id="status"></div>
+  </section>
+
+  <!-- 生成结果：互动讲解页预览 -->
+  <section class="hidden" id="result">
+    <div class="result-bar card">
+      <h2><span class="step-no">②</span> 你的互动讲解页</h2>
+      <p class="tip">下方就是成品预览：点卖点卡片看细节，点工艺步骤听故事。</p>
+      <div class="btn-row">
+        <button class="btn primary" id="btn-download">⬇️ 下载讲解页 HTML</button>
+        <button class="btn ghost" id="btn-regen">换个说法重新生成</button>
+      </div>
+    </div>
+    <div id="preview"></div>
+  </section>
+</main>
+
+<footer>
+  <p>后端代理持有 API Key，前端零密钥 · 由 MiniMax 驱动 · <a href="https://github.com/trylang/gongzhonghao-demo" target="_blank" rel="noreferrer">源码</a></p>
+</footer>
+
+<script src="app.js"></script>
+</body>
+</html>

@@ -1,0 +1,13 @@
+{
+  "name": "pain-point-studio",
+  "version": "1.0.0",
+  "description": "痛点挖掘 × 素材变体工作流 — 粘贴评论提炼痛点，一键生成 20 组营销素材",
+  "type": "module",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node server.js"
+  },
+  "engines": {
+    "node": ">=18"
+  }
+}

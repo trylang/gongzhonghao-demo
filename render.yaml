@@ -55,3 +55,29 @@ services:
     envVars:
       - key: MINIMAX_API_KEY
         sync: false   # 部署时 Render 提示填入，不进代码库
+
+  - type: web
+    name: pain-point-studio
+    runtime: node
+    plan: free
+    branch: main
+    rootDir: demos/pain-point-studio
+    buildCommand: "echo 'no build needed'"
+    startCommand: "node server.js"
+    healthCheckPath: "/"
+    envVars:
+      - key: MINIMAX_API_KEY
+        sync: false   # 部署时 Render 提示填入，不进代码库
+
+  - type: web
+    name: product-storyteller
+    runtime: node
+    plan: free
+    branch: main
+    rootDir: demos/product-storyteller
+    buildCommand: "echo 'no build needed'"
+    startCommand: "node server.js"
+    healthCheckPath: "/"
+    envVars:
+      - key: MINIMAX_API_KEY
+        sync: false   # 部署时 Render 提示填入，不进代码库

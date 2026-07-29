@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>痛点挖掘 × 素材变体工作流</title>
+<link rel="stylesheet" href="style.css" />
+</head>
+<body>
+<header class="hero">
+  <h1>🔍 痛点挖掘 × 素材变体</h1>
+  <p class="sub">粘贴真实用户评论 → AI 提炼痛点清单 → 一键生成 20 组营销素材</p>
+  <p class="tip">评论从哪来？商品评价页、笔记评论区、客服聊天记录，复制粘贴即可。AI 负责"读完提炼"这一步。</p>
+</header>
+
+<main>
+  <!-- 步骤一 -->
+  <section class="card" id="step1">
+    <h2><span class="step-no">①</span> 粘贴评论，提炼痛点</h2>
+    <label>你的产品（一句话：产品 + 核心卖点 + 目标人群）</label>
+    <input id="product" type="text" placeholder="例：代州黄酒，古法冬酿 180 天，适合过年送长辈" />
+    <label>用户评论（每行一条，10 条以上效果最好）</label>
+    <textarea id="comments" rows="9" placeholder="把商品评价 / 笔记评论 / 客服记录粘贴到这里……"></textarea>
+    <div class="btn-row">
+      <button class="btn ghost" id="btn-sample">📋 用示例评论试试</button>
+      <button class="btn primary" id="btn-extract">提炼痛点 →</button>
+    </div>
+    <div class="status" id="status1"></div>
+  </section>
+
+  <!-- 痛点清单 -->
+  <section class="card hidden" id="step2">
+    <h2><span class="step-no">②</span> 痛点清单（勾选要用的，默认前 4 个）</h2>
+    <div id="pain-list"></div>
+    <div class="btn-row">
+      <button class="btn primary" id="btn-variants">生成 20 组素材变体 →</button>
+    </div>
+    <div class="status" id="status2"></div>
+  </section>
+
+  <!-- 素材变体 -->
+  <section class="card hidden" id="step3">
+    <h2><span class="step-no">③</span> 素材变体（标题 + 首图文案 + 口播开头）</h2>
+    <p class="tip">四个角度组并行生成，每组 5 条。点击卡片右上角可复制整组。</p>
+    <div id="variant-groups"></div>
+  </section>
+</main>
+
+<footer>
+  <p>后端代理持有 API Key，前端零密钥 · 由 MiniMax 驱动 · <a href="https://github.com/trylang/gongzhonghao-demo" target="_blank" rel="noreferrer">源码</a></p>
+</footer>
+
+<script src="app.js"></script>
+</body>
+</html>
