@@ -1,4 +1,4 @@
-/* 产品会说话 — 前端逻辑 */
+/* 产品会说话 — 前端逻辑（C-lite：D3 长卷 + 三套主题皮） */
 
 const $ = (id) => document.getElementById(id);
 
@@ -9,6 +9,22 @@ const SAMPLE = {
 };
 
 let storyData = null;
+let userTheme = "auto"; // auto | gufa | blueprint | flow
+
+document.querySelectorAll(".theme-chip").forEach((chip) => {
+  chip.onclick = () => {
+    document.querySelectorAll(".theme-chip").forEach((c) => c.classList.remove("on"));
+    chip.classList.add("on");
+    userTheme = chip.dataset.theme;
+    /* 已经生成过就即时换皮，不重新调 AI */
+    if (storyData) renderStory();
+  };
+});
+
+function activeTheme() {
+  if (userTheme !== "auto") return userTheme;
+  return (storyData && storyData.theme && window.PSScene.THEMES[storyData.theme]) ? storyData.theme : "gufa";
+}
 
 $("btn-sample").onclick = () => {
   $("pname").value = SAMPLE.name;
@@ -36,7 +52,39 @@ function parseJSON(text) {
   try { return JSON.parse(raw); } catch (_) {}
   const fixed = repairJSONStrings(raw);
   try { return JSON.parse(fixed); } catch (_) {}
+  try { return JSON.parse(repairJSONStructure(fixed)); } catch (_) {}
   throw new Error("AI 返回内容格式异常，请再点一次重试");
+}
+
+/* 结构级修复：括号栈配平（补缺失的 } ]）+ 清理闭合符前的尾逗号 */
+function repairJSONStructure(s) {
+  let out = "", inStr = false;
+  const stack = [];
+  const emitClose = (ch) => { out = out.replace(/[,\s]+$/, ""); out += ch; };
+  for (let i = 0; i < s.length; i++) {
+    const c = s[i];
+    if (inStr) {
+      if (c === "\\") { out += c + (s[i + 1] || ""); i++; continue; }
+      if (c === '"') inStr = false;
+      out += c;
+      continue;
+    }
+    if (c === '"') { inStr = true; out += c; continue; }
+    if (c === "{" || c === "[") { stack.push(c); out += c; continue; }
+    if (c === "}" || c === "]") {
+      const want = c === "}" ? "{" : "[";
+      while (stack.length && stack[stack.length - 1] !== want) {
+        emitClose(stack.pop() === "{" ? "}" : "]");
+      }
+      if (stack.length) stack.pop();
+      emitClose(c);
+      continue;
+    }
+    out += c;
+  }
+  if (inStr) out += '"';
+  while (stack.length) emitClose(stack.pop() === "{" ? "}" : "]");
+  return out;
 }
 
 function repairJSONStrings(s) {
@@ -82,17 +130,19 @@ async function generate() {
       `你是产品故事策划。根据产品信息生成互动讲解页内容。严格输出 JSON 对象，不要输出其他内容：
 {
  "tagline":"一句打动人的副标题（20字内）",
+ "theme":"gufa 或 blueprint 或 flow",
  "sellingPoints":[{"icon":"一个emoji","title":"卖点标题（8字内）","detail":"细节说明（40字内，具体、有画面感）"}],
- "steps":[{"name":"步骤名","story":"这一步在做什么、为什么重要（50字内，讲给外行听）","secret":"一句行家才知道的门道（25字内）"}]
+ "steps":[{"name":"步骤名（8字内）","note":"这一步的年份/时长/温度等关键数字标注（8字内，没有就留空字符串）","story":"这一步在做什么、为什么重要（50字内，讲给外行听）","secret":"一句行家才知道的门道（25字内）"}]
 }
-要求：sellingPoints 4-6 个；steps 严格按用户给的顺序逐步展开；语言口语化、不吹嘘、有真实感。所有字符串值内部禁止出现英文双引号和换行，引用语气请用中文引号「」。`,
+theme 判定：传统工艺/酒/茶/非遗/农产品→gufa；建材/机械/工业/建筑→blueprint；科技/电子/软件/新消费→flow。
+要求：sellingPoints 4-6 个；steps 严格按用户给的顺序逐步展开；note 尽量从用户输入里提取真实数字（如 180 天、冬至、60℃）；语言口语化、不吹嘘、有真实感。所有字符串值内部禁止出现英文双引号和换行，引用语气请用中文引号「」。`,
       `产品名：${name}\n产品介绍：${desc}\n工艺流程（按序）：\n${steps}`,
       3000
     );
     storyData = parseJSON(text);
     storyData.name = name;
     renderStory();
-    st.textContent = "✅ 生成完毕，往下看成品";
+    st.textContent = "✅ 生成完毕，往下看成品（可随时切换视觉主题）";
     $("result").classList.remove("hidden");
     $("result").scrollIntoView({ behavior: "smooth" });
   } catch (e) {
@@ -106,44 +156,19 @@ async function generate() {
 $("btn-gen").onclick = generate;
 $("btn-regen").onclick = generate;
 
-function storyHTML(d, standalone = false) {
-  const sp = (d.sellingPoints || [])
-    .map(
-      (s) => `<div class="sp-card" onclick="this.classList.toggle('open')">
-  <div class="sp-icon">${esc(s.icon || "✨")}</div>
-  <div class="sp-title">${esc(s.title)}</div>
-  <div class="sp-detail">${esc(s.detail)}</div>
-  <div class="sp-more">点击查看细节 ▾</div>
-</div>`
-    )
-    .join("");
-  const tl = (d.steps || [])
-    .map(
-      (s, i) => `<div class="tl-step" onclick="this.classList.toggle('open')">
-  <div class="tl-name">第 ${i + 1} 步 · ${esc(s.name)} <span class="tl-more">▾</span></div>
-  <div class="tl-body">
-    <div class="tl-story">${esc(s.story)}</div>
-    ${s.secret ? `<div class="tl-secret">🔑 行家门道：${esc(s.secret)}</div>` : ""}
-  </div>
-</div>`
-    )
-    .join("");
-  return `<div class="story">
-  <div class="story-hero"><h1>${esc(d.name)}</h1><p class="tagline">${esc(d.tagline || "")}</p></div>
-  <div class="story-section"><h2>为什么值得选</h2><div class="sp-grid">${sp}</div></div>
-  <div class="story-section"><h2>它是怎么做出来的</h2><div class="timeline">${tl}</div></div>
-  <div class="story-footer">本页由「产品会说话」生成 · 点击卡片与步骤可展开${standalone ? "" : "（预览）"}</div>
-</div>`;
-}
-
 function renderStory() {
-  $("preview").innerHTML = storyHTML(storyData);
+  window.PSScene.render($("preview"), storyData, activeTheme(), false);
 }
 
-/* 下载独立 HTML：内联样式，双击就能打开，可挂详情页 */
+/* 下载独立 HTML：内嵌数据 + 场景渲染代码，D3 走 CDN，双击打开动画完整 */
 $("btn-download").onclick = async () => {
   if (!storyData) return;
-  const css = await fetch("style.css").then((r) => r.text());
+  const [css, sceneSrc] = await Promise.all([
+    fetch("style.css").then((r) => r.text()),
+    fetch("scene.js").then((r) => r.text()),
+  ]);
+  const payload = JSON.stringify(storyData).replace(/</g, "\\u003c");
+  const bodyBg = { gufa: "#f7f1e8", blueprint: "#081a30", flow: "#060b16" }[activeTheme()] || "#f7f1e8";
   const html = `<!DOCTYPE html>
 <html lang="zh-CN">
 <head>
@@ -152,8 +177,13 @@ $("btn-download").onclick = async () => {
 <title>${esc(storyData.name)} · 互动讲解页</title>
 <style>${css}</style>
 </head>
-<body style="padding:16px;max-width:720px;margin:0 auto;">
-${storyHTML(storyData, true)}
+<body style="padding:16px;max-width:760px;margin:0 auto;background:${bodyBg};">
+<div id="ps-root"></div>
+<script src="https://cdn.jsdelivr.net/npm/d3@7.9.0/dist/d3.min.js"><\/script>
+<script>${sceneSrc.replace(/<\/script>/g, "<\\/script>")}<\/script>
+<script>
+window.PSScene.render(document.getElementById("ps-root"), ${payload}, ${JSON.stringify(activeTheme())}, true);
+<\/script>
 </body>
 </html>`;
   const blob = new Blob([html], { type: "text/html" });

@@ -50,10 +50,43 @@ function parseJSON(text) {
   // 修复 1：转义字符串值内部的裸换行 / 制表符 / 未转义引号
   const fixed = repairJSONStrings(raw);
   try { return JSON.parse(fixed); } catch (_) {}
-  // 修复 2：输出被截断时，在全文上抠出所有完整对象
+  // 修复 2：括号栈配平（补缺失的 } ]）+ 清理尾逗号
+  try { return JSON.parse(repairJSONStructure(fixed)); } catch (_) {}
+  // 修复 3：输出被截断时，在全文上抠出所有完整对象
   const objs = extractCompleteObjects(repairJSONStrings(t.slice(start)));
   if (objs.length) return open === "[" ? objs : objs[0];
   throw new Error("AI 返回内容格式异常，请再点一次重试");
+}
+
+/* 结构级修复：括号栈配平 + 闭合符前尾逗号清理 */
+function repairJSONStructure(s) {
+  let out = "", inStr = false;
+  const stack = [];
+  const emitClose = (ch) => { out = out.replace(/[,\s]+$/, ""); out += ch; };
+  for (let i = 0; i < s.length; i++) {
+    const c = s[i];
+    if (inStr) {
+      if (c === "\\") { out += c + (s[i + 1] || ""); i++; continue; }
+      if (c === '"') inStr = false;
+      out += c;
+      continue;
+    }
+    if (c === '"') { inStr = true; out += c; continue; }
+    if (c === "{" || c === "[") { stack.push(c); out += c; continue; }
+    if (c === "}" || c === "]") {
+      const want = c === "}" ? "{" : "[";
+      while (stack.length && stack[stack.length - 1] !== want) {
+        emitClose(stack.pop() === "{" ? "}" : "]");
+      }
+      if (stack.length) stack.pop();
+      emitClose(c);
+      continue;
+    }
+    out += c;
+  }
+  if (inStr) out += '"';
+  while (stack.length) emitClose(stack.pop() === "{" ? "}" : "]");
+  return out;
 }
 
 function repairJSONStrings(s) {
