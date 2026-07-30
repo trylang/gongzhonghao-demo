@@ -94,6 +94,8 @@ button { font-family: inherit; }
 .loading { color: var(--muted); font-size: 14px; padding: 14px 0; }
 .err { color: #b23a2a; font-size: 14px; padding: 10px 0; }
 .foot { color: var(--muted); font-size: 12px; text-align: center; padding: 24px 0 40px; }
+.legend { font-size: 12px; color: var(--muted); background: #fff; border: 1px dashed var(--line); border-radius: 10px; padding: 10px 12px; margin-bottom: 14px; line-height: 1.9; }
+.legend .tag { vertical-align: middle; }
 
 /* 节点编辑器 / 任务编辑器 */
 .item-row { display: flex; gap: 8px; align-items: center; margin-bottom: 8px; }

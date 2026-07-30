@@ -159,15 +159,17 @@
       ${o.flywheel ? `<p style="margin:6px 0 0;color:var(--muted)">飞轮：${esc(o.flywheel)}</p>` : ""}
     </div>`;
   }
+  const LEGEND_HTML = `<div class="legend">标签含义：${tagClass("高", "lev")} 杠杆高 = 投入小、回报大、优先做；${tagClass("中", "lev")} 杠杆中 = 值得做但非最优先；${tagClass("低", "lev")} 杠杆低 = 见效慢或资源消耗大。${tagClass("高", "diff")} 难度高 = 需改造流程或跨部门；${tagClass("中", "diff")} 难度中 = 一周内可跑通；${tagClass("低", "diff")} 难度低 = 今天就能试。<span class="tag fly-yes">有飞轮</span> = 这个环节的产出能自动提升下一环节效率；<span class="tag fly-no">弱飞轮</span> = 是一次性提升，需要持续投入才能维持。</div>`;
+
   function renderVisionDraft(r) {
-    let html = `<div class="vision-line">${esc(r.visionStatement || "")}</div>`;
+    let html = LEGEND_HTML + `<div class="vision-line">${esc(r.visionStatement || "")}</div>`;
     (r.opportunities || []).forEach((o) => { html += vcard(o); });
     if (r.nextStepHint) html += `<p class="hint">下一步建议：${esc(r.nextStepHint)}</p>`;
     $("#draftOut").innerHTML = html;
     renderClarify("#clarifyQuestions", r.clarifyingQuestions);
   }
   function renderVisionBattle(r) {
-    let html = `<div class="vision-line">${esc(r.visionStatement || "")}</div>`;
+    let html = LEGEND_HTML + `<div class="vision-line">${esc(r.visionStatement || "")}</div>`;
     (r.opportunities || []).forEach((o) => { html += vcard(o); });
     html += `<h3>行动作战图</h3><div class="battle">${esc(r.battleMap || "")}</div>`;
     if (r.metrics) html += `<h3>建议追踪的指标</h3><div class="battle">${esc(r.metrics)}</div>`;
@@ -350,7 +352,13 @@
   $("#btnRestart").addEventListener("click", () => { state.visionInput = null; state.vision = null; showPanel("#mirror1", "step", 1); });
 
   // ============ 第二镜事件 ============
-  $("#btnAddNode").addEventListener("click", () => $("#loopNodes").appendChild(nodeRow("")));
+  $("#btnAddNode").addEventListener("click", () => {
+    $("#loopNodes").appendChild(nodeRow(""));
+    const btn = $("#btnAddNode");
+    const old = btn.textContent;
+    btn.textContent = "已添加 ✓";
+    setTimeout(() => btn.textContent = old, 800);
+  });
   $("#btnLoopDraft").addEventListener("click", async () => {
     ensureLoopNodes();
     const nodes = collectLoopNodes();
@@ -380,7 +388,13 @@
 
   // ============ 第三镜事件 ============
   $("#repRole").addEventListener("change", (e) => { if (e.target.value) loadRoleTasks(e.target.value); });
-  $("#btnAddTask").addEventListener("click", () => $("#repTasks").appendChild(taskRow("")));
+  $("#btnAddTask").addEventListener("click", () => {
+    $("#repTasks").appendChild(taskRow(""));
+    const btn = $("#btnAddTask");
+    const old = btn.textContent;
+    btn.textContent = "已添加 ✓";
+    setTimeout(() => btn.textContent = old, 800);
+  });
   $("#btnRepDraft").addEventListener("click", async () => {
     const role = $("#repRole").value || $("#repRoleText").value.trim();
     if (!role) { alert("选个岗位，或自己写一个～"); return; }
@@ -408,6 +422,22 @@
   $("#btnRepDownload").addEventListener("click", () => downloadHTML(repText(state.rep), "岗位替代作战图.html"));
   $("#btnRepRestart").addEventListener("click", () => { state.repInput = null; state.rep = null; showPanel("#mirror3", "repStep", 1); });
 
+  // 从第一镜推断推荐岗位（用于第三镜预填提示）
+  function suggestRoleFromVision() {
+    const p = (state.visionInput && state.visionInput.painPoints) || [];
+    if (p.includes("获客") || p.includes("转化")) return "销售";
+    if (p.includes("复购") || p.includes("内容") || p.includes("私域")) return "私域运营";
+    if (p.includes("售后")) return "客服";
+    if (p.includes("供应链") || p.includes("交付")) return "运营";
+    return "私域运营";
+  }
+
+  function cleanScenarioTitle(raw) {
+    if (!raw) return "";
+    // 模型有时会返回带标签或描述的字符串，只取第一行/最前面的短语
+    return String(raw).split(/[。！；\n]/)[0].replace(/\s+/g, " ").trim();
+  }
+
   // ============ 导航 + 共享上下文预填 ============
   $$(".tab").forEach((t) => t.addEventListener("click", () => {
     const m = t.dataset.mirror;
@@ -415,12 +445,28 @@
     ["#mirror1", "#mirror2", "#mirror3"].forEach((s, i) => $(s).classList.toggle("hidden", String(i + 1) !== m));
     if (m === "2") {
       ensureLoopNodes();
-      if (state.vision && state.vision.opportunities && state.vision.opportunities.length && !$("#loopScenario").value) {
-        $("#loopScenario").value = state.vision.opportunities[0].title || "";
+      const inp = $("#loopScenario");
+      if (!inp.value) {
+        if (state.vision && state.vision.opportunities && state.vision.opportunities.length) {
+          inp.value = cleanScenarioTitle(state.vision.opportunities[0].title || "");
+        } else {
+          inp.placeholder = "如：老客微信私域复购（先在第一镜跑完，这里会自动带入最高杠杆场景）";
+        }
       }
     }
     if (m === "3") {
-      if (!$("#repTasks").children.length) loadRoleTasks($("#repRole").value || "");
+      if (!$("#repTasks").children.length) loadRoleTasks($("#repRole").value || "私域运营");
+      // 如果岗位未选，根据第一镜疼点给出推荐提示
+      if (!$("#repRole").value && !$("#repRoleText").value) {
+        const suggested = suggestRoleFromVision();
+        if (suggested) {
+          $("#repRoleText").placeholder = `推荐先评估：${suggested}（也可从上面下拉框选）`;
+        }
+      }
     }
   }));
+
+  // 页面加载即初始化第二、三镜的默认表单，避免 tab 切换前元素为空
+  ensureLoopNodes();
+  loadRoleTasks("私域运营");
 })();

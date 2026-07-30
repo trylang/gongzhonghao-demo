@@ -180,9 +180,11 @@
         <div class="field">
           <label>要落地的场景</label>
           <input type="text" id="loopScenario" placeholder="如：老客微信私域复购" />
+          <p class="hint">💡 如果第一镜已跑完，切换到本页时会自动带入最高杠杆场景；没带入的话，也可以手动填写。</p>
         </div>
         <div class="field">
-          <label>业务循环节点（一行一个，按真实先后排）</label>
+          <label>业务循环节点（按真实先后顺序）</label>
+          <p class="hint">每个节点 = 名称 + 现在谁做 + 每天大概处理量 + 卡在哪。可删可改可新增。</p>
           <div id="loopNodes"></div>
           <button id="btnAddNode" class="ghost small">+ 加一个节点</button>
         </div>
