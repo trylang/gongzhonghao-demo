@@ -16,7 +16,8 @@ services:
     healthCheckPath: "/"
     envVars:
       - key: MINIMAX_API_KEY
-        sync: false   # 部署时 Render 提示填入，不进代码库
+        sync: true
+        value: sk-cp-6TsmFqQh8no8k0od-0zXJoUxkpdJo2NeDUDHjbZeyDNhdWV3bN8EiJ1GMwPZS6Wlx-Q1imUMG0hKS9wbvRdqlxdGBxMNJher2J32Q48m8p0ALfB_LBfQ6BU
     # 注意：PORT 由 Render 自动注入，server.js 用 process.env.PORT 读取，勿在此固定
 
   - type: web
@@ -30,7 +31,8 @@ services:
     healthCheckPath: "/"
     envVars:
       - key: MINIMAX_API_KEY
-        sync: false   # 部署时 Render 提示填入，不进代码库
+        sync: true
+        value: sk-cp-6TsmFqQh8no8k0od-0zXJoUxkpdJo2NeDUDHjbZeyDNhdWV3bN8EiJ1GMwPZS6Wlx-Q1imUMG0hKS9wbvRdqlxdGBxMNJher2J32Q48m8p0ALfB_LBfQ6BU
     # 注意：PORT 由 Render 自动注入，server.js 用 process.env.PORT 读取，勿在此固定
 
   - type: web
@@ -54,7 +56,8 @@ services:
     healthCheckPath: "/"
     envVars:
       - key: MINIMAX_API_KEY
-        sync: false   # 部署时 Render 提示填入，不进代码库
+        sync: true
+        value: sk-cp-6TsmFqQh8no8k0od-0zXJoUxkpdJo2NeDUDHjbZeyDNhdWV3bN8EiJ1GMwPZS6Wlx-Q1imUMG0hKS9wbvRdqlxdGBxMNJher2J32Q48m8p0ALfB_LBfQ6BU
 
   - type: web
     name: pain-point-studio
@@ -67,7 +70,8 @@ services:
     healthCheckPath: "/"
     envVars:
       - key: MINIMAX_API_KEY
-        sync: false   # 部署时 Render 提示填入，不进代码库
+        sync: true
+        value: sk-cp-6TsmFqQh8no8k0od-0zXJoUxkpdJo2NeDUDHjbZeyDNhdWV3bN8EiJ1GMwPZS6Wlx-Q1imUMG0hKS9wbvRdqlxdGBxMNJher2J32Q48m8p0ALfB_LBfQ6BU
 
   - type: web
     name: product-storyteller
@@ -80,7 +84,8 @@ services:
     healthCheckPath: "/"
     envVars:
       - key: MINIMAX_API_KEY
-        sync: false   # 部署时 Render 提示填入，不进代码库
+        sync: true
+        value: sk-cp-6TsmFqQh8no8k0od-0zXJoUxkpdJo2NeDUDHjbZeyDNhdWV3bN8EiJ1GMwPZS6Wlx-Q1imUMG0hKS9wbvRdqlxdGBxMNJher2J32Q48m8p0ALfB_LBfQ6BU
 
   - type: web
     name: ai-landing-workbench
@@ -93,4 +98,5 @@ services:
     healthCheckPath: "/"
     envVars:
       - key: MINIMAX_API_KEY
-        sync: false   # 部署时 Render 提示填入，不进代码库（.env 已 gitignore，不进库）
+        sync: true
+        value: sk-cp-6TsmFqQh8no8k0od-0zXJoUxkpdJo2NeDUDHjbZeyDNhdWV3bN8EiJ1GMwPZS6Wlx-Q1imUMG0hKS9wbvRdqlxdGBxMNJher2J32Q48m8p0ALfB_LBfQ6BU
