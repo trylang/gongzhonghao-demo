@@ -1,0 +1,13 @@
+{
+  "name": "ai-landing-workbench",
+  "version": "1.0.0",
+  "description": "AI 落地三镜工作台 —— 第一镜（远望镜）已上线：场景模板 + 多选 + 多轮澄清，帮中小企业看清 AI 机会",
+  "type": "module",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node server.js"
+  },
+  "engines": {
+    "node": ">=18"
+  }
+}

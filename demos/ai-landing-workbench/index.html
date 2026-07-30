@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>AI 落地三镜工作台 · 第一镜 远望镜</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <header class="top">
+    <div class="wrap">
+      <div class="brand">AI 落地三镜工作台</div>
+      <div class="sub">一次文明级机会，落到你的生意里</div>
+    </div>
+  </header>
+
+  <nav class="tabs wrap">
+    <button class="tab active" data-mirror="1">① 远望镜 · Vision</button>
+    <button class="tab" data-mirror="2">② 循环镜 · Loop <span class="soon">即将上线</span></button>
+    <button class="tab" data-mirror="3">③ 显微镜 · Replace <span class="soon">即将上线</span></button>
+  </nav>
+
+  <main class="wrap">
+    <!-- 第一镜 -->
+    <section id="mirror1" class="mirror">
+      <div class="steps">
+        <span class="step-dot active" data-step="1">1 · 填表</span>
+        <span class="step-dot" data-step="2">2 · 看草稿 + 补充</span>
+        <span class="step-dot" data-step="3">3 · 作战图</span>
+      </div>
+
+      <!-- STEP 1 -->
+      <div id="step1" class="panel">
+        <h2>先选个场景模板，省得空想</h2>
+        <p class="hint">选一个最像你的，系统会预填一部分，你再改。也可以直接空着从头填。</p>
+        <div class="field">
+          <label>场景模板</label>
+          <select id="sceneTemplate">
+            <option value="">— 不选，我自己填 —</option>
+            <option value="huangjiu">区域黄酒 / 农产品品牌</option>
+            <option value="bakery">社区烘焙 / 连锁餐饮</option>
+            <option value="edu">少儿教培 / 知识服务</option>
+            <option value="factory">小型制造 / 加工厂</option>
+            <option value="travel">文旅 / 民宿 / 体验</option>
+            <option value="service">本地生活服务（维修 / 家政 / 美容）</option>
+          </select>
+        </div>
+
+        <h3>第一镜 · 7 个引导问题</h3>
+
+        <div class="field">
+          <label>1 · 你的生意是什么？</label>
+          <input type="text" id="businessType" placeholder="如：区域黄酒品牌" />
+          <input type="text" id="businessDesc" placeholder="一句话补充：你主要卖什么、卖给谁" />
+        </div>
+
+        <div class="field">
+          <label>2 · 今天最头疼的环节？（可多选）</label>
+          <div class="checks" id="painPoints">
+            <label><input type="checkbox" value="获客" />获客</label>
+            <label><input type="checkbox" value="转化" />转化</label>
+            <label><input type="checkbox" value="交付" />交付</label>
+            <label><input type="checkbox" value="复购" />复购</label>
+            <label><input type="checkbox" value="供应链" />供应链</label>
+            <label><input type="checkbox" value="人力" />人力</label>
+            <label><input type="checkbox" value="财务" />财务</label>
+            <label><input type="checkbox" value="售后" />售后</label>
+            <label class="other"><input type="checkbox" value="__other" />其他：<input type="text" id="painOther" placeholder="自填" /></label>
+          </div>
+        </div>
+
+        <div class="field">
+          <label>3 · 你手上有但没用起来的资源？（可多选）</label>
+          <div class="checks" id="resources">
+            <label><input type="checkbox" value="老客名单" />老客名单</label>
+            <label><input type="checkbox" value="内容素材" />内容素材</label>
+            <label><input type="checkbox" value="行业 know-how" />行业 know-how</label>
+            <label><input type="checkbox" value="渠道关系" />渠道关系</label>
+            <label><input type="checkbox" value="私域社群" />私域社群</label>
+            <label><input type="checkbox" value="供应链优势" />供应链优势</label>
+            <label><input type="checkbox" value="品牌口碑" />品牌口碑</label>
+            <label class="other"><input type="checkbox" value="__other" />其他：<input type="text" id="resOther" placeholder="自填" /></label>
+          </div>
+        </div>
+
+        <div class="field">
+          <label>4 · 3 年后你希望生意变成什么样？（可多选 + 补充）</label>
+          <div class="checks" id="futureGoals">
+            <label><input type="checkbox" value="营收翻倍" />营收翻倍</label>
+            <label><input type="checkbox" value="少雇人" />少雇人</label>
+            <label><input type="checkbox" value="开分店" />开分店</label>
+            <label><input type="checkbox" value="做品牌" />做品牌</label>
+            <label><input type="checkbox" value="标准化可复制" />标准化可复制</label>
+            <label><input type="checkbox" value="自由时间" />有更多自由时间</label>
+            <label class="other"><input type="checkbox" value="__other" />其他：<input type="text" id="futureOther" placeholder="自填" /></label>
+          </div>
+          <input type="text" id="futureText" placeholder="用一句话描绘你理想的生意样子" />
+        </div>
+
+        <div class="field">
+          <label>5 · 每月愿意投多少做 AI 落地？</label>
+          <div class="radios" id="monthlyBudget">
+            <label><input type="radio" name="budget" value="<1000 元" /><1000 元</label>
+            <label><input type="radio" name="budget" value="1000–5000 元" />1000–5000 元</label>
+            <label><input type="radio" name="budget" value="5000–2 万" />5000–2 万</label>
+            <label><input type="radio" name="budget" value="2 万以上" />2 万以上</label>
+          </div>
+        </div>
+
+        <div class="field">
+          <label>6 · 最不放心 AI 碰哪？（可多选）</label>
+          <div class="checks" id="avoidAI">
+            <label><input type="checkbox" value="客户沟通" />客户沟通</label>
+            <label><input type="checkbox" value="定价" />定价</label>
+            <label><input type="checkbox" value="财务" />财务</label>
+            <label><input type="checkbox" value="内容口径" />内容口径</label>
+            <label><input type="checkbox" value="用人决策" />用人决策</label>
+            <label><input type="checkbox" value="都愿意试" />都愿意试</label>
+            <label class="other"><input type="checkbox" value="__other" />其他：<input type="text" id="avoidOther" placeholder="自填" /></label>
+          </div>
+        </div>
+
+        <div class="field">
+          <label>7 · 你拿什么定义"成了"？（可多选）</label>
+          <div class="checks" id="successMetrics">
+            <label><input type="checkbox" value="营收" />营收</label>
+            <label><input type="checkbox" value="利润" />利润</label>
+            <label><input type="checkbox" value="人力节省" />人力节省</label>
+            <label><input type="checkbox" value="客户数" />客户数</label>
+            <label><input type="checkbox" value="复购率" />复购率</label>
+            <label><input type="checkbox" value="口碑" />口碑</label>
+            <label class="other"><input type="checkbox" value="__other" />其他：<input type="text" id="metricOther" placeholder="自填" /></label>
+          </div>
+        </div>
+
+        <div class="field">
+          <label>还有啥想补充的？（选填）</label>
+          <textarea id="freeText" rows="3" placeholder="比如：现在主要靠老客转介绍，没做过线上；团队 5 人，老板自己管微信……"></textarea>
+        </div>
+
+        <button id="btnDraft" class="primary">生成我的 AI 机会 →</button>
+      </div>
+
+      <!-- STEP 2 -->
+      <div id="step2" class="panel hidden">
+        <h2>你的机会草稿出来了</h2>
+        <p class="hint">先看下面的判断。橙色问题是 AI 想再确认一下的——答完它，作战图会更准。</p>
+        <div id="draftOut"></div>
+        <div id="clarifyBox" class="clarify">
+          <h3>补充几个信息，让建议更准</h3>
+          <div id="clarifyQuestions"></div>
+        </div>
+        <button id="btnRefine" class="primary">补充完，出定稿作战图 →</button>
+        <button id="btnBack1" class="ghost">← 回去改填</button>
+      </div>
+
+      <!-- STEP 3 -->
+      <div id="step3" class="panel hidden">
+        <h2>你的《AI 落地作战图》</h2>
+        <div id="battleOut"></div>
+        <div class="actions">
+          <button id="btnCopy" class="primary">一键复制作战图</button>
+          <button id="btnDownload" class="ghost">下载 HTML</button>
+          <button id="btnRestart" class="ghost">重新填一份</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- 第二镜占位 -->
+    <section id="mirror2" class="mirror hidden">
+      <div class="placeholder">
+        <h2>② 循环镜 · Loop Designer（即将上线）</h2>
+        <p>把第一镜选中的高杠杆场景，拆成「获客→评估→服务→交付→复购」的节点，AI 标出哪些能全自动、哪些 AI 辅助，并画出数据飞轮。第一镜跑通后开启。</p>
+      </div>
+    </section>
+
+    <!-- 第三镜占位 -->
+    <section id="mirror3" class="mirror hidden">
+      <div class="placeholder">
+        <h2>③ 显微镜 · Replacement Calculator（即将上线）</h2>
+        <p>选一个岗位，粘贴日常任务清单，AI 给每个任务打可替代度、算能省多少工时、配哪些评测指标，并给出「招人 vs 搭 agent」的成本边界。第一镜跑通后开启。</p>
+      </div>
+    </section>
+  </main>
+
+  <footer class="wrap foot">一次文明级机会 · 落到你的生意里 — 由「代州黄酒 × AI 实验场」出品</footer>
+
+  <script src="app.js"></script>
+</body>
+</html>

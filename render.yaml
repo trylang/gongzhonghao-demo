@@ -81,3 +81,16 @@ services:
     envVars:
       - key: MINIMAX_API_KEY
         sync: false   # 部署时 Render 提示填入，不进代码库
+
+  - type: web
+    name: ai-landing-workbench
+    runtime: node
+    plan: free
+    branch: main
+    rootDir: demos/ai-landing-workbench
+    buildCommand: "echo 'no build needed'"
+    startCommand: "node server.js"
+    healthCheckPath: "/"
+    envVars:
+      - key: MINIMAX_API_KEY
+        sync: false   # 部署时 Render 提示填入，不进代码库（.env 已 gitignore，不进库）
