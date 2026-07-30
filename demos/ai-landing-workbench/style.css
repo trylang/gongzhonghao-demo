@@ -94,3 +94,44 @@ button { font-family: inherit; }
 .loading { color: var(--muted); font-size: 14px; padding: 14px 0; }
 .err { color: #b23a2a; font-size: 14px; padding: 10px 0; }
 .foot { color: var(--muted); font-size: 12px; text-align: center; padding: 24px 0 40px; }
+
+/* 节点编辑器 / 任务编辑器 */
+.item-row { display: flex; gap: 8px; align-items: center; margin-bottom: 8px; }
+.item-row input, .item-row select { flex: 1; min-width: 0; }
+.item-row .nn-name, .item-row .tt-name { flex: 2; }
+.item-row .row-del { flex: 0 0 auto; width: 30px; background: #f3e3da; color: #8f3522; border: 1px solid var(--line); border-radius: 8px; cursor: pointer; font-size: 16px; line-height: 1; padding: 6px 0; }
+.item-row .row-del:hover { background: #eccfc2; }
+button.small { padding: 7px 14px; font-size: 13px; }
+
+/* 循环节点流 */
+.node-flow { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; margin: 6px 0 14px; }
+.node-flow .arrow { color: var(--muted); font-weight: 700; }
+.node { border: 1px solid var(--line); border-radius: 10px; padding: 8px 10px; background: #fff; min-width: 92px; text-align: center; }
+.node .node-name { font-size: 13px; font-weight: 600; margin-bottom: 4px; }
+.node.role-auto { background: #e7f0e8; border-color: #bcd8c0; }
+.node.role-assist { background: #fbf2dc; border-color: #ecd9a4; }
+.node.role-human { background: #f0eeec; border-color: #ddd6cf; }
+.node.role-hold { background: #f6e6e0; border-color: #e8c4b6; }
+.tag.role-auto { background: #dfe7df; color: #4a7c59; }
+.tag.role-assist { background: #f6eccf; color: #8a6d2b; }
+.tag.role-human { background: #eceae7; color: #6d645b; }
+.tag.role-hold { background: #f3d9cf; color: #8f3522; }
+.tag.role-mid { background: #f6eccf; color: #8a6d2b; }
+
+/* 替代矩阵 */
+.matrix { width: 100%; border-collapse: collapse; margin: 10px 0; font-size: 13px; }
+.matrix th, .matrix td { border: 1px solid var(--line); padding: 8px 10px; text-align: left; vertical-align: top; }
+.matrix th { background: #fdf6ee; color: var(--accent); font-weight: 600; }
+.matrix tr:nth-child(even) td { background: #fdfbf7; }
+
+/* 成本边界卡片 */
+.summary-card { display: flex; flex-wrap: wrap; gap: 10px; margin: 10px 0; }
+.summary-card > div { flex: 1; min-width: 120px; background: #fdf6ee; border: 1px solid var(--line); border-radius: 10px; padding: 12px; text-align: center; }
+.summary-card .big { display: block; font-size: 18px; font-weight: 700; color: var(--accent); }
+.summary-card label { font-size: 12px; color: var(--muted); }
+.conclusion { background: #e7f0e8; border-left: 4px solid var(--ok); padding: 10px 14px; border-radius: 8px; font-weight: 600; color: #36543f; }
+
+/* 替代度标签 */
+.tag.rep-high { background: #dfe7df; color: #4a7c59; }
+.tag.rep-mid { background: #f6eccf; color: #8a6d2b; }
+.tag.rep-low { background: #f3d9cf; color: #8f3522; }

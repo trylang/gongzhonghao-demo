@@ -16,8 +16,8 @@
 
   <nav class="tabs wrap">
     <button class="tab active" data-mirror="1">① 远望镜 · Vision</button>
-    <button class="tab" data-mirror="2">② 循环镜 · Loop <span class="soon">即将上线</span></button>
-    <button class="tab" data-mirror="3">③ 显微镜 · Replace <span class="soon">即将上线</span></button>
+    <button class="tab" data-mirror="2">② 循环镜 · Loop</button>
+    <button class="tab" data-mirror="3">③ 显微镜 · Replace</button>
   </nav>
 
   <main class="wrap">
@@ -166,19 +166,108 @@
       </div>
     </section>
 
-    <!-- 第二镜占位 -->
+    <!-- 第二镜 -->
     <section id="mirror2" class="mirror hidden">
-      <div class="placeholder">
-        <h2>② 循环镜 · Loop Designer（即将上线）</h2>
-        <p>把第一镜选中的高杠杆场景，拆成「获客→评估→服务→交付→复购」的节点，AI 标出哪些能全自动、哪些 AI 辅助，并画出数据飞轮。第一镜跑通后开启。</p>
+      <div class="steps">
+        <span class="step-dot active" data-step="1">1 · 拆场景</span>
+        <span class="step-dot" data-step="2">2 · 看草稿 + 补充</span>
+        <span class="step-dot" data-step="3">3 · 循环作战图</span>
+      </div>
+
+      <div id="loopStep1" class="panel">
+        <h2>把高杠杆场景拆成一条业务循环</h2>
+        <p class="hint">从第一镜挑一个场景（已自动带入），把它的业务流程一个节点一个节点列出来。不用一次写完美，草稿出来后 AI 会帮你补全和纠正。</p>
+        <div class="field">
+          <label>要落地的场景</label>
+          <input type="text" id="loopScenario" placeholder="如：老客微信私域复购" />
+        </div>
+        <div class="field">
+          <label>业务循环节点（一行一个，按真实先后排）</label>
+          <div id="loopNodes"></div>
+          <button id="btnAddNode" class="ghost small">+ 加一个节点</button>
+        </div>
+        <button id="btnLoopDraft" class="primary">生成循环草稿 →</button>
+      </div>
+
+      <div id="loopStep2" class="panel hidden">
+        <h2>循环草稿出来了</h2>
+        <p class="hint">下面是每个节点的 AI 角色建议、数据飞轮和最小可行方案。橙色问题是 AI 想再确认的——答完它，作战图更准。</p>
+        <div id="loopDraftOut"></div>
+        <div id="loopClarifyBox" class="clarify">
+          <h3>补充几个信息，让建议更准</h3>
+          <div id="loopClarifyQuestions"></div>
+        </div>
+        <button id="btnLoopRefine" class="primary">补充完，出定稿循环图 →</button>
+        <button id="btnLoopBack1" class="ghost">← 回去改</button>
+      </div>
+
+      <div id="loopStep3" class="panel hidden">
+        <h2>你的《业务循环作战图》</h2>
+        <div id="loopBattleOut"></div>
+        <div class="actions">
+          <button id="btnLoopCopy" class="primary">一键复制</button>
+          <button id="btnLoopDownload" class="ghost">下载 HTML</button>
+          <button id="btnLoopRestart" class="ghost">重新填</button>
+        </div>
       </div>
     </section>
 
-    <!-- 第三镜占位 -->
+    <!-- 第三镜 -->
     <section id="mirror3" class="mirror hidden">
-      <div class="placeholder">
-        <h2>③ 显微镜 · Replacement Calculator（即将上线）</h2>
-        <p>选一个岗位，粘贴日常任务清单，AI 给每个任务打可替代度、算能省多少工时、配哪些评测指标，并给出「招人 vs 搭 agent」的成本边界。第一镜跑通后开启。</p>
+      <div class="steps">
+        <span class="step-dot active" data-step="1">1 · 选岗位列任务</span>
+        <span class="step-dot" data-step="2">2 · 看评估 + 补充</span>
+        <span class="step-dot" data-step="3">3 · 替代作战图</span>
+      </div>
+
+      <div id="repStep1" class="panel">
+        <h2>选一个岗位，看看哪些活能交给 agent</h2>
+        <p class="hint">选个岗位，系统会预填常见任务清单，你删改即可。最后 AI 给你一张替代矩阵 + 「招人 vs 搭 agent」的成本边界。</p>
+        <div class="field">
+          <label>岗位</label>
+          <select id="repRole">
+            <option value="">— 自己填 —</option>
+            <option value="销售">销售 / 商务</option>
+            <option value="客服">客服 / 售后</option>
+            <option value="内容运营">内容运营</option>
+            <option value="私域运营">私域运营</option>
+            <option value="运营">运营 / 增长</option>
+            <option value="行政">行政 / 助理</option>
+          </select>
+          <input type="text" id="repRoleText" placeholder="或自己写一个岗位名，如：社群主播" />
+        </div>
+        <div class="field">
+          <label>该岗位当前月成本（人/外包，选填，用于算成本边界）</label>
+          <input type="text" id="repRoleCost" placeholder="如：8000 元/月，或不填让 AI 估算" />
+        </div>
+        <div class="field">
+          <label>日常任务清单（每行一个，可改可删可加）</label>
+          <div id="repTasks"></div>
+          <button id="btnAddTask" class="ghost small">+ 加一个任务</button>
+        </div>
+        <button id="btnRepDraft" class="primary">生成替代评估 →</button>
+      </div>
+
+      <div id="repStep2" class="panel hidden">
+        <h2>替代评估草稿出来了</h2>
+        <p class="hint">每个任务标了可替代度、能省多少工时、要配什么评测。橙色问题是 AI 想确认的——答完更准。</p>
+        <div id="repDraftOut"></div>
+        <div id="repClarifyBox" class="clarify">
+          <h3>补充几个信息，让评估更准</h3>
+          <div id="repClarifyQuestions"></div>
+        </div>
+        <button id="btnRepRefine" class="primary">补充完，出定稿替代图 →</button>
+        <button id="btnRepBack1" class="ghost">← 回去改</button>
+      </div>
+
+      <div id="repStep3" class="panel hidden">
+        <h2>你的《岗位替代作战图》</h2>
+        <div id="repBattleOut"></div>
+        <div class="actions">
+          <button id="btnRepCopy" class="primary">一键复制</button>
+          <button id="btnRepDownload" class="ghost">下载 HTML</button>
+          <button id="btnRepRestart" class="ghost">重新填</button>
+        </div>
       </div>
     </section>
   </main>
