@@ -19,6 +19,9 @@
     <button class="tab" data-mirror="2">② 循环镜 · Loop</button>
     <button class="tab" data-mirror="3">③ 显微镜 · Replace</button>
   </nav>
+  <div class="wrap nav-hint">
+    <strong>三镜怎么用：</strong>① 远望镜帮你<span class="nh">看清机会</span> → ② 循环镜把机会拆成<span class="nh">可运行的业务节点</span> → ③ 显微镜算清<span class="nh">哪个岗位/任务可以交给 agent</span>。建议按顺序走，后两镜会自动使用前一步的结论。
+  </div>
 
   <main class="wrap">
     <!-- 第一镜 -->
@@ -179,13 +182,17 @@
         <p class="hint">从第一镜挑一个场景（已自动带入），把它的业务流程一个节点一个节点列出来。不用一次写完美，草稿出来后 AI 会帮你补全和纠正。</p>
         <div class="field">
           <label>要落地的场景</label>
-          <input type="text" id="loopScenario" placeholder="如：老客微信私域复购" />
-          <p class="hint">💡 如果第一镜已跑完，切换到本页时会自动带入最高杠杆场景；没带入的话，也可以手动填写。</p>
+          <select id="loopScenarioSelect">
+            <option value="">— 选择第一镜的机会场景 —</option>
+            <option value="__custom">✏️ 其他（手动填写）</option>
+          </select>
+          <input type="text" id="loopScenarioText" class="hidden" placeholder="手动填写场景名称" />
+          <p class="hint">💡 如果第一镜已跑完，这里会下拉列出 AI 发现的几个机会场景，直接选即可；选"其他"可手动填写。</p>
         </div>
         <div class="field">
           <label>业务循环节点（按真实先后顺序）</label>
           <p class="hint">每个节点 = 名称 + 现在谁做 + 每天大概处理量 + 卡在哪。可删可改可新增。</p>
-          <div id="loopNodes"></div>
+          <div id="loopNodes" class="editor-list"></div>
           <button id="btnAddNode" class="ghost small">+ 加一个节点</button>
         </div>
         <button id="btnLoopDraft" class="primary">生成循环草稿 →</button>
@@ -243,8 +250,9 @@
           <input type="text" id="repRoleCost" placeholder="如：8000 元/月，或不填让 AI 估算" />
         </div>
         <div class="field">
-          <label>日常任务清单（每行一个，可改可删可加）</label>
-          <div id="repTasks"></div>
+          <label>日常任务清单（可改可删可加）</label>
+          <p class="hint">每行一个任务，填写任务名和每月大约工时即可。</p>
+          <div id="repTasks" class="editor-list"></div>
           <button id="btnAddTask" class="ghost small">+ 加一个任务</button>
         </div>
         <button id="btnRepDraft" class="primary">生成替代评估 →</button>

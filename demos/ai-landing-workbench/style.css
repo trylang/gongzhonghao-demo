@@ -97,12 +97,31 @@ button { font-family: inherit; }
 .legend { font-size: 12px; color: var(--muted); background: #fff; border: 1px dashed var(--line); border-radius: 10px; padding: 10px 12px; margin-bottom: 14px; line-height: 1.9; }
 .legend .tag { vertical-align: middle; }
 
+.nav-hint { font-size: 13px; color: var(--muted); background: #fff; border: 1px solid var(--line); border-radius: 10px; padding: 10px 14px; margin: 8px auto 6px; }
+.nav-hint .nh { color: var(--accent); font-weight: 600; }
+
+.spinner {
+  display: inline-block; width: 14px; height: 14px; border: 2px solid rgba(255,255,255,.4);
+  border-top-color: #fff; border-radius: 50%; animation: spin .8s linear infinite; vertical-align: middle; margin-right: 6px;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+.loading .spinner { border-color: rgba(168,65,42,.25); border-top-color: var(--accent); }
+
+button:disabled, .btn-busy { opacity: .65; cursor: not-allowed; }
+
 /* 节点编辑器 / 任务编辑器 */
-.item-row { display: flex; gap: 8px; align-items: center; margin-bottom: 8px; }
-.item-row input, .item-row select { flex: 1; min-width: 0; }
-.item-row .nn-name, .item-row .tt-name { flex: 2; }
-.item-row .row-del { flex: 0 0 auto; width: 30px; background: #f3e3da; color: #8f3522; border: 1px solid var(--line); border-radius: 8px; cursor: pointer; font-size: 16px; line-height: 1; padding: 6px 0; }
+.editor-list { display: flex; flex-direction: column; gap: 10px; margin-bottom: 10px; }
+.item-row {
+  display: grid; grid-template-columns: 1.6fr .9fr .8fr 1.2fr auto; gap: 8px; align-items: center;
+  background: #fff; border: 1px solid var(--line); border-radius: 10px; padding: 10px 12px;
+}
+.item-row input, .item-row select { min-width: 0; width: 100%; padding: 8px 10px; font-size: 14px; }
+.item-row .row-del {
+  width: 28px; height: 28px; background: #f3e3da; color: #8f3522; border: 1px solid var(--line);
+  border-radius: 8px; cursor: pointer; font-size: 16px; line-height: 1; padding: 0;
+}
 .item-row .row-del:hover { background: #eccfc2; }
+#repTasks .item-row { grid-template-columns: 2fr .8fr auto; }
 button.small { padding: 7px 14px; font-size: 13px; }
 
 /* 循环节点流 */

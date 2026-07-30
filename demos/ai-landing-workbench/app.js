@@ -65,6 +65,19 @@
   function esc(s) {
     return String(s == null ? "" : s).replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
   }
+  function fmtObj(v, depth = 0) {
+    // 把模型返回的对象/数组格式化成可读文本；字符串直接返回
+    if (v == null) return "";
+    if (typeof v === "string") return v;
+    if (Array.isArray(v)) return v.map((x, i) => `${i + 1}. ${fmtObj(x, depth + 1)}`).join("\n");
+    if (typeof v === "object") {
+      return Object.entries(v).map(([k, val]) => {
+        const line = `${k}：${fmtObj(val, depth + 1)}`;
+        return depth === 0 ? line.replace(/\n/g, "\n  ") : line;
+      }).join("\n\n");
+    }
+    return String(v);
+  }
   function setChecks(sel, vals) {
     $$(sel + " input[type=checkbox]").forEach((cb) => { cb.checked = cb.value === "__other" ? false : vals.includes(cb.value); });
   }
@@ -115,6 +128,25 @@
   function downloadHTML(text, name) {
     const blob = new Blob([`<pre style="font-family:inherit;white-space:pre-wrap;padding:20px">${esc(text)}</pre>`], { type: "text/html" });
     const a = document.createElement("a"); a.href = URL.createObjectURL(blob); a.download = name; a.click();
+  }
+  let busyBtns = [];
+  function setBusy(ids, message) {
+    busyBtns = ids.map((id) => {
+      const btn = $(id); if (!btn) return null;
+      const old = { el: btn, text: btn.textContent, disabled: btn.disabled };
+      btn.disabled = true;
+      btn.classList.add("btn-busy");
+      btn.innerHTML = `<span class="spinner"></span> ${esc(message)}`;
+      return old;
+    }).filter(Boolean);
+  }
+  function clearBusy() {
+    busyBtns.forEach((old) => {
+      old.el.disabled = old.disabled;
+      old.el.classList.remove("btn-busy");
+      old.el.textContent = old.text;
+    });
+    busyBtns = [];
   }
   function renderClarify(containerSel, questions) {
     const cq = $(containerSel); cq.innerHTML = "";
@@ -171,8 +203,8 @@
   function renderVisionBattle(r) {
     let html = LEGEND_HTML + `<div class="vision-line">${esc(r.visionStatement || "")}</div>`;
     (r.opportunities || []).forEach((o) => { html += vcard(o); });
-    html += `<h3>行动作战图</h3><div class="battle">${esc(r.battleMap || "")}</div>`;
-    if (r.metrics) html += `<h3>建议追踪的指标</h3><div class="battle">${esc(r.metrics)}</div>`;
+    html += `<h3>行动作战图</h3><div class="battle">${esc(fmtObj(r.battleMap))}</div>`;
+    if (r.metrics) html += `<h3>建议追踪的指标</h3><div class="battle">${esc(fmtObj(r.metrics))}</div>`;
     if (r.nextStepHint) html += `<p class="hint">进入循环镜建议：${esc(r.nextStepHint)}</p>`;
     $("#battleOut").innerHTML = html;
   }
@@ -183,7 +215,7 @@
       if (o.firstMove) t += "   第一步：" + o.firstMove + "\n";
       if (o.flywheel) t += "   飞轮：" + o.flywheel + "\n";
     });
-    t += "\n【行动作战图】\n" + (r.battleMap || "");
+    t += "\n【行动作战图】\n" + fmtObj(r.battleMap);
     if (r.metrics) t += "\n\n【指标】\n" + r.metrics;
     return t;
   }
@@ -245,8 +277,8 @@
     if (r.mvp) {
       html += `<h3>最小可行方案</h3><div class="card"><p><strong>${esc((r.mvp.firstNodes || []).join(" + "))}</strong></p><p>${esc(r.mvp.rationale || "")}</p>${r.mvp.firstMove ? `<p style="color:var(--accent)">👉 第一步：${esc(r.mvp.firstMove)}</p>` : (r.mvp.quickWin ? `<p style="color:var(--accent)">👉 ${esc(r.mvp.quickWin)}</p>` : "")}</div>`;
     }
-    html += `<h3>落地作战图</h3><div class="battle">${esc(r.battleMap || "")}</div>`;
-    if (r.metrics) html += `<h3>建议追踪的指标</h3><div class="battle">${esc(r.metrics)}</div>`;
+    html += `<h3>落地作战图</h3><div class="battle">${esc(fmtObj(r.battleMap))}</div>`;
+    if (r.metrics) html += `<h3>建议追踪的指标</h3><div class="battle">${esc(fmtObj(r.metrics))}</div>`;
     if (r.nextStepHint) html += `<p class="hint">进入显微镜建议：${esc(r.nextStepHint)}</p>`;
     $("#loopBattleOut").innerHTML = html;
   }
@@ -255,8 +287,8 @@
     (r.nodes || []).forEach((n, i) => { t += `${i + 1}. ${n.name}（${n.role}）\n   为什么：${n.why || ""}\n   输入：${n.input || ""} 产出：${n.output || ""}\n   工具：${n.toolHint || ""}\n`; });
     if (r.loops) t += "\n【数据飞轮】\n" + r.loops.map((l, i) => `${i + 1}. ${l}`).join("\n") + "\n";
     if (r.mvp) t += `\n【最小可行方案】先上：${(r.mvp.firstNodes || []).join(" + ")}\n理由：${r.mvp.rationale || ""}\n第一步：${r.mvp.firstMove || r.mvp.quickWin || ""}\n`;
-    t += `\n【落地作战图】\n${r.battleMap || ""}`;
-    if (r.metrics) t += `\n\n【指标】\n${r.metrics}`;
+    t += `\n【落地作战图】\n${fmtObj(r.battleMap)}`;
+    if (r.metrics) t += `\n\n【指标】\n${fmtObj(r.metrics)}`;
     return t;
   }
 
@@ -309,18 +341,18 @@
       html += `<tr><td>${esc(t.name || "")}</td><td>${repTag(t.replaceable)}</td><td>${esc(t.hoursSaved || "")}h</td><td>${esc(t.evalMetric || "")}</td><td>${esc(t.risk || "")}</td></tr>`;
     });
     html += `</tbody></table>`;
-    html += `<h3>落地作战图</h3><div class="battle">${esc(r.battleMap || "")}</div>`;
+    html += `<h3>落地作战图</h3><div class="battle">${esc(fmtObj(r.battleMap))}</div>`;
     if (r.checklist && r.checklist.length) { html += `<h3>落地清单</h3><div class="battle">${r.checklist.map((c, i) => `${i + 1}. ${c}`).join("\n")}</div>`; }
-    if (r.metrics) html += `<h3>建议追踪的指标</h3><div class="battle">${esc(r.metrics)}</div>`;
+    if (r.metrics) html += `<h3>建议追踪的指标</h3><div class="battle">${esc(fmtObj(r.metrics))}</div>`;
     $("#repBattleOut").innerHTML = html;
   }
   function repText(r) {
     let t = "【岗位替代作战图】\n岗位：" + (r.role || "") + "\n\n";
     (r.tasks || []).forEach((tk, i) => { t += `${i + 1}. ${tk.name}（替代度 ${tk.replaceable}，月省 ${tk.hoursSaved || "?"}h）\n   为什么：${tk.reason || ""}\n   评测：${tk.evalMetric || ""}\n   风险：${tk.risk || ""}\n`; });
     if (r.summary) { const s = r.summary; t += `\n【成本边界】替代率 ${s.replacedRatio} ｜ 月省 ${s.totalHoursSaved}h ｜ agent月成本 ${s.agentCostPerMonth} ｜ 现岗位 ${s.humanCostPerMonth}\n结论：${s.conclusion}\n`; }
-    t += `\n【落地作战图】\n${r.battleMap || ""}`;
+    t += `\n【落地作战图】\n${fmtObj(r.battleMap)}`;
     if (r.checklist) t += `\n\n【落地清单】\n` + r.checklist.map((c, i) => `${i + 1}. ${c}`).join("\n");
-    if (r.metrics) t += `\n\n【指标】\n${r.metrics}`;
+    if (r.metrics) t += `\n\n【指标】\n${fmtObj(r.metrics)}`;
     return t;
   }
 
@@ -330,21 +362,25 @@
     const input = collectInput();
     if (!input.businessType && !input.freeText) { alert("至少填一下「你的生意是什么」，或选个场景模板～"); return; }
     state.visionInput = input;
-    $("#draftOut").innerHTML = `<div class="loading">⏳ 正在结合 Alexandr Wang 的框架，为你生成机会草稿…</div>`;
+    $("#draftOut").innerHTML = `<div class="loading"><span class="spinner"></span> 正在结合 Alexandr Wang 的框架，为你生成机会草稿…</div>`;
+    setBusy(["#btnDraft"], "生成中，请稍后");
     showPanel("#mirror1", "step", 2);
     try {
       const draft = await postJSON("/api/vision", { stage: "draft", input });
       renderVisionDraft(draft); state.vision = draft;
     } catch (err) { $("#draftOut").innerHTML = `<div class="err">出错了：${esc(err.message)}</div>`; }
+    finally { clearBusy(); }
   });
   $("#btnRefine").addEventListener("click", async () => {
     state.visionInput.clarifications = collectClarify("#clarifyQuestions");
-    $("#battleOut").innerHTML = `<div class="loading">⏳ 正在结合你的补充，生成定稿作战图…</div>`;
+    $("#battleOut").innerHTML = `<div class="loading"><span class="spinner"></span> 正在结合你的补充，生成定稿作战图…</div>`;
+    setBusy(["#btnRefine", "#btnBack1"], "生成中，请稍后");
     showPanel("#mirror1", "step", 3);
     try {
       const final = await postJSON("/api/vision", { stage: "refine", input: state.visionInput, history: state.vision });
       renderVisionBattle(final); state.vision = final;
     } catch (err) { $("#battleOut").innerHTML = `<div class="err">出错了：${esc(err.message)}</div>`; }
+    finally { clearBusy(); }
   });
   $("#btnBack1").addEventListener("click", () => showPanel("#mirror1", "step", 1));
   $("#btnCopy").addEventListener("click", () => copyText(visionText(state.vision)));
@@ -363,23 +399,30 @@
     ensureLoopNodes();
     const nodes = collectLoopNodes();
     if (!nodes.length) { alert("至少写 1 个节点～"); return; }
-    state.loopInput = { businessType: state.visionInput?.businessType || "", scenario: $("#loopScenario").value.trim(), nodes };
+    const scenario = $("#loopScenarioSelect").value === "__custom"
+      ? $("#loopScenarioText").value.trim()
+      : ($("#loopScenarioSelect").value || $("#loopScenarioText").value.trim());
+    state.loopInput = { businessType: state.visionInput?.businessType || "", scenario, nodes };
     if (!state.loopInput.scenario) { alert("给这个场景起个名～"); return; }
-    $("#loopDraftOut").innerHTML = `<div class="loading">⏳ 正在把这条业务流拆成节点、画飞轮…</div>`;
+    $("#loopDraftOut").innerHTML = `<div class="loading"><span class="spinner"></span> 正在把这条业务流拆成节点、画飞轮…</div>`;
+    setBusy(["#btnLoopDraft", "#btnAddNode"], "生成中，请稍后");
     showPanel("#mirror2", "loopStep", 2);
     try {
       const draft = await postJSON("/api/loop", { stage: "draft", input: state.loopInput });
       renderLoopDraft(draft); state.loop = draft;
     } catch (err) { $("#loopDraftOut").innerHTML = `<div class="err">出错了：${esc(err.message)}</div>`; }
+    finally { clearBusy(); }
   });
   $("#btnLoopRefine").addEventListener("click", async () => {
     state.loopInput.clarifications = collectClarify("#loopClarifyQuestions");
-    $("#loopBattleOut").innerHTML = `<div class="loading">⏳ 正在结合你的补充，生成定稿循环图…</div>`;
+    $("#loopBattleOut").innerHTML = `<div class="loading"><span class="spinner"></span> 正在结合你的补充，生成定稿循环图…</div>`;
+    setBusy(["#btnLoopRefine", "#btnLoopBack1"], "生成中，请稍后");
     showPanel("#mirror2", "loopStep", 3);
     try {
       const final = await postJSON("/api/loop", { stage: "refine", input: state.loopInput, history: state.loop });
       renderLoopBattle(final); state.loop = final;
     } catch (err) { $("#loopBattleOut").innerHTML = `<div class="err">出错了：${esc(err.message)}</div>`; }
+    finally { clearBusy(); }
   });
   $("#btnLoopBack1").addEventListener("click", () => showPanel("#mirror2", "loopStep", 1));
   $("#btnLoopCopy").addEventListener("click", () => copyText(loopText(state.loop)));
@@ -401,21 +444,25 @@
     const tasks = collectTasks();
     if (!tasks.length) { alert("至少写 1 个任务～"); return; }
     state.repInput = { businessType: state.visionInput?.businessType || "", role, roleCost: $("#repRoleCost").value.trim(), tasks };
-    $("#repDraftOut").innerHTML = `<div class="loading">⏳ 正在逐个任务评估可替代度…</div>`;
+    $("#repDraftOut").innerHTML = `<div class="loading"><span class="spinner"></span> 正在逐个任务评估可替代度…</div>`;
+    setBusy(["#btnRepDraft", "#btnAddTask"], "生成中，请稍后");
     showPanel("#mirror3", "repStep", 2);
     try {
       const draft = await postJSON("/api/replace", { stage: "draft", input: state.repInput });
       renderRepDraft(draft); state.rep = draft;
     } catch (err) { $("#repDraftOut").innerHTML = `<div class="err">出错了：${esc(err.message)}</div>`; }
+    finally { clearBusy(); }
   });
   $("#btnRepRefine").addEventListener("click", async () => {
     state.repInput.clarifications = collectClarify("#repClarifyQuestions");
-    $("#repBattleOut").innerHTML = `<div class="loading">⏳ 正在结合你的补充，生成定稿替代图…</div>`;
+    $("#repBattleOut").innerHTML = `<div class="loading"><span class="spinner"></span> 正在结合你的补充，生成定稿替代图…</div>`;
+    setBusy(["#btnRepRefine", "#btnRepBack1"], "生成中，请稍后");
     showPanel("#mirror3", "repStep", 3);
     try {
       const final = await postJSON("/api/replace", { stage: "refine", input: state.repInput, history: state.rep });
       renderRepBattle(final); state.rep = final;
     } catch (err) { $("#repBattleOut").innerHTML = `<div class="err">出错了：${esc(err.message)}</div>`; }
+    finally { clearBusy(); }
   });
   $("#btnRepBack1").addEventListener("click", () => showPanel("#mirror3", "repStep", 1));
   $("#btnRepCopy").addEventListener("click", () => copyText(repText(state.rep)));
@@ -438,6 +485,28 @@
     return String(raw).split(/[。！；\n]/)[0].replace(/\s+/g, " ").trim();
   }
 
+  function refreshLoopScenarioOptions() {
+    const sel = $("#loopScenarioSelect");
+    const currentVal = sel.value;
+    sel.innerHTML = `<option value="">— 选择第一镜的机会场景 —</option><option value="__custom">✏️ 其他（手动填写）</option>`;
+    if (state.vision && state.vision.opportunities && state.vision.opportunities.length) {
+      state.vision.opportunities.forEach((o, i) => {
+        const t = cleanScenarioTitle(o.title || "");
+        if (!t) return;
+        const opt = document.createElement("option");
+        opt.value = t; opt.textContent = `${i + 1}. ${t}`;
+        sel.appendChild(opt);
+      });
+    }
+    if (currentVal) sel.value = currentVal;
+    toggleLoopScenarioInput();
+  }
+  function toggleLoopScenarioInput() {
+    const isCustom = $("#loopScenarioSelect").value === "__custom";
+    $("#loopScenarioText").classList.toggle("hidden", !isCustom);
+    if (!isCustom) $("#loopScenarioText").value = $("#loopScenarioSelect").value;
+  }
+
   // ============ 导航 + 共享上下文预填 ============
   $$(".tab").forEach((t) => t.addEventListener("click", () => {
     const m = t.dataset.mirror;
@@ -445,13 +514,10 @@
     ["#mirror1", "#mirror2", "#mirror3"].forEach((s, i) => $(s).classList.toggle("hidden", String(i + 1) !== m));
     if (m === "2") {
       ensureLoopNodes();
-      const inp = $("#loopScenario");
-      if (!inp.value) {
-        if (state.vision && state.vision.opportunities && state.vision.opportunities.length) {
-          inp.value = cleanScenarioTitle(state.vision.opportunities[0].title || "");
-        } else {
-          inp.placeholder = "如：老客微信私域复购（先在第一镜跑完，这里会自动带入最高杠杆场景）";
-        }
+      refreshLoopScenarioOptions();
+      if (state.vision && state.vision.opportunities && state.vision.opportunities.length && !$("#loopScenarioSelect").value) {
+        $("#loopScenarioSelect").value = cleanScenarioTitle(state.vision.opportunities[0].title || "");
+        toggleLoopScenarioInput();
       }
     }
     if (m === "3") {
@@ -465,6 +531,7 @@
       }
     }
   }));
+  $("#loopScenarioSelect").addEventListener("change", toggleLoopScenarioInput);
 
   // 页面加载即初始化第二、三镜的默认表单，避免 tab 切换前元素为空
   ensureLoopNodes();
