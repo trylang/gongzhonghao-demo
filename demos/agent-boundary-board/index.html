@@ -1,0 +1,469 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>商业 Agent 边界画板 — 给你的 AI 划清红线</title>
+<style>
+  :root {
+    --bg: #f7f2ea;
+    --ink: #3d3835;
+    --brand: #a0522d;
+    --brand-dark: #7a3d20;
+    --card-bg: #fffdf9;
+    --green: #2e7d52;
+    --amber: #b8860b;
+    --red: #b03a2e;
+    --border: #e0d5c5;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
+    background: var(--bg); color: var(--ink); line-height: 1.6;
+    padding-bottom: 60px;
+  }
+  header { text-align: center; padding: 36px 16px 8px; }
+  header h1 { font-size: 24px; color: var(--brand-dark); letter-spacing: 1px; }
+  header p { font-size: 14px; color: #8a7f72; margin-top: 8px; max-width: 560px; margin-left: auto; margin-right: auto; }
+  .container { max-width: 960px; margin: 0 auto; padding: 16px; }
+
+  .step-label { font-size: 15px; font-weight: 700; color: var(--brand-dark); margin: 22px 0 10px; display: flex; align-items: center; gap: 8px; }
+  .step-label .num { background: var(--brand); color: #fff; width: 22px; height: 22px; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; font-size: 13px; flex-shrink: 0; }
+
+  .industry-row { display: flex; gap: 8px; flex-wrap: wrap; }
+  .industry-row button {
+    border: 1px solid var(--border); background: var(--card-bg); color: var(--ink);
+    padding: 7px 14px; border-radius: 18px; font-size: 13px; cursor: pointer; transition: all .15s;
+  }
+  .industry-row button.active { background: var(--brand); color: #fff; border-color: var(--brand); }
+  .industry-row input {
+    border: 1px solid var(--border); background: var(--card-bg); padding: 7px 12px;
+    border-radius: 18px; font-size: 13px; width: 160px; outline: none;
+  }
+
+  /* 卡片库 */
+  .card-pool { display: flex; flex-wrap: wrap; gap: 8px; padding: 14px; background: #efe7da; border-radius: 12px; min-height: 60px; }
+  .action-card {
+    background: var(--card-bg); border: 1.5px solid var(--border); border-radius: 8px;
+    padding: 8px 12px; font-size: 13.5px; cursor: grab; user-select: none;
+    box-shadow: 0 1px 3px rgba(61,56,53,.08); transition: transform .12s, box-shadow .12s;
+    display: inline-flex; align-items: center; gap: 6px; position: relative;
+  }
+  .action-card:active { cursor: grabbing; }
+  .action-card.selected { outline: 2.5px solid var(--brand); outline-offset: 1px; transform: scale(1.04); }
+  .action-card .emoji { font-size: 15px; }
+  .action-card .cond-tag { font-size: 11px; color: var(--amber); background: #fdf6e3; border-radius: 4px; padding: 1px 5px; }
+  .action-card .remove-btn {
+    display: none; position: absolute; top: -7px; right: -7px; width: 18px; height: 18px;
+    background: #c0574a; color: #fff; border-radius: 50%; font-size: 11px; line-height: 18px;
+    text-align: center; cursor: pointer;
+  }
+  .zone .action-card .remove-btn { display: block; }
+  .custom-add { display: inline-flex; gap: 6px; align-items: center; }
+  .custom-add input { border: 1px dashed var(--brand); background: transparent; padding: 7px 10px; border-radius: 8px; font-size: 13px; width: 130px; outline: none; }
+  .custom-add button { border: none; background: var(--brand); color: #fff; border-radius: 8px; padding: 7px 12px; font-size: 13px; cursor: pointer; }
+
+  .hint-mobile { font-size: 12.5px; color: #9c8f80; margin-top: 8px; }
+
+  /* 三个区域 */
+  .zones { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-top: 12px; }
+  @media (max-width: 700px) { .zones { grid-template-columns: 1fr; } }
+  .zone {
+    border: 2px dashed var(--border); border-radius: 12px; padding: 12px; min-height: 150px;
+    background: var(--card-bg); transition: border-color .15s, background .15s;
+  }
+  .zone.drag-over { background: #fdf9f0; }
+  .zone h3 { font-size: 15px; margin-bottom: 4px; display: flex; align-items: center; gap: 6px; }
+  .zone .desc { font-size: 12px; color: #9c8f80; margin-bottom: 10px; }
+  .zone .cards { display: flex; flex-wrap: wrap; gap: 8px; }
+  .zone-auto { border-color: #bcd9c8; } .zone-auto h3 { color: var(--green); }
+  .zone-auto.drag-over, .zone-auto.tap-target { border-color: var(--green); }
+  .zone-review { border-color: #e8d9ae; } .zone-review h3 { color: var(--amber); }
+  .zone-review.drag-over, .zone-review.tap-target { border-color: var(--amber); }
+  .zone-forbidden { border-color: #e5c0ba; } .zone-forbidden h3 { color: var(--red); }
+  .zone-forbidden.drag-over, .zone-forbidden.tap-target { border-color: var(--red); }
+  .tap-target { animation: pulse 1.2s infinite; }
+  @keyframes pulse { 50% { background: #fdf6ec; } }
+
+  /* 生成按钮 */
+  .gen-row { text-align: center; margin: 28px 0 8px; }
+  .gen-btn {
+    background: linear-gradient(135deg, var(--brand), var(--brand-dark)); color: #fff; border: none;
+    font-size: 17px; padding: 14px 44px; border-radius: 30px; cursor: pointer; letter-spacing: 2px;
+    box-shadow: 0 4px 14px rgba(160,82,45,.35); transition: transform .15s;
+  }
+  .gen-btn:hover { transform: translateY(-2px); }
+  .gen-btn:disabled { opacity: .55; cursor: wait; transform: none; }
+  .gen-tip { font-size: 12.5px; color: #9c8f80; margin-top: 8px; }
+
+  /* 结果 */
+  .result-wrap { display: none; margin-top: 24px; background: var(--card-bg); border: 1px solid var(--border); border-radius: 12px; padding: 22px; }
+  .result-toolbar { display: flex; gap: 10px; margin-bottom: 16px; flex-wrap: wrap; }
+  .result-toolbar button {
+    border: 1px solid var(--brand); background: #fff; color: var(--brand); padding: 8px 18px;
+    border-radius: 20px; font-size: 13.5px; cursor: pointer;
+  }
+  .result-toolbar button.primary { background: var(--brand); color: #fff; }
+  #result-content h2 { font-size: 18px; color: var(--brand-dark); margin: 18px 0 8px; border-left: 4px solid var(--brand); padding-left: 10px; }
+  #result-content ul, #result-content ol { padding-left: 22px; margin: 8px 0; }
+  #result-content li { margin: 4px 0; font-size: 14.5px; }
+  #result-content p { margin: 8px 0; font-size: 14.5px; }
+  #result-content pre {
+    background: #2f2a26; color: #f3ead9; padding: 14px; border-radius: 8px; font-size: 13px;
+    overflow-x: auto; white-space: pre-wrap; word-break: break-all; margin: 10px 0;
+  }
+  #result-content strong { color: var(--brand-dark); }
+  .loading-box { display: none; text-align: center; padding: 30px 0; color: #8a7f72; font-size: 14px; }
+  .loading-box .spinner {
+    width: 30px; height: 30px; border: 3px solid var(--border); border-top-color: var(--brand);
+    border-radius: 50%; margin: 0 auto 12px; animation: spin .8s linear infinite;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  .toast {
+    position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%); background: #3d3835;
+    color: #fff; padding: 10px 22px; border-radius: 22px; font-size: 13.5px; opacity: 0;
+    pointer-events: none; transition: opacity .3s; z-index: 99;
+  }
+  .toast.show { opacity: .94; }
+  footer { text-align: center; font-size: 12px; color: #b0a494; margin-top: 40px; }
+
+  /* 条件弹层 */
+  .cond-mask { display: none; position: fixed; inset: 0; background: rgba(40,34,30,.45); z-index: 50; align-items: center; justify-content: center; }
+  .cond-dialog { background: #fff; border-radius: 14px; padding: 22px; width: min(92vw, 380px); }
+  .cond-dialog h4 { font-size: 16px; color: var(--brand-dark); margin-bottom: 6px; }
+  .cond-dialog p { font-size: 12.5px; color: #9c8f80; margin-bottom: 12px; }
+  .cond-dialog input { width: 100%; border: 1px solid var(--border); border-radius: 8px; padding: 10px; font-size: 14px; outline: none; }
+  .cond-dialog .btns { display: flex; gap: 10px; margin-top: 14px; justify-content: flex-end; }
+  .cond-dialog .btns button { padding: 8px 18px; border-radius: 8px; font-size: 13.5px; cursor: pointer; border: 1px solid var(--border); background: #fff; }
+  .cond-dialog .btns .ok { background: var(--brand); color: #fff; border-color: var(--brand); }
+</style>
+</head>
+<body>
+<header>
+  <h1>🛡️ 商业 Agent 边界画板</h1>
+  <p>准备让 AI 帮你做生意？先把边界划清楚。把下面的动作卡片放进三个区域，一键生成一份能拍到桌上的《Agent 权限边界文档》。</p>
+</header>
+
+<div class="container">
+  <div class="step-label"><span class="num">1</span>选你的行业</div>
+  <div class="industry-row" id="industry-row">
+    <button data-v="零售/门店" class="active">零售/门店</button>
+    <button data-v="餐饮">餐饮</button>
+    <button data-v="电商">电商</button>
+    <button data-v="生产制造">生产制造</button>
+    <button data-v="本地服务业">本地服务业</button>
+    <input id="industry-custom" placeholder="或自己填，如：黄酒酿造" maxlength="30">
+  </div>
+
+  <div class="step-label"><span class="num">2</span>把动作卡片放进对应区域</div>
+  <div class="card-pool" id="card-pool"></div>
+  <div class="custom-add" style="margin-top:10px">
+    <input id="custom-card-input" placeholder="自定义动作…" maxlength="20">
+    <button onclick="addCustomCard()">+ 加一张卡</button>
+  </div>
+  <p class="hint-mobile">💡 电脑上直接拖拽；手机上先点一下卡片，再点目标区域。放进「需人工审批」的卡可以再点一次设置条件（如金额上限）。</p>
+
+  <div class="zones">
+    <div class="zone zone-auto" data-zone="auto">
+      <h3>✅ 自动执行</h3>
+      <div class="desc">AI 可以直接做，事后留痕即可</div>
+      <div class="cards"></div>
+    </div>
+    <div class="zone zone-review" data-zone="review">
+      <h3>✋ 需人工审批</h3>
+      <div class="desc">AI 先提交，人点头才执行</div>
+      <div class="cards"></div>
+    </div>
+    <div class="zone zone-forbidden" data-zone="forbidden">
+      <h3>⛔ 绝对禁止</h3>
+      <div class="desc">任何情况下 AI 都不能碰</div>
+      <div class="cards"></div>
+    </div>
+  </div>
+
+  <div class="gen-row">
+    <button class="gen-btn" id="gen-btn" onclick="generate()">生成边界文档</button>
+    <div class="gen-tip">生成的文档含 4 部分：授权清单 / 审批流程 / 红线条款 / 可直接贴进 AI 的系统提示词</div>
+  </div>
+
+  <div class="loading-box" id="loading-box">
+    <div class="spinner"></div>
+    <div>AI 正在起草你的边界文档，约需 20 秒…</div>
+  </div>
+
+  <div class="result-wrap" id="result-wrap">
+    <div class="result-toolbar">
+      <button class="primary" onclick="copyRich()">📋 一键复制（保留格式）</button>
+      <button onclick="copyPlain()">复制纯文本</button>
+      <button onclick="generate()">🔄 重新生成</button>
+    </div>
+    <div id="result-content"></div>
+  </div>
+
+  <footer>本工具由「Lang商业实验室」出品 · AI 生成内容仅供参考，落地前请结合自身业务判断</footer>
+</div>
+
+<div class="cond-mask" id="cond-mask">
+  <div class="cond-dialog">
+    <h4 id="cond-title">设置审批条件</h4>
+    <p>例如：单次金额 ≤ 500 元免审；每天最多 3 次；降价幅度 ≤ 10%</p>
+    <input id="cond-input" maxlength="50" placeholder="不填则表示一律需要审批">
+    <div class="btns">
+      <button onclick="closeCond()">取消</button>
+      <button class="ok" onclick="saveCond()">保存</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+const PRESET_CARDS = [
+  { emoji: "💬", name: "回复常见客户咨询" },
+  { emoji: "🏷️", name: "修改商品价格" },
+  { emoji: "🎫", name: "发放优惠券" },
+  { emoji: "💸", name: "处理退款" },
+  { emoji: "📦", name: "下采购订单" },
+  { emoji: "🤝", name: "与客户议价" },
+  { emoji: "✍️", name: "签署合同/协议" },
+  { emoji: "😤", name: "处理客诉与差评" },
+  { emoji: "📣", name: "发布营销文案" },
+  { emoji: "📊", name: "生成经营日报" },
+  { emoji: "👥", name: "回复员工排班请求" },
+  { emoji: "🎁", name: "赠送赠品/免单" },
+  { emoji: "📞", name: "外呼老客户回访" },
+  { emoji: "🗂️", name: "更新库存记录" },
+];
+
+let cardId = 0;
+let selectedCardEl = null;   // 手机点选模式当前选中的卡
+let condTargetEl = null;     // 正在设置条件的卡
+
+const pool = document.getElementById("card-pool");
+
+function makeCard(name, emoji) {
+  const el = document.createElement("div");
+  el.className = "action-card";
+  el.draggable = true;
+  el.dataset.name = name;
+  el.dataset.cid = "c" + (++cardId);
+  el.innerHTML = `<span class="emoji">${emoji || "🔧"}</span><span class="nm">${name}</span><span class="cond-tag" style="display:none"></span><span class="remove-btn" title="移回卡片库">×</span>`;
+  el.addEventListener("dragstart", (e) => {
+    e.dataTransfer.setData("text/plain", el.dataset.cid);
+    clearSelection();
+  });
+  el.addEventListener("click", (e) => {
+    if (e.target.classList.contains("remove-btn")) {
+      el.querySelector(".cond-tag").style.display = "none";
+      el.dataset.condition = "";
+      pool.appendChild(el);
+      e.stopPropagation();
+      return;
+    }
+    const zone = el.closest(".zone");
+    if (zone && zone.dataset.zone === "review") { openCond(el); e.stopPropagation(); return; }
+    // 点选模式：选中/取消
+    if (selectedCardEl === el) { clearSelection(); return; }
+    clearSelection();
+    selectedCardEl = el;
+    el.classList.add("selected");
+    document.querySelectorAll(".zone").forEach(z => z.classList.add("tap-target"));
+    e.stopPropagation();
+  });
+  return el;
+}
+
+function clearSelection() {
+  if (selectedCardEl) selectedCardEl.classList.remove("selected");
+  selectedCardEl = null;
+  document.querySelectorAll(".zone").forEach(z => z.classList.remove("tap-target"));
+}
+
+PRESET_CARDS.forEach(c => pool.appendChild(makeCard(c.name, c.emoji)));
+
+function addCustomCard() {
+  const inp = document.getElementById("custom-card-input");
+  const v = inp.value.trim();
+  if (!v) return;
+  pool.appendChild(makeCard(v, "⭐"));
+  inp.value = "";
+}
+
+// 拖拽落区
+document.querySelectorAll(".zone").forEach(zone => {
+  zone.addEventListener("dragover", (e) => { e.preventDefault(); zone.classList.add("drag-over"); });
+  zone.addEventListener("dragleave", () => zone.classList.remove("drag-over"));
+  zone.addEventListener("drop", (e) => {
+    e.preventDefault(); zone.classList.remove("drag-over");
+    const cid = e.dataTransfer.getData("text/plain");
+    const card = document.querySelector(`[data-cid="${cid}"]`);
+    if (card) dropInto(zone, card);
+  });
+  // 点选模式落区
+  zone.addEventListener("click", () => {
+    if (selectedCardEl) { const c = selectedCardEl; clearSelection(); dropInto(zone, c); }
+  });
+});
+// 拖回卡片库
+pool.addEventListener("dragover", (e) => e.preventDefault());
+pool.addEventListener("drop", (e) => {
+  e.preventDefault();
+  const cid = e.dataTransfer.getData("text/plain");
+  const card = document.querySelector(`[data-cid="${cid}"]`);
+  if (card) { card.dataset.condition = ""; card.querySelector(".cond-tag").style.display = "none"; pool.appendChild(card); }
+});
+document.body.addEventListener("click", (e) => {
+  if (!e.target.closest(".action-card") && !e.target.closest(".zone")) clearSelection();
+});
+
+function dropInto(zone, card) {
+  zone.querySelector(".cards").appendChild(card);
+  if (zone.dataset.zone !== "review") { card.dataset.condition = ""; card.querySelector(".cond-tag").style.display = "none"; }
+  else if (!card.dataset.condition) { openCond(card); }
+}
+
+// 条件弹层
+function openCond(el) {
+  condTargetEl = el;
+  document.getElementById("cond-title").textContent = `「${el.dataset.name}」的审批条件`;
+  document.getElementById("cond-input").value = el.dataset.condition || "";
+  document.getElementById("cond-mask").style.display = "flex";
+}
+function closeCond() { document.getElementById("cond-mask").style.display = "none"; condTargetEl = null; }
+function saveCond() {
+  if (condTargetEl) {
+    const v = document.getElementById("cond-input").value.trim();
+    condTargetEl.dataset.condition = v;
+    const tag = condTargetEl.querySelector(".cond-tag");
+    if (v) { tag.textContent = v.length > 12 ? v.slice(0, 12) + "…" : v; tag.style.display = ""; }
+    else tag.style.display = "none";
+  }
+  closeCond();
+}
+
+// 行业选择
+const indRow = document.getElementById("industry-row");
+indRow.querySelectorAll("button").forEach(b => b.addEventListener("click", () => {
+  indRow.querySelectorAll("button").forEach(x => x.classList.remove("active"));
+  b.classList.add("active");
+  document.getElementById("industry-custom").value = "";
+}));
+
+function collectZones() {
+  const out = {};
+  document.querySelectorAll(".zone").forEach(zone => {
+    out[zone.dataset.zone] = [...zone.querySelectorAll(".action-card")].map(c => ({
+      name: c.dataset.name, condition: c.dataset.condition || "",
+    }));
+  });
+  return out;
+}
+
+let lastMarkdown = "";
+async function generate() {
+  const zones = collectZones();
+  const total = zones.auto.length + zones.review.length + zones.forbidden.length;
+  if (!total) { showToast("先把至少一张卡片放进任一区域"); return; }
+  const custom = document.getElementById("industry-custom").value.trim();
+  const activeBtn = indRow.querySelector("button.active");
+  const industry = custom || (activeBtn ? activeBtn.dataset.v : "通用中小企业");
+
+  const btn = document.getElementById("gen-btn");
+  btn.disabled = true;
+  document.getElementById("loading-box").style.display = "block";
+  document.getElementById("result-wrap").style.display = "none";
+  try {
+    const resp = await fetch("/api/generate", {
+      method: "POST", headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ industry, zones }),
+    });
+    const data = await resp.json();
+    if (!resp.ok || data.error) throw new Error(data.error || "服务异常");
+    lastMarkdown = data.markdown;
+    document.getElementById("result-content").innerHTML = mdToHtml(data.markdown);
+    document.getElementById("result-wrap").style.display = "block";
+    document.getElementById("result-wrap").scrollIntoView({ behavior: "smooth" });
+  } catch (e) {
+    showToast("生成失败：" + e.message);
+  } finally {
+    btn.disabled = false;
+    document.getElementById("loading-box").style.display = "none";
+  }
+}
+
+// 极简 Markdown → HTML（含表格）
+function mdToHtml(md) {
+  const esc = (s) => s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+  const lines = md.split("\n");
+  let html = "", inUl = false, inOl = false, inCode = false, codeBuf = [], tableBuf = [];
+  const closeLists = () => { if (inUl) { html += "</ul>"; inUl = false; } if (inOl) { html += "</ol>"; inOl = false; } };
+  const flushTable = () => {
+    if (!tableBuf.length) return;
+    const rows = tableBuf.filter(r => !/^\s*\|?[\s:|-]+\|?\s*$/.test(r));
+    let t = '<table style="border-collapse:collapse;width:100%;margin:10px 0;font-size:13.5px">';
+    rows.forEach((r, i) => {
+      const cells = r.replace(/^\s*\|/, "").replace(/\|\s*$/, "").split("|").map(c => c.trim());
+      const tag = i === 0 ? "th" : "td";
+      const st = i === 0
+        ? 'style="border:1px solid #e0d5c5;padding:6px 8px;background:#efe7da;text-align:left"'
+        : 'style="border:1px solid #e0d5c5;padding:6px 8px"';
+      t += "<tr>" + cells.map(c => `<${tag} ${st}>` + esc(c).replace(/\*\*(.+?)\*\*/g, "<strong>$1</strong>") + `</${tag}>`).join("") + "</tr>";
+    });
+    t += "</table>";
+    html += t; tableBuf = [];
+  };
+  for (const raw of lines) {
+    if (!inCode && /^\s*\|.*\|\s*$/.test(raw)) { closeLists(); tableBuf.push(raw); continue; }
+    flushTable();
+    if (raw.trim().startsWith("```")) {
+      if (inCode) { html += "<pre>" + esc(codeBuf.join("\n")) + "</pre>"; codeBuf = []; inCode = false; }
+      else { closeLists(); inCode = true; }
+      continue;
+    }
+    if (inCode) { codeBuf.push(raw); continue; }
+    const line = raw;
+    const inline = (s) => esc(s).replace(/\*\*(.+?)\*\*/g, "<strong>$1</strong>").replace(/`(.+?)`/g, "<code>$1</code>");
+    if (/^###\s/.test(line)) { closeLists(); html += "<h3>" + inline(line.replace(/^###\s*/, "")) + "</h3>"; }
+    else if (/^##\s/.test(line)) { closeLists(); html += "<h2>" + inline(line.replace(/^##\s*/, "")) + "</h2>"; }
+    else if (/^#\s/.test(line)) { closeLists(); html += "<h2>" + inline(line.replace(/^#\s*/, "")) + "</h2>"; }
+    else if (/^\s*[-*]\s/.test(line)) { if (!inUl) { closeLists(); html += "<ul>"; inUl = true; } html += "<li>" + inline(line.replace(/^\s*[-*]\s*/, "")) + "</li>"; }
+    else if (/^\s*\d+[.、]\s/.test(line)) { if (!inOl) { closeLists(); html += "<ol>"; inOl = true; } html += "<li>" + inline(line.replace(/^\s*\d+[.、]\s*/, "")) + "</li>"; }
+    else if (!line.trim()) { closeLists(); }
+    else { closeLists(); html += "<p>" + inline(line) + "</p>"; }
+  }
+  if (inCode) html += "<pre>" + esc(codeBuf.join("\n")) + "</pre>";
+  flushTable();
+  closeLists();
+  return html;
+}
+
+async function copyRich() {
+  const el = document.getElementById("result-content");
+  try {
+    if (navigator.clipboard && window.ClipboardItem) {
+      await navigator.clipboard.write([new ClipboardItem({
+        "text/html": new Blob([el.innerHTML], { type: "text/html" }),
+        "text/plain": new Blob([lastMarkdown], { type: "text/plain" }),
+      })]);
+      showToast("已复制（带格式），可直接粘贴到公众号/飞书/Word");
+      return;
+    }
+    throw new Error("no ClipboardItem");
+  } catch { copyPlain(); }
+}
+function copyPlain() {
+  const ta = document.createElement("textarea");
+  ta.value = lastMarkdown; document.body.appendChild(ta); ta.select();
+  document.execCommand("copy"); ta.remove();
+  showToast("已复制纯文本");
+}
+let toastTimer;
+function showToast(msg) {
+  const t = document.getElementById("toast");
+  t.textContent = msg; t.classList.add("show");
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => t.classList.remove("show"), 2600);
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,297 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AI 时间机器 — 上传一张老照片，找回它的故事</title>
+<style>
+  :root {
+    --bg: #f7f2ea; --ink: #3d3835; --brand: #a0522d; --brand-dark: #7a3d20;
+    --card-bg: #fffdf9; --border: #e0d5c5; --sepia: #8a6f52;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { font-family: "PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif; background: var(--bg); color: var(--ink); line-height: 1.7; padding-bottom: 60px; }
+  header { text-align: center; padding: 36px 16px 6px; }
+  header h1 { font-size: 24px; color: var(--brand-dark); letter-spacing: 1px; }
+  header p { font-size: 14px; color: #8a7f72; margin-top: 8px; max-width: 520px; margin-left: auto; margin-right: auto; }
+  .container { max-width: 680px; margin: 0 auto; padding: 16px; }
+  .step-label { font-size: 15px; font-weight: 700; color: var(--brand-dark); margin: 24px 0 10px; display: flex; align-items: center; gap: 8px; }
+  .step-label .num { background: var(--brand); color: #fff; width: 22px; height: 22px; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; font-size: 13px; flex-shrink: 0; }
+
+  /* 上传区 */
+  .upload-box {
+    border: 2.5px dashed var(--border); border-radius: 14px; background: var(--card-bg);
+    padding: 40px 16px; text-align: center; cursor: pointer; transition: border-color .2s;
+  }
+  .upload-box:hover, .upload-box.drag-over { border-color: var(--brand); }
+  .upload-box .icon { font-size: 40px; }
+  .upload-box .main { font-size: 15px; margin-top: 8px; }
+  .upload-box .sub { font-size: 12.5px; color: #9c8f80; margin-top: 4px; }
+  #file-input { display: none; }
+  .preview-wrap { display: none; text-align: center; }
+  .preview-wrap img {
+    max-width: 100%; max-height: 340px; border-radius: 10px; border: 6px solid #fff;
+    box-shadow: 0 4px 18px rgba(61,56,53,.18);
+  }
+  .preview-wrap .re-upload { margin-top: 10px; font-size: 13px; color: var(--brand); cursor: pointer; text-decoration: underline; }
+
+  .act-btn {
+    display: block; margin: 20px auto 0; background: linear-gradient(135deg,var(--brand),var(--brand-dark));
+    color: #fff; border: none; font-size: 16px; padding: 13px 42px; border-radius: 28px;
+    cursor: pointer; letter-spacing: 2px; box-shadow: 0 4px 14px rgba(160,82,45,.35);
+  }
+  .act-btn:disabled { opacity: .55; cursor: wait; }
+
+  .loading-box { display: none; text-align: center; padding: 26px 0; color: #8a7f72; font-size: 14px; }
+  .spinner { width: 30px; height: 30px; border: 3px solid var(--border); border-top-color: var(--brand); border-radius: 50%; margin: 0 auto 12px; animation: spin .8s linear infinite; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  /* 线索卡 */
+  .clue-section { display: none; }
+  .era-banner {
+    background: linear-gradient(135deg, #6b4a2f, #8a6f52); color: #f7f0e3; border-radius: 12px;
+    padding: 16px 18px; margin-bottom: 14px;
+  }
+  .era-banner .era { font-size: 20px; font-weight: 700; letter-spacing: 1px; }
+  .era-banner .reason { font-size: 13px; opacity: .85; margin-top: 4px; }
+  .clue-card {
+    background: var(--card-bg); border: 1px solid var(--border); border-left: 4px solid var(--sepia);
+    border-radius: 10px; padding: 12px 14px; margin-bottom: 10px; display: flex; gap: 10px; align-items: flex-start;
+  }
+  .clue-card input[type=checkbox] { margin-top: 5px; accent-color: var(--brand); width: 16px; height: 16px; flex-shrink: 0; }
+  .clue-card .type { font-size: 12px; color: #fff; background: var(--sepia); border-radius: 4px; padding: 1px 7px; display: inline-block; }
+  .clue-card .detail { font-size: 14px; margin-top: 5px; }
+  .clue-card .infer { font-size: 13px; color: #8a7f72; margin-top: 3px; }
+  .note-input { width: 100%; border: 1px solid var(--border); border-radius: 10px; background: var(--card-bg); padding: 12px; font-size: 14px; outline: none; resize: vertical; min-height: 70px; font-family: inherit; }
+
+  /* 故事结果 */
+  .story-section { display: none; }
+  .story-card {
+    background: #fffef8; border: 1px solid #e8dcc3; border-radius: 12px; padding: 26px 22px;
+    box-shadow: 0 3px 14px rgba(61,56,53,.08); position: relative;
+  }
+  .story-card::before { content: "❝"; position: absolute; top: 8px; left: 14px; font-size: 34px; color: #d8c9ae; }
+  .story-card .story-text { font-size: 15px; text-indent: 2em; white-space: pre-wrap; }
+  .quote-line { text-align: center; font-size: 16px; color: var(--brand-dark); font-weight: 700; margin: 18px 0 6px; letter-spacing: 1px; }
+  .titles-box { margin-top: 16px; }
+  .titles-box .t-item {
+    background: var(--card-bg); border: 1px solid var(--border); border-radius: 8px; padding: 9px 13px;
+    font-size: 13.5px; margin-bottom: 8px; cursor: pointer; transition: border-color .15s;
+  }
+  .titles-box .t-item:hover { border-color: var(--brand); }
+  .titles-box .t-item::after { content: " （点击复制）"; font-size: 11px; color: #b0a494; }
+  .result-toolbar { display: flex; gap: 10px; margin-top: 18px; flex-wrap: wrap; justify-content: center; }
+  .result-toolbar button { border: 1px solid var(--brand); background: #fff; color: var(--brand); padding: 9px 20px; border-radius: 20px; font-size: 13.5px; cursor: pointer; }
+  .result-toolbar button.primary { background: var(--brand); color: #fff; }
+
+  .toast { position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%); background: #3d3835; color: #fff; padding: 10px 22px; border-radius: 22px; font-size: 13.5px; opacity: 0; pointer-events: none; transition: opacity .3s; z-index: 99; }
+  .toast.show { opacity: .94; }
+  footer { text-align: center; font-size: 12px; color: #b0a494; margin-top: 44px; }
+  .privacy-note { text-align: center; font-size: 12px; color: #9c8f80; margin-top: 10px; }
+</style>
+</head>
+<body>
+<header>
+  <h1>📷 AI 时间机器</h1>
+  <p>上传一张老照片，AI 像侦探一样从服饰、建筑、物件里找线索，推测年代，再把它的故事讲给你听。</p>
+</header>
+
+<div class="container">
+  <div class="step-label"><span class="num">1</span>上传老照片</div>
+  <div class="upload-box" id="upload-box" onclick="document.getElementById('file-input').click()">
+    <div class="icon">🖼️</div>
+    <div class="main">点这里选择照片，或把照片拖进来</div>
+    <div class="sub">支持 jpg / png / webp · 照片只用于本次识别，不会被保存</div>
+  </div>
+  <div class="preview-wrap" id="preview-wrap">
+    <img id="preview-img" alt="老照片预览">
+    <div class="re-upload" onclick="resetAll()">换一张照片</div>
+  </div>
+  <input type="file" id="file-input" accept="image/png,image/jpeg,image/webp">
+  <button class="act-btn" id="analyze-btn" style="display:none" onclick="analyze()">🔍 开始找线索</button>
+
+  <div class="loading-box" id="loading-analyze">
+    <div class="spinner"></div>
+    <div>AI 侦探正在放大镜下观察照片，约需 20–40 秒…</div>
+  </div>
+
+  <div class="clue-section" id="clue-section">
+    <div class="step-label"><span class="num">2</span>核对 AI 找到的线索</div>
+    <div class="era-banner">
+      <div class="era" id="era-text"></div>
+      <div class="reason" id="era-reason"></div>
+      <div class="reason" id="scene-guess"></div>
+    </div>
+    <div id="clue-list"></div>
+    <div class="step-label" style="margin-top:18px"><span class="num">3</span>补充你知道的（选填）</div>
+    <textarea class="note-input" id="user-note" maxlength="200" placeholder="比如：这是我爷爷1988年在县城照相馆拍的；照片里的街道现在成了步行街…"></textarea>
+    <button class="act-btn" id="story-btn" onclick="genStory()">✨ 生成今昔故事</button>
+    <div class="loading-box" id="loading-story">
+      <div class="spinner"></div>
+      <div>正在把线索写成故事…</div>
+    </div>
+  </div>
+
+  <div class="story-section" id="story-section">
+    <div class="step-label"><span class="num">4</span>这张照片的故事</div>
+    <div class="story-card"><div class="story-text" id="story-text"></div></div>
+    <div class="quote-line" id="quote-line"></div>
+    <div class="titles-box" id="titles-box"></div>
+    <div class="result-toolbar">
+      <button class="primary" onclick="copyStory()">📋 复制故事全文</button>
+      <button onclick="genStory()">🔄 重写一版</button>
+      <button onclick="resetAll()">📷 再来一张</button>
+    </div>
+  </div>
+
+  <p class="privacy-note">🔒 照片全程只在你的浏览器和单次请求中流转，服务器不保存任何图片。</p>
+  <footer>本工具由「Lang商业实验室」出品 · AI 推测仅供参考，欢迎在评论区晒出你的老照片故事</footer>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+let imgDataUrl = "";
+let lastAnalysis = null;
+let lastStory = null;
+
+const fileInput = document.getElementById("file-input");
+const uploadBox = document.getElementById("upload-box");
+
+fileInput.addEventListener("change", () => { if (fileInput.files[0]) loadFile(fileInput.files[0]); });
+uploadBox.addEventListener("dragover", (e) => { e.preventDefault(); uploadBox.classList.add("drag-over"); });
+uploadBox.addEventListener("dragleave", () => uploadBox.classList.remove("drag-over"));
+uploadBox.addEventListener("drop", (e) => {
+  e.preventDefault(); uploadBox.classList.remove("drag-over");
+  const f = e.dataTransfer.files[0];
+  if (f && /^image\//.test(f.type)) loadFile(f);
+});
+
+function loadFile(file) {
+  const reader = new FileReader();
+  reader.onload = () => {
+    const img = new Image();
+    img.onload = () => {
+      // 压到长边 ≤1024，控制请求体积
+      const maxSide = 1024;
+      let { width: w, height: h } = img;
+      if (Math.max(w, h) > maxSide) { const r = maxSide / Math.max(w, h); w = Math.round(w * r); h = Math.round(h * r); }
+      const canvas = document.createElement("canvas");
+      canvas.width = w; canvas.height = h;
+      canvas.getContext("2d").drawImage(img, 0, 0, w, h);
+      imgDataUrl = canvas.toDataURL("image/jpeg", 0.85);
+      document.getElementById("preview-img").src = imgDataUrl;
+      uploadBox.style.display = "none";
+      document.getElementById("preview-wrap").style.display = "block";
+      document.getElementById("analyze-btn").style.display = "block";
+      document.getElementById("clue-section").style.display = "none";
+      document.getElementById("story-section").style.display = "none";
+    };
+    img.src = reader.result;
+  };
+  reader.readAsDataURL(file);
+}
+
+function resetAll() {
+  imgDataUrl = ""; lastAnalysis = null; lastStory = null;
+  fileInput.value = "";
+  uploadBox.style.display = "block";
+  document.getElementById("preview-wrap").style.display = "none";
+  document.getElementById("analyze-btn").style.display = "none";
+  document.getElementById("clue-section").style.display = "none";
+  document.getElementById("story-section").style.display = "none";
+  window.scrollTo({ top: 0, behavior: "smooth" });
+}
+
+async function analyze() {
+  if (!imgDataUrl) { showToast("先上传一张照片"); return; }
+  const btn = document.getElementById("analyze-btn");
+  btn.disabled = true;
+  document.getElementById("loading-analyze").style.display = "block";
+  try {
+    const resp = await fetch("/api/analyze", {
+      method: "POST", headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ image: imgDataUrl }),
+    });
+    const data = await resp.json();
+    if (!resp.ok || data.error) throw new Error(data.error || "服务异常");
+    lastAnalysis = data.result;
+    renderClues(lastAnalysis);
+    btn.style.display = "none";
+    document.getElementById("clue-section").style.display = "block";
+    document.getElementById("clue-section").scrollIntoView({ behavior: "smooth" });
+  } catch (e) { showToast(e.message); }
+  finally { btn.disabled = false; document.getElementById("loading-analyze").style.display = "none"; }
+}
+
+function renderClues(a) {
+  document.getElementById("era-text").textContent = "🕰️ " + (a.era || "年代待定");
+  document.getElementById("era-reason").textContent = a.era_reason ? "依据：" + a.era_reason : "";
+  document.getElementById("scene-guess").textContent = a.scene_guess ? "场景推测：" + a.scene_guess : "";
+  const list = document.getElementById("clue-list");
+  list.innerHTML = "";
+  (a.clues || []).forEach((c, i) => {
+    const div = document.createElement("div");
+    div.className = "clue-card";
+    div.innerHTML = `<input type="checkbox" checked data-i="${i}">
+      <div><span class="type">${escapeHtml(c.type || "线索")}</span>
+      <div class="detail">${escapeHtml(c.detail || "")}</div>
+      <div class="infer">→ ${escapeHtml(c.inference || "")}</div></div>`;
+    list.appendChild(div);
+  });
+}
+
+async function genStory() {
+  if (!lastAnalysis) return;
+  const checked = [...document.querySelectorAll('#clue-list input:checked')].map(cb => lastAnalysis.clues[+cb.dataset.i]).filter(Boolean);
+  const btn = document.getElementById("story-btn");
+  btn.disabled = true;
+  document.getElementById("loading-story").style.display = "block";
+  try {
+    const resp = await fetch("/api/story", {
+      method: "POST", headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        era: lastAnalysis.era, scene: lastAnalysis.scene_guess,
+        clues: checked, userNote: document.getElementById("user-note").value.trim(),
+      }),
+    });
+    const data = await resp.json();
+    if (!resp.ok || data.error) throw new Error(data.error || "服务异常");
+    lastStory = data.result;
+    document.getElementById("story-text").textContent = lastStory.story || "";
+    document.getElementById("quote-line").textContent = lastStory.quote ? "「" + lastStory.quote + "」" : "";
+    const tb = document.getElementById("titles-box");
+    tb.innerHTML = "";
+    (lastStory.titles || []).forEach(t => {
+      const d = document.createElement("div");
+      d.className = "t-item"; d.textContent = t;
+      d.addEventListener("click", () => { copyText(t); showToast("标题已复制"); });
+      tb.appendChild(d);
+    });
+    document.getElementById("story-section").style.display = "block";
+    document.getElementById("story-section").scrollIntoView({ behavior: "smooth" });
+  } catch (e) { showToast(e.message); }
+  finally { btn.disabled = false; document.getElementById("loading-story").style.display = "none"; }
+}
+
+function copyStory() {
+  if (!lastStory) return;
+  const text = (lastStory.story || "") + "\n\n—— " + (lastStory.quote || "") + "\n（由 AI 时间机器生成）";
+  copyText(text); showToast("故事已复制，去发朋友圈吧");
+}
+function copyText(t) {
+  const ta = document.createElement("textarea");
+  ta.value = t; document.body.appendChild(ta); ta.select();
+  document.execCommand("copy"); ta.remove();
+}
+function escapeHtml(s) { return String(s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;"); }
+let toastTimer;
+function showToast(msg) {
+  const t = document.getElementById("toast");
+  t.textContent = msg; t.classList.add("show");
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => t.classList.remove("show"), 2600);
+}
+</script>
+</body>
+</html>

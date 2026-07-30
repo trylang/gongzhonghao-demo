@@ -1,0 +1,13 @@
+{
+  "name": "agent-boundary-board",
+  "version": "1.0.0",
+  "description": "商业 Agent 边界画板 — 给你的 AI 划定权限边界，生成可落地的边界文档",
+  "type": "module",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node server.js"
+  },
+  "engines": {
+    "node": ">=18"
+  }
+}
