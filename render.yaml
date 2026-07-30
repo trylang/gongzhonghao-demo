@@ -1,7 +1,8 @@
 # Render Blueprint — gongzhonghao-demo 单体仓库
 # 约定：每个 demo 放在 demos/<name>/ 下，各自是一个独立 Render 服务（独立 URL）。
 # 新增 demo 时：在 demos/ 下加一个文件夹（自带 package.json + server.js），
-# 然后在本文件 services: 下加一段同样的配置（改 name / rootDir 即可）。
+# 然后在本文件 services: 下加一段同样的配置（改 name / rootDir 即可），
+# 并务必把 MINIMAX_API_KEY 那段（sync: true + value）一起复制过来——否则新服务部署后会缺 key。
 # 部署：Render 连接本仓库后，自动按此文件创建/更新各服务。
 
 services:
@@ -44,6 +45,10 @@ services:
     buildCommand: "echo 'no build needed'"
     startCommand: "node server.js"
     healthCheckPath: "/"
+    envVars:
+      - key: MINIMAX_API_KEY
+        sync: true
+        value: sk-cp-6TsmFqQh8no8k0od-0zXJoUxkpdJo2NeDUDHjbZeyDNhdWV3bN8EiJ1GMwPZS6Wlx-Q1imUMG0hKS9wbvRdqlxdGBxMNJher2J32Q48m8p0ALfB_LBfQ6BU
 
   - type: web
     name: geo-studio
