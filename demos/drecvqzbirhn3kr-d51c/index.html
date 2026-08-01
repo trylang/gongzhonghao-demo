@@ -1,0 +1,156 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LLM 路由器成本与效率对比 Demo</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
+            background-color: #f5f5f5;
+            color: #333;
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+        }
+        h1 {
+            text-align: center;
+            margin-bottom: 30px;
+            color: #2c3e50;
+        }
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+            background-color: #fff;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        }
+        form {
+            display: flex;
+            flex-direction: column;
+        }
+        label {
+            margin-bottom: 8px;
+            font-weight: 500;
+        }
+        input[type="text"], select, textarea {
+            padding: 10px;
+            margin-bottom: 20px;
+            border: 1px solid #bdc3c7;
+            border-radius: 4px;
+            font-size: 16px;
+            resize: vertical;
+        }
+        textarea {
+            height: 100px;
+        }
+        button {
+            padding: 12px;
+            background-color: #3498db;
+            color: #fff;
+            border: none;
+            border-radius: 4px;
+            font-size: 16px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+        button:hover {
+            background-color: #2980b9;
+        }
+        .loading {
+            text-align: center;
+            margin-top: 20px;
+            font-size: 18px;
+            color: #7f8c8d;
+        }
+        .result {
+            margin-top: 30px;
+            padding: 20px;
+            background-color: #ecf0f1;
+            border-radius: 4px;
+            white-space: pre-wrap;
+        }
+        .error {
+            margin-top: 30px;
+            padding: 20px;
+            background-color: #e74c3c;
+            color: #fff;
+            border-radius: 4px;
+            white-space: pre-wrap;
+        }
+    </style>
+</head>
+<body>
+    <h1>LLM 路由器成本与效率对比 Demo</h1>
+    <div class="container">
+        <form id="generateForm">
+            <label for="taskType">任务类型</label>
+            <select id="taskType" name="taskType" required>
+                <option value="客服问答">客服问答</option>
+                <option value="简单文案">简单文案</option>
+                <option value="复杂文案">复杂文案</option>
+                <option value="数据分析">数据分析</option>
+            </select>
+
+            <label for="prompt">提示词</label>
+            <textarea id="prompt" name="prompt" placeholder="请输入您的提示词" required></textarea>
+
+            <label for="modelSelection">模型选择</label>
+            <select id="modelSelection" name="modelSelection" required>
+                <option value="cheap">Cheap 模型</option>
+                <option value="base">Base 模型</option>
+                <option value="pro">Pro 模型</option>
+                <option value="reasoning">Reasoning 模型</option>
+            </select>
+
+            <button type="submit">生成 / 运行</button>
+        </form>
+
+        <div id="loading" class="loading" style="display: none;">正在生成...</div>
+        <div id="error" class="error" style="display: none;"></div>
+        <div id="result" class="result" style="display: none;"></div>
+    </div>
+
+    <script>
+        document.getElementById('generateForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            document.getElementById('loading').style.display = 'block';
+            document.getElementById('error').style.display = 'none';
+            document.getElementById('result').style.display = 'none';
+
+            const data = {
+                taskType: document.getElementById('taskType').value,
+                prompt: document.getElementById('prompt').value,
+                modelSelection: document.getElementById('modelSelection').value
+            };
+
+            fetch('/api/generate', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(data)
+            })
+            .then(response => response.json())
+            .then(data => {
+                document.getElementById('loading').style.display = 'none';
+                if (data.result) {
+                    document.getElementById('result').style.display = 'block';
+                    document.getElementById('result').textContent = data.result;
+                } else {
+                    document.getElementById('error').style.display = 'block';
+                    document.getElementById('error').textContent = '发生错误，请稍后重试。';
+                }
+            })
+            .catch(error => {
+                document.getElementById('loading').style.display = 'none';
+                document.getElementById('error').style.display = 'block';
+                document.getElementById('error').textContent = '网络错误，请检查您的连接。';
+            });
+        });
+    </script>
+</body>
+</html

@@ -165,3 +165,17 @@ services:
       - key: MINIMAX_API_KEY
         sync: true
         value: sk-cp-6TsmFqQh8no8k0od-0zXJoUxkpdJo2NeDUDHjbZeyDNhdWV3bN8EiJ1GMwPZS6Wlx-Q1imUMG0hKS9wbvRdqlxdGBxMNJher2J32Q48m8p0ALfB_LBfQ6BU
+
+  - type: web
+    name: drecvqzbirhn3kr-d51c
+    runtime: node
+    plan: free
+    branch: main
+    rootDir: demos/drecvqzbirhn3kr-d51c
+    buildCommand: npm install
+    startCommand: npm start
+    healthCheckPath: /healthz
+    envVars:
+      - key: MINIMAX_API_KEY
+        sync: true
+        value: sk-cp-6TsmFqQh8no8k0od-0zXJoUxkpdJo2NeDUDHjbZeyDNhdWV3bN8EiJ1GMwPZS6Wlx-Q1imUMG0hKS9wbvRdqlxdGBxMNJher2J32Q48m8p0ALfB_LBfQ6BU
