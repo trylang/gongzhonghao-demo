@@ -1,0 +1,210 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LLM 路由器成本与效果对比工具</title>
+    <style>
+        body { 
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", sans-serif; 
+            background-color: #f5f5f5; 
+            color: #333; 
+            margin: 0; 
+            padding: 20px; 
+            display: flex; 
+            flex-direction: column; 
+            min-height: 100vh; 
+        }
+        header { 
+            text-align: center; 
+            margin-bottom: 20px; 
+        }
+        h1 { 
+            font-size: 1.5rem; 
+            margin-bottom: 10px; 
+        }
+        p { 
+            font-size: 1rem; 
+            margin-bottom: 20px; 
+        }
+        form { 
+            background: #fff; 
+            padding: 20px; 
+            border-radius: 8px; 
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1); 
+            margin-bottom: 20px; 
+        }
+        .form-group { 
+            margin-bottom: 15px; 
+        }
+        label { 
+            display: block; 
+            margin-bottom: 5px; 
+            font-weight: 500; 
+        }
+        input[type="text"], select, textarea { 
+            width: 100%; 
+            padding: 10px; 
+            border: 1px solid #ccc; 
+            border-radius: 4px; 
+            font-size: 1rem; 
+        }
+        textarea { 
+            resize: vertical; 
+            height: 100px; 
+        }
+        button { 
+            background-color: #4CAF50; 
+            color: white; 
+            padding: 12px 20px; 
+            border: none; 
+            border-radius: 4px; 
+            cursor: pointer; 
+            font-size: 1rem; 
+            width: 100%; 
+        }
+        button:hover { 
+            background-color: #45a049; 
+        }
+        .loading { 
+            background-color: #4CAF50; 
+            opacity: 0.6; 
+            pointer-events: none; 
+        }
+        .results { 
+            background: #fff; 
+            padding: 20px; 
+            border-radius: 8px; 
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1); 
+        }
+        table { 
+            width: 100%; 
+            border-collapse: collapse; 
+            margin-top: 10px; 
+        }
+        th, td { 
+            text-align: left; 
+            padding: 8px; 
+            border-bottom: 1px solid #ddd; 
+        }
+        th { 
+            background-color: #f2f2f2; 
+        }
+        .error { 
+            color: red; 
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>LLM 路由器成本与效果对比工具</h1>
+        <p>模拟不同模型调度策略的成本、命中率和回答差异对比</p>
+    </header>
+    <form id="generateForm">
+        <div class="form-group">
+            <label for="prompt">提示词</label>
+            <textarea id="prompt" name="prompt" placeholder="请输入提示词，例如：'请写一篇关于 AI 路由器的文章'" required></textarea>
+        </div>
+        <div class="form-group">
+            <label for="modelType">模型类型</label>
+            <select id="modelType" name="modelType" required>
+                <option value="cheap">Cheap 模型</option>
+                <option value="base">Base 模型</option>
+                <option value="pro">Pro 模型</option>
+                <option value="reasoning">Reasoning 模型</option>
+            </select>
+        </div>
+        <div class="form-group">
+            <label for="routerEnabled">启用路由器</label>
+            <select id="routerEnabled" name="routerEnabled" required>
+                <option value="true">是</option>
+                <option value="false">否</option>
+            </select>
+        </div>
+        <button type="submit">生成 / 运行</button>
+    </form>
+    <div id="results" class="results" style="display: none;">
+        <h2>结果对比</h2>
+        <table>
+            <thead>
+                <tr>
+                    <th>指标</th>
+                    <th>单模型 + 缓存</th>
+                    <th>四档路由器</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>成本</td>
+                    <td id="costSingle"></td>
+                    <td id="costRouter"></td>
+                </tr>
+                <tr>
+                    <td>命中率</td>
+                    <td id="hitRateSingle"></td>
+                    <td id="hitRateRouter"></td>
+                </tr>
+                <tr>
+                    <td>回答差异</td>
+                    <td id="diffSingle"></td>
+                    <td id="diffRouter"></td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+    <div id="error" class="error" style="display: none;">
+        发生错误，请稍后重试。
+    </div>
+
+    <script>
+        document.getElementById('generateForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            document.getElementById('results').style.display = 'none';
+            document.getElementById('error').style.display = 'none';
+            const button = e.target.querySelector('button');
+            button.innerText = '生成中...';
+            button.disabled = true;
+            button.classList.add('loading');
+
+            const data = {
+                prompt: document.getElementById('prompt').value,
+                modelType: document.getElementById('modelType').value,
+                routerEnabled: document.getElementById('routerEnabled').value === 'true'
+            };
+
+            try {
+                const response = await fetch('/api/generate', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(data)
+                });
+
+                if (!response.ok) {
+                    throw new Error('网络响应不正常');
+                }
+
+                const result = await response.json();
+                const { costSingle, hitRateSingle, diffSingle, costRouter, hitRateRouter, diffRouter } = result;
+
+                document.getElementById('costSingle').innerText = costSingle;
+                document.getElementById('hitRateSingle').innerText = hitRateSingle;
+                document.getElementById('diffSingle').innerText = diffSingle;
+                document.getElementById('costRouter').innerText = costRouter;
+                document.getElementById('hitRateRouter').innerText = hitRateRouter;
+                document.getElementById('diffRouter').innerText = diffRouter;
+
+                document.getElementById('results').style.display = 'block';
+            } catch (error) {
+                console.error(error);
+                document.getElementById('error').style.display = 'block';
+            } finally {
+                button.innerText = '生成 / 运行';
+                button.disabled = false;
+                button.classList.remove('loading');
+            }
+        });
+    </script>
+</body>
+</html
