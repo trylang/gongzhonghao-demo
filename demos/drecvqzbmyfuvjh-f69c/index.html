@@ -1,0 +1,168 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>黄酒项目语音问答 Demo</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
+            background-color: #f5f5f5;
+            color: #333;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+        }
+        header {
+            background-color: #4CAF50;
+            color: white;
+            padding: 1rem;
+            text-align: center;
+        }
+        main {
+            flex: 1;
+            padding: 1rem;
+            max-width: 600px;
+            margin: auto;
+            background-color: white;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+        form {
+            display: flex;
+            flex-direction: column;
+        }
+        label {
+            margin-top: 1rem;
+            font-weight: bold;
+        }
+        input, select, textarea {
+            padding: 0.5rem;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            margin-top: 0.5rem;
+        }
+        textarea {
+            resize: vertical;
+            height: 100px;
+        }
+        button {
+            margin-top: 1.5rem;
+            padding: 0.75rem;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 1rem;
+        }
+        button:disabled {
+            background-color: #66bb6a;
+            cursor: not-allowed;
+        }
+        .response {
+            margin-top: 2rem;
+            padding: 1rem;
+            background-color: #e8f5e9;
+            border-left: 4px solid #4CAF50;
+            white-space: pre-wrap;
+        }
+        .loading {
+            margin-top: 2rem;
+            padding: 1rem;
+            background-color: #fff3e0;
+            border-left: 4px solid #ffa726;
+        }
+        .error {
+            margin-top: 2rem;
+            padding: 1rem;
+            background-color: #ffebee;
+            border-left: 4px solid #e53935;
+            color: #c62828;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>黄酒项目语音问答 Demo</h1>
+    </header>
+    <main>
+        <form id="query-form">
+            <label for="question-type">问题类型</label>
+            <select id="question-type" required>
+                <option value="">请选择问题类型</option>
+                <option value="价格">价格相关</option>
+                <option value="产品">产品信息</option>
+                <option value="购买">购买方式</option>
+                <option value="其他">其他</option>
+            </select>
+
+            <label for="specific-question">具体问题</label>
+            <textarea id="specific-question" placeholder="请输入您的问题" required></textarea>
+
+            <button type="submit">生成 / 运行</button>
+        </form>
+
+        <div id="response-section" class="loading" style="display:none;">
+            <p>正在生成回答，请稍候...</p>
+        </div>
+
+        <div id="error-section" class="error" style="display:none;">
+            <p>发生错误，请稍后重试。</p>
+        </div>
+
+        <div id="result-section" class="response" style="display:none;">
+            <!-- 回答内容将显示在这里 -->
+        </div>
+    </main>
+
+    <script>
+        document.getElementById('query-form').addEventListener('submit', async function(event) {
+            event.preventDefault();
+            const questionType = document.getElementById('question-type').value;
+            const specificQuestion = document.getElementById('specific-question').value;
+
+            if (!questionType || !specificQuestion) {
+                alert('请填写所有字段');
+                return;
+            }
+
+            // 显示加载状态
+            document.getElementById('response-section').style.display = 'none';
+            document.getElementById('error-section').style.display = 'none';
+            const responseSection = document.getElementById('response-section');
+            responseSection.style.display = 'block';
+            responseSection.innerHTML = '<p>正在生成回答，请稍候...</p>';
+
+            // 发送 POST 请求
+            try {
+                const response = await fetch('/api/generate', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        questionType: questionType,
+                        specificQuestion: specificQuestion
+                    })
+                });
+
+                const data = await response.json();
+                if (response.ok) {
+                    // 显示结果
+                    responseSection.innerHTML = `<p>${data.result}</p>`;
+                } else {
+                    // 显示错误
+                    document.getElementById('error-section').style.display = 'block';
+                    document.getElementById('error-section').innerHTML = `<p>${data.error || '发生错误，请稍后重试。'}</p>`;
+                }
+            } catch (error) {
+                // 显示错误
+                document.getElementById('error-section').style.display = 'block';
+                document.getElementById('error-section').innerHTML = `<p>${error.message || '发生错误，请稍后重试。'}</p>`;
+            }
+        });
+    </script>
+</body>
+</html
