@@ -8,6 +8,9 @@ const app = express();
 app.use(express.json());
 app.use(express.static('.'));
 
+// Render 健康检查（render.yaml 的 healthCheckPath: /healthz 需要此路由）
+app.get('/healthz', (_req, res) => { res.status(200).send('ok'); });
+
 // 每个 demo 的"出什么成果"由 ./system_prompt.txt 决定（复制脚手架后修改此文件即可）
 const SYSTEM_PROMPT = fs.existsSync('./system_prompt.txt')
   ? fs.readFileSync('./system_prompt.txt', 'utf-8')
