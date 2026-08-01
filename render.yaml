@@ -140,10 +140,13 @@ services:
 
   - type: web
     name: drecvqzbirhn3kr-92ef
+    runtime: node
+    plan: free
+    branch: main
     rootDir: demos/drecvqzbirhn3kr-92ef
-    env: node
     buildCommand: npm install
     startCommand: npm start
+    healthCheckPath: /healthz
     envVars:
       - key: MINIMAX_API_KEY
         sync: true
