@@ -1,0 +1,177 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI 创业景气指数对比仪表盘</title>
+    <style>
+        body { 
+            font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+            background-color: #f5f7fa;
+            color: #333;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+        }
+        header {
+            background-color: #4a90e2;
+            color: white;
+            padding: 20px;
+            text-align: center;
+        }
+        main {
+            flex: 1;
+            padding: 20px;
+            max-width: 800px;
+            margin: 0 auto;
+        }
+        h1 {
+            margin-top: 0;
+        }
+        form {
+            background-color: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .form-group {
+            margin-bottom: 15px;
+        }
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+        input[type="text"], select, textarea {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            box-sizing: border-box;
+            font-size: 16px;
+        }
+        textarea {
+            resize: vertical;
+            height: 100px;
+        }
+        button {
+            background-color: #4a90e2;
+            color: white;
+            padding: 12px 20px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+            width: 100%;
+        }
+        button:hover {
+            background-color: #357abD;
+        }
+        .loading, .error {
+            margin-top: 20px;
+            padding: 15px;
+            border-radius: 4px;
+            font-size: 16px;
+        }
+        .loading {
+            background-color: #e0f7fa;
+            color: #006064;
+        }
+        .error {
+            background-color: #ffebee;
+            color: #c62828;
+        }
+        .result {
+            margin-top: 20px;
+            padding: 20px;
+            background-color: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            white-space: pre-wrap;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>AI 创业景气指数对比仪表盘</h1>
+    </header>
+    <main>
+        <form id="generate-form">
+            <div class="form-group">
+                <label for="industry">行业类型</label>
+                <select id="industry" name="industry" required>
+                    <option value="">请选择行业</option>
+                    <option value="电商">电商</option>
+                    <option value="金融">金融</option>
+                    <option value="医疗">医疗</option>
+                    <option value="教育">教育</option>
+                    <option value="制造">制造</option>
+                    <option value="其他">其他</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label for="region">所在地区</label>
+                <input type="text" id="region" name="region" placeholder="例如：北京、上海、广东" required>
+            </div>
+            <div class="form-group">
+                <label for="scale">企业规模</label>
+                <select id="scale" name="scale" required>
+                    <option value="">请选择规模</option>
+                    <option value="小型">小型（1-50人）</option>
+                    <option value="中型">中型（51-500人）</option>
+                    <option value="大型">大型（500人以上）</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label for="description">需求描述</label>
+                <textarea id="description" name="description" placeholder="请简要描述您的AI创业需求或痛点" required></textarea>
+            </div>
+            <button type="submit">生成 / 运行</button>
+        </form>
+        <div id="result-section" class="result" style="display: none;"></div>
+        <div id="loading-section" class="loading" style="display: none;">生成中，请稍候...</div>
+        <div id="error-section" class="error" style="display: none;"></div>
+    </main>
+    <script>
+        document.getElementById('generate-form').addEventListener('submit', function(e) {
+            e.preventDefault();
+            document.getElementById('result-section').style.display = 'none';
+            document.getElementById('error-section').style.display = 'none';
+            document.getElementById('loading-section').style.display = 'block';
+
+            const formData = {
+                industry: document.getElementById('industry').value,
+                region: document.getElementById('region').value,
+                scale: document.getElementById('scale').value,
+                description: document.getElementById('description').value
+            };
+
+            fetch('/api/generate', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(formData)
+            })
+            .then(response => response.json())
+            .then(data => {
+                document.getElementById('loading-section').style.display = 'none';
+                if (data.result) {
+                    document.getElementById('result-section').innerText = data.result;
+                    document.getElementById('result-section').style.display = 'block';
+                } else {
+                    document.getElementById('error-section').innerText = '生成失败，请稍后再试。';
+                    document.getElementById('error-section').style.display = 'block';
+                }
+            })
+            .catch(error => {
+                document.getElementById('loading-section').style.display = 'none';
+                document.getElementById('error-section').innerText = '网络错误，请检查您的连接。';
+                document.getElementById('error-section').style.display = 'block';
+            });
+        });
+    </script>
+</body>
+</html
