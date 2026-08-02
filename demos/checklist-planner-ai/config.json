@@ -1,0 +1,106 @@
+{
+  "title": "小生意接手工具包",
+  "subtitle": "让接手小店更轻松，避免踩坑并快速上手运营",
+  "accent": "#2f6bff",
+  "fields": [
+    {
+      "key": "businessType",
+      "label": "店铺类型",
+      "type": "select",
+      "options": [
+        "干洗店",
+        "宠物寄养",
+        "本地维修",
+        "小型分销",
+        "社区服务",
+        "其他"
+      ],
+      "placeholder": "请选择店铺类型",
+      "required": true
+    },
+    {
+      "key": "annualRevenue",
+      "label": "年营收（万元）",
+      "type": "text",
+      "placeholder": "请输入年营收，例如50",
+      "required": true
+    },
+    {
+      "key": "employeeCount",
+      "label": "员工人数",
+      "type": "text",
+      "placeholder": "请输入员工人数，例如5",
+      "required": true
+    },
+    {
+      "key": "location",
+      "label": "店铺位置",
+      "type": "text",
+      "placeholder": "请输入店铺所在城市或区域",
+      "required": false
+    },
+    {
+      "key": "keyChallenges",
+      "label": "接手面临的主要挑战",
+      "type": "textarea",
+      "placeholder": "例如核心员工离职、现金流紧张等",
+      "required": false
+    }
+  ],
+  "refine": false,
+  "result": {
+    "render": [
+      {
+        "field": "dueDiligenceChecklist",
+        "as": "section",
+        "label": "接手前尽调清单",
+        "itemRender": []
+      },
+      {
+        "field": "first30DaysPlan",
+        "as": "section",
+        "label": "接手后30天岗位手册",
+        "itemRender": []
+      },
+      {
+        "field": "pricingModel",
+        "as": "section",
+        "label": "定价与现金流测算模型",
+        "itemRender": []
+      },
+      {
+        "field": "recommendations",
+        "as": "section",
+        "label": "AI 辅助建议",
+        "itemRender": []
+      },
+      {
+        "field": "toolsAndResources",
+        "as": "cards",
+        "label": "实用工具与资源",
+        "map": {},
+        "itemRender": [
+          {
+            "fields": [
+              {
+                "field": "name",
+                "as": "heading",
+                "label": "工具名称"
+              },
+              {
+                "field": "description",
+                "as": "text",
+                "label": "描述"
+              },
+              {
+                "field": "link",
+                "as": "text",
+                "label": "链接"
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  }
+}
