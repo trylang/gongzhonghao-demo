@@ -1,0 +1,89 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <title>中小企业 AI 场景验证工具</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>
+        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; background-color: #f5f7fa; color: #333; margin: 0; padding: 0; display: flex; justify-content: center; }
+        .container { max-width: 600px; width: 100%; padding: 20px; box-sizing: border-box; }
+        h1 { text-align: center; margin-bottom: 30px; }
+        form { background: #fff; padding: 20px; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
+        .form-group { margin-bottom: 15px; }
+        label { display: block; margin-bottom: 5px; font-weight: 500; }
+        input[type="text"], select, textarea { width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box; }
+        textarea { resize: vertical; height: 100px; }
+        button { width: 100%; padding: 12px; background-color: #4a90e2; color: #fff; border: none; border-radius: 4px; font-size: 16px; cursor: pointer; }
+        button:disabled { background-color: #8bb8e8; cursor: not-allowed; }
+        .loading { text-align: center; margin-top: 20px; }
+        .error { color: #e74c3c; margin-top: 20px; text-align: center; }
+        .result { background: #fff; padding: 20px; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); white-space: pre-wrap; margin-top: 20px; }
+        @media (max-width: 600px) { .container { padding: 15px; } }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>中小企业 AI 场景验证工具</h1>
+        <form id="generate-form">
+            <div class="form-group">
+                <label for="business">业务场景</label>
+                <input type="text" id="business" name="business" placeholder="例如：黄酒文案">
+            </div>
+            <div class="form-group">
+                <label for="questions">问题集（每行一个问题）</label>
+                <textarea id="questions" name="questions" placeholder="例如：\n1. 为冬季小酌场景的黄酒写短视频标题\n2. 客户问代州黄酒的保质期\n3. 写一段 100 字的朋友圈推广文案"></textarea>
+            </div>
+            <div class="form-group">
+                <label for="models">选择模型</label>
+                <select id="models" name="models">
+                    <option value="模型A">模型A</option>
+                    <option value="模型B">模型B</option>
+                    <option value="模型C">模型C</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label for="prompts">提示词模板</label>
+                <textarea id="prompts" name="prompts" placeholder="例如：请为{问题}写一段文案"></textarea>
+            </div>
+            <button type="submit">生成 / 运行</button>
+        </form>
+        <div id="result-section" style="display:none;">
+            <div class="result" id="result"></div>
+        </div>
+        <div class="loading" id="loading" style="display:none;">
+            <p>正在生成，请稍候...</p>
+        </div>
+        <div class="error" id="error" style="display:none;"></div>
+    </div>
+    <script>
+        document.getElementById('generate-form').addEventListener('submit', function(e) {
+            e.preventDefault();
+            document.getElementById('result-section').style.display = 'none';
+            document.getElementById('error').style.display = 'none';
+            document.getElementById('loading').style.display = 'block';
+            const data = {
+                business: document.getElementById('business').value,
+                questions: document.getElementById('questions').value,
+                models: document.getElementById('models').value,
+                prompts: document.getElementById('prompts').value
+            };
+            fetch('/api/generate', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(data)
+            })
+            .then(response => response.json())
+            .then(data => {
+                document.getElementById('result').innerText = data.result;
+                document.getElementById('result-section').style.display = 'block';
+                document.getElementById('loading').style.display = 'none';
+            })
+            .catch(error => {
+                document.getElementById('error').innerText = '发生错误，请稍后再试。';
+                document.getElementById('error').style.display = 'block';
+                document.getElementById('loading').style.display = 'none';
+            });
+        });
+    </script>
+</body>
+</html
