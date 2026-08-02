@@ -1,0 +1,108 @@
+{
+  "title": "为黄酒项目打造智能语音客服原型",
+  "subtitle": "通过模拟真实对话场景，降低中老年用户咨询门槛，提升客户服务体验",
+  "accent": "#FFA500",
+  "fields": [
+    {
+      "key": "customerQuery",
+      "label": "客户咨询问题",
+      "type": "textarea",
+      "placeholder": "请输入客户提出的问题，例如“我上周买的黄酒有问题”",
+      "required": true
+    },
+    {
+      "key": "customerAgeGroup",
+      "label": "客户年龄段",
+      "type": "radio",
+      "options": [
+        "18-30岁",
+        "31-50岁",
+        "51岁及以上"
+      ],
+      "required": true
+    },
+    {
+      "key": "preferredResponseType",
+      "label": "客户偏好回复方式",
+      "type": "checkbox",
+      "options": [
+        "文字回复",
+        "语音回复"
+      ],
+      "required": false
+    },
+    {
+      "key": "dialect",
+      "label": "客户使用的方言",
+      "type": "select",
+      "options": [
+        "普通话",
+        "山西话",
+        "其他方言"
+      ],
+      "placeholder": "请选择",
+      "required": false
+    }
+  ],
+  "refine": false,
+  "result": {
+    "render": [
+      {
+        "field": "responseSummary",
+        "as": "heading",
+        "label": "AI 客服回复总结"
+      },
+      {
+        "field": "responseAnalysis",
+        "as": "section",
+        "label": "回复分析与建议",
+        "map": {}
+      },
+      {
+        "field": "responseDelay",
+        "as": "tag",
+        "label": "预估响应延迟",
+        "map": {
+          "低": "低延迟",
+          "中": "中等延迟",
+          "高": "高延迟"
+        }
+      },
+      {
+        "field": "opportunities",
+        "as": "cards",
+        "label": "改进建议",
+        "itemRender": [
+          {
+            "field": "opportunity",
+            "as": "heading",
+            "label": ""
+          },
+          {
+            "field": "description",
+            "as": "text",
+            "label": ""
+          }
+        ]
+      },
+      {
+        "field": "tasks",
+        "as": "table",
+        "label": "后续任务",
+        "map": {},
+        "itemRender": [
+          {
+            "field": "task",
+            "as": "text",
+            "label": "任务"
+          },
+          {
+            "field": "priority",
+            "as": "text",
+            "label": "优先级"
+          }
+        ]
+      }
+    ]
+  }
+}
