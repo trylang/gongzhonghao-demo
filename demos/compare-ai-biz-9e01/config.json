@@ -1,0 +1,101 @@
+{
+  "title": "AI 黄酒文案稳定性评测工具",
+  "subtitle": "帮助中小企业通过数据评估 AI 文案在不同场景下的表现，避免凭感觉决策",
+  "accent": "#d4aa00",
+  "fields": [
+    {
+      "key": "businessScenario",
+      "label": "业务场景",
+      "type": "select",
+      "options": [
+        "冬至温饮场景的短视频脚本开头",
+        "餐饮店主推的招商话术",
+        "针对江浙沪年轻女性的小红书标题"
+      ],
+      "placeholder": "选择您的业务场景",
+      "required": true
+    },
+    {
+      "key": "promptTemplates",
+      "label": "Prompt 模板",
+      "type": "checkbox",
+      "options": [
+        "文案感模板",
+        "销售转化模板"
+      ],
+      "required": true
+    },
+    {
+      "key": "models",
+      "label": "模型选择",
+      "type": "radio",
+      "options": [
+        "7B 模型",
+        "14B 模型"
+      ],
+      "required": true
+    },
+    {
+      "key": "numRuns",
+      "label": "每组合运行次数",
+      "type": "select",
+      "options": [
+        "1",
+        "3",
+        "5"
+      ],
+      "placeholder": "选择运行次数",
+      "required": true
+    }
+  ],
+  "refine": false,
+  "result": {
+    "render": [
+      {
+        "field": "summary",
+        "as": "heading",
+        "label": "评测总结"
+      },
+      {
+        "field": "stabilityAnalysis",
+        "as": "section",
+        "label": "稳定性分析"
+      },
+      {
+        "field": "recommendations",
+        "as": "section",
+        "label": "建议与结论"
+      },
+      {
+        "field": "scoreComparison",
+        "as": "table",
+        "label": "评分对比表",
+        "map": {
+          "高": "High",
+          "中": "Medium",
+          "低": "Low"
+        }
+      },
+      {
+        "field": "opportunities",
+        "as": "cards",
+        "label": "潜在优化机会",
+        "itemRender": [
+          {
+            "field": "opportunity",
+            "as": "text"
+          },
+          {
+            "field": "impact",
+            "as": "tag",
+            "map": {
+              "高": "high",
+              "中": "mid",
+              "低": "low"
+            }
+          }
+        ]
+      }
+    ]
+  }
+}
