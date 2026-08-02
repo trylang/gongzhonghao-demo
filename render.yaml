@@ -334,18 +334,6 @@ services:
         sync: true
         value: sk-cp-6TsmFqQh8no8k0od-0zXJoUxkpdJo2NeDUDHjbZeyDNhdWV3bN8EiJ1GMwPZS6Wlx-Q1imUMG0hKS9wbvRdqlxdGBxMNJher2J32Q48m8p0ALfB_LBfQ6BU
 
-  # ---- 公众号正文查看器：单服务托管全部正文，每篇 pages/<slug>/index.html ----
-  # 纯静态，无需 MINIMAX_API_KEY。每篇文章一个目录，slug 用飞书 record_id（唯一）。
-  - type: web
-    name: gongzhonghao-articles
-    runtime: node
-    plan: free
-    branch: main
-    rootDir: pages
-    buildCommand: "echo 'no build needed'"
-    startCommand: "node server.js"
-    healthCheckPath: "/"
-
   - type: web
     name: writer-ai-905d
     runtime: node
