@@ -1,0 +1,64 @@
+```
+请根据用户输入的产品描述，分析以下内容：
+
+1. 在 Diátaxis 文档分类框架中（教程、操作指南、技术参考、原理阐述），当前产品描述在每个类别中是否缺失内容。
+2. 针对缺失的类别，提出具体的补写建议。
+
+请输出一个结构化的 JSON 格式结果：
+
+{
+    "tutorials": {
+        "missing": true/false,
+        "suggestions": ["建议补写的教程内容1", "建议补写的教程内容2"]
+    },
+    "how-to-guides": {
+        "missing": true/false,
+        "suggestions": ["建议补写的操作指南内容1", "建议补写的操作指南内容2"]
+    },
+    "technical-reference": {
+        "missing": true/false,
+        "suggestions": ["建议补写的技术参考内容1", "建议补写的技术参考内容2"]
+    },
+    "explanation": {
+        "missing": true/false,
+        "suggestions": ["建议补写的原理阐述内容1", "建议补写的原理阐述内容2"]
+    }
+}
+```
+
+### 示例
+
+输入：
+```
+代州黄酒，山西传统工艺，选用山西本地的黄米，遵循古法酿造，酒体醇厚，回味悠长，适合搭配羊肉。
+```
+
+输出：
+```json
+{
+    "tutorials": {
+        "missing": true,
+        "suggestions": [
+            "如何第一次品尝代州黄酒",
+            "黄酒入门三步"
+        ]
+    },
+    "how-to-guides": {
+        "missing": true,
+        "suggestions": [
+            "如何用代州黄酒做羊肉",
+            "黄酒加热步骤"
+        ]
+    },
+    "technical-reference": {
+        "missing": true,
+        "suggestions": [
+            "代州黄酒的规格参数表（酒精度、净含量、保质期、饮用温度范围）"
+        ]
+    },
+    "explanation": {
+        "missing": false,
+        "suggestions": []
+    }
+}
+```

@@ -1,0 +1,177 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Diátaxis 文档分析工具</title>
+    <style>
+        body {
+            font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+            background-color: #f5f7fa;
+            color: #333;
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+        }
+        header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        h1 {
+            font-size: 2em;
+            margin: 0;
+            color: #2c3e50;
+        }
+        main {
+            flex: 1;
+            max-width: 800px;
+            margin: 0 auto;
+        }
+        form {
+            background: #fff;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+        }
+        .form-group {
+            margin-bottom: 15px;
+        }
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: 500;
+        }
+        input[type="text"], textarea, select {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            font-size: 1em;
+        }
+        textarea {
+            resize: vertical;
+            height: 100px;
+        }
+        button {
+            background-color: #3498db;
+            color: #fff;
+            border: none;
+            padding: 12px 20px;
+            font-size: 1em;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+        button:hover {
+            background-color: #2980b9;
+        }
+        .loading {
+            background-color: #95a5a6;
+            cursor: not-allowed;
+        }
+        .error {
+            color: #e74c3c;
+            margin-top: 10px;
+        }
+        .result {
+            background: #fff;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            white-space: pre-wrap;
+        }
+        footer {
+            text-align: center;
+            margin-top: 30px;
+            color: #7f8c8d;
+            font-size: 0.9em;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>Diátaxis 文档分析工具</h1>
+    </header>
+    <main>
+        <form id="generate-form">
+            <div class="form-group">
+                <label for="product-description">产品描述</label>
+                <textarea id="product-description" placeholder="请输入产品描述..." required></textarea>
+            </div>
+            <div class="form-group">
+                <label for="document-type">文档类型</label>
+                <select id="document-type">
+                    <option value="tutorials">教程 (Tutorials)</option>
+                    <option value="how-to-guides">操作指南 (How-to Guides)</option>
+                    <option value="technical-reference">技术参考 (Technical Reference)</option>
+                    <option value="explanation">原理阐述 (Explanation)</option>
+                </select>
+            </div>
+            <button type="submit">生成分析</button>
+            <button type="button" id="reset-button" style="margin-left: 10px; background-color: #95a5a6;">重置</button>
+        </form>
+        <div id="result-section" class="result" style="display: none;"></div>
+        <div id="error-message" class="error" style="display: none;"></div>
+    </main>
+    <footer>
+        &copy; 2023 Diátaxis 文档分析工具. 版权所有.
+    </footer>
+
+    <script>
+        document.getElementById('generate-form').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            const productDescription = document.getElementById('product-description').value.trim();
+            const documentType = document.getElementById('document-type').value;
+            const resultSection = document.getElementById('result-section');
+            const errorMessage = document.getElementById('error-message');
+            const button = e.submitter;
+
+            // Disable button and show loading state
+            button.classList.add('loading');
+            button.textContent = '生成中...';
+            resultSection.style.display = 'none';
+            errorMessage.style.display = 'none';
+
+            try {
+                const response = await fetch('/api/generate', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        productDescription: productDescription,
+                        documentType: documentType
+                    })
+                });
+
+                if (!response.ok) {
+                    throw new Error('服务器错误');
+                }
+
+                const data = await response.json();
+                const result = data.result;
+
+                // Display the result
+                resultSection.textContent = result;
+                resultSection.style.display = 'block';
+            } catch (err) {
+                errorMessage.textContent = '发生错误，请稍后再试。';
+                errorMessage.style.display = 'block';
+            } finally {
+                // Revert button state
+                button.classList.remove('loading');
+                button.textContent = '生成分析';
+            }
+        });
+
+        document.getElementById('reset-button').addEventListener('click', function() {
+            document.getElementById('product-description').value = '';
+            document.getElementById('result-section').style.display = 'none';
+            document.getElementById('error-message').style.display = 'none';
+        });
+    </script>
+</body>
+</html
