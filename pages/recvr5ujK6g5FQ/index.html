@@ -1,14 +1,208 @@
-<!doctype html>
-<html lang="zh-CN">
-<head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>正文托管 POC 验证 · Diátaxis</title>
-<style>body{font-family:-apple-system,system-ui,sans-serif;max-width:720px;margin:40px auto;padding:0 16px;line-height:1.8}h1{color:#c0392b}</style>
-</head>
-<body>
-<h1>这是正文托管服务的 POC 验证页</h1>
-<p>slug = recvr5ujK6g5FQ（对应飞书记录 Diátaxis）。</p>
-<p>若此页能正常返回 200，说明 gongzhonghao-articles 服务已成功部署到 Render，可承载真实正文 HTML。</p>
-</body>
-</html>
+<div id="copybar">
+    <button onclick="copyArticle()">📋 复制全文（公众号格式）</button>
+    <button class="dlbtn" onclick="downloadHtml()">⬇️ 下载 HTML</button>
+    <span id="copyStatus"></span>
+  </div>
+
+  <div id="envHint">
+    ⚠️ 检测到你正身在预览面板（沙箱 iframe）里，浏览器会拦截复制。请点上方「⬇️ 下载 HTML」把文件存到电脑，
+    再用 <b>Chrome / Safari 直接打开该文件</b>，然后点「📋 复制全文」，即可粘进公众号后台。
+  </div>
+
+  <!-- 复制时只取 #article 内部，#copybar / #envHint 不进公众号 -->
+  <div id="article">
+  <div id="article">
+  <h1>一个人做产品，文档不是售后附件，是你的销售员</h1>
+  <p>最近我一直在想一个问题：为什么很多人学了一堆 AI 写作技巧，公众号也开了，内容也发了，但真正能靠内容带来客户的人还是少数？</p>
+  <p>直到我翻到一个叫 Diátaxis 的文档方法论站点，才意识到，问题可能不在写作能力，而在结构。</p>
+  <p>大多数人在写内容的时候，本质上是在按自己舒服的方式写，不是按用户需要的方式写。</p>
+  <p>对正在做个人公司的创业者来说，这件事比想象中重要得多。</p>
+  <img src="https://cdn.jsdelivr.net/gh/trylang/gongzhonghao-assets@v51/scene-1.png" alt="一位创业者在桌前对着电脑工作，桌上堆满了文件">
+  <h2>一、你写的文档，用户根本不爱看</h2>
+  <p>我过去做企业内网系统，文档是最后才补的环节。开发完功能，截图几张，写几句说明，往 Confluence 一扔。文档在我心里是"售后附件"，不是产品本身。</p>
+  <p>后来接触 Diátaxis 这个框架，我才发现，海外技术团队早就把文档当成产品核心能力在做了。</p>
+  <p>Diátaxis 是一套文档结构方法论，把技术文档分成四类：</p>
+  <ul>
+    <li>教程（tutorials）：带新人从零走一遍，熟悉基本流程；</li>
+    <li>操作指南（how-to guides）：解决一个具体问题，步骤明确；</li>
+    <li>技术参考（technical reference）：字典式查阅，列清楚每个参数、每个 API；</li>
+    <li>原理阐述（explanation）：讲清楚"为什么这么设计"，帮助理解背景。</li>
+  </ul>
+  <p>这四类对应的，是用户和文档打交道时四种完全不同的需求。</p>
+  <img src="https://cdn.jsdelivr.net/gh/trylang/gongzhonghao-assets@v51/diagram-1.png" alt="Diátaxis 框架的四种文档类型示意图">
+  <h2>二、海外团队已经把文档当产品，国内多数项目还没做到</h2>
+  <p>Gatsby 重构开源文档时，也是按 Diátaxis 来组织的。他们说：</p>
+  <blockquote>At Gatsby we recently reorganized our open-source documentation, and the Diátaxis framework was our go-to resource throughout the project.</blockquote>
+  <p>Vonage 用这套框架搭了内部文档，用户爱看，贡献者也愿意往里加内容。</p>
+  <p>这三家公司的共同点：把文档当成产品的一部分，不是产品的附属物。</p>
+  <p>国内的情况，我接触下来，整体还停留在比较早期的阶段。</p>
+  <p>多数 SaaS、API、开源项目甚至 AI 工具，文档就是一份 README，或者按功能模块罗列的网页。新用户上手成本很高，客服压力很大，最后要么靠销售一对一跟进，要么用户干脆放弃。</p>
+  <h2>三、AI 让你可以按结构批量补齐模块</h2>
+  <p>讲到这里，可能有人会说：现在不是有 AI 吗？能写文档，能写文章，能写一切。</p>
+  <p>没错，但这里有一个关键的杠杆点。</p>
+  <p>传统思路是逐篇写作、逐篇更新。今天写一篇教程，明天写一篇操作指南，后天补一段参考文档。成本高，难持续，写着写着自己就累了。</p>
+  <p>Diátaxis 提供的是结构模板。把现有文档丢给大模型，可以自动判断它在四类里各缺什么、按模板生成缺失部分。</p>
+  <p>这意味着一个人几小时内可以完成过去一个团队几周的工作。</p>
+  <h2>四、把方法论变成可验证的小实验，比看懂更重要</h2>
+  <p>我打算先把自己的黄酒项目内容站当作第一个测试对象。</p>
+  <p>第一步，用 Diátaxis 四象限梳理现有内容，看哪类多、哪类缺。</p>
+  <p>第二步，写一个最小脚本，丢进去一段产品说明或者 README，自动输出它在四类文档里各缺什么、应该补哪些。</p>
+  <p>第三步，把脚本跑出来的结果，用作下一轮内容选题的参考。</p>
+  <p>衡量标准很直接：用户从第一次访问到完成第一个动作（了解产品、下单、留资）的时间有没有变短。</p>
+  <h2>五、对中国创业者的几个判断</h2>
+  <p>第一，判断一个 AI 工具值不值得用，先看它的文档是按什么逻辑组织的。</p>
+  <p>第二，不要把内容生产等同于"写文章"，要建立自己的内容四象限。</p>
+  <p>第三，中文场景下还有一个被低估的机会。</p>
+  <h2>写在最后</h2>
+  <p>未来一个人能撑起一家公司，靠的不是会写多少内容，而是能不能把内容变成一套结构化、可复用的系统。</p>
+  <p>Diátaxis 不只是一个写作方法论，它本质上是一种"按用户需求组织信息"的产品思维。</p>
+  <p>如果你有兴趣，这三周可以试试这三件事：</p>
+  <ul>
+    <li>第一周，把自己的公众号、产品文档或者内容站现有内容按 Diátaxis 四象限梳理一遍，画一张四象限图，标出每类有多少、缺哪些。</li>
+    <li>第二周，用 Claude 或者 GPT 写一个最小脚本，输入任意一段产品说明，自动判断它在四类文档里属于哪类、缺失哪类，输出补写建议。</li>
+    <li>第三周，把脚本跑一遍自己的项目，用结果指导下一轮内容选题，看看用户从首次接触到完成关键动作的时间有没有缩短。</li>
+  </ul>
+  <p>我没有做出什么了不起的成果，也没有融资数据可以分享。</p>
+  <p>但我越来越确信一件事：一个人做产品时，文档和内容就是你的销售团队和客服，必须用框架降低维护成本，否则你会被自己越攒越多的内容拖垮。</p>
+  <p>这件事，值得每个人认真对待。</p>
+  <h1>36岁程序员转型后，我才发现：普通人做AI产品最容易踩的坑，不是不会写，是不会&quot;分类&quot;</h1>
+  <p>最近我在研究一套海外的文档框架，发现了一件挺反常识的事——大多数做内容的人都在拼命生产内容，却很少有人停下来想一想：这些内容到底应该怎么组织？</p>
+  <p>这套框架叫 Diátaxis。说实话，第一次看到的时候我没太当回事，感觉像是又一个"方法论"。但仔细拆完之后，我才意识到它解决的不是写作问题，是产品问题。</p>
+  <h2>一、Diátaxis 到底是什么</h2>
+  <p>它把文档分成四类：</p>
+  <ul>
+    <li>教程：手把手带你走一遍，从头到尾跟着做；</li>
+    <li>操作指南：解决一个具体问题，目标是"做完就走"；</li>
+    <li>技术参考：查字典式，你想查什么就查什么；</li>
+    <li>背景解释：讲为什么、讲原理，帮你理解一件事。</li>
+  </ul>
+  <p>看起来很普通对吧？但它真正在问的是一个产品问题：**"用户这一刻到底想干嘛？"**</p>
+  <h2>二、海外公司用它解决了什么问题</h2>
+  <p>Cloudflare 用这套框架重整了开发者文档，官方的原话是"我们的文档比以往任何时候都清晰"。Gatsby 也用它梳理过信息架构，结果是用户更容易找到自己需要的资源。</p>
+  <p>这些公司不缺内容，缺的是结构。</p>
+  <p>它解决的不是"怎么写得更好"，而是"为什么用户找不到东西"。这两件事的区别很大。前者是文字能力问题，后者是产品设计问题。</p>
+  <h2>三、我准备怎么用到自己的项目上</h2>
+  <p>我最近在参与一个黄酒项目，内容站刚起步，最头疼的就是：写了很多东西，但发出去之后自己回头看都觉得乱。</p>
+  <p>现在我打算用这四象限重新梳理：</p>
+  <ul>
+    <li>教程类：给新读者讲黄酒入门，比如"第一次喝黄酒应该选什么"；</li>
+    <li>操作指南：解决具体场景问题，比如"买哪种黄酒送人"、"怎么温酒"；</li>
+    <li>参考类：产品清单、参数表，方便用户对比；</li>
+    <li>解释类：讲黄酒文化、行业趋势、讲"为什么代州黄酒和绍兴黄酒不一样"。</li>
+  </ul>
+  <p>结构解决了，内容才不会乱堆。每一篇内容知道自己属于哪一类，用户也知道自己该从哪一类开始看。</p>
+  <h2>四、技术实现其实没想象中难</h2>
+  <p>我准备这样跑 MVP：</p>
+  <ul>
+    <li>第一步，把现有的文档、笔记、产品介绍全部抓出来；</li>
+    <li>第二步，用 LLM 按四象限自动分类；</li>
+    <li>第三步，看哪一类明显缺失；</li>
+    <li>第四步，针对缺失类型自动生成初稿；</li>
+    <li>最后一步，人工 review 后发布。</li>
+  </ul>
+  <p>一个人，几天就能跑出第一版。</p>
+  <p>验证指标也很简单：新用户从首次访问到完成第一个任务（比如看完一篇教程、查到一个产品参数）的时间，有没有明显下降。如果下降了，说明结构起作用了；如果没变化，说明问题不在结构，要回到内容本身去找原因。</p>
+  <h2>五、我对这件事的判断</h2>
+  <p>AI 时代，文档不是写一次就完事的附属品，而是需要按用户需求结构化运营的产品模块。</p>
+  <p>这个判断对个人公司尤其重要。一个人能写的内容是有限的，如果每一篇都靠灵感、靠临场发挥，三个月之后内容站基本就废了。必须用框架把这件事工业化，让内容生产变成一个可持续的流程，而不是一次性的表演。</p>
+  <p>我打算先用黄酒项目做第一个测试对象，3 周后回来汇报结果。</p>
+  <p>如果你也在做小产品或者内容站，欢迎评论区聊聊：你的文档现在是怎么组织的？有没有被"写完就乱"这个问题困扰过？</p>
+</div>
+    <!-- 文末 demo 框（占位：demo 方向待用户确认，自动化不自行定稿） -->
+    <div class="demo-box" style="border-color:#bbb;color:#666;">
+      <p><strong>🛠️ 文末互动：用现成LLM写一个最小脚本：丢进去一个README（准备中）</strong></p>
+      <p style="font-size:13px;color:#666;">Demo 方向已采集，正在生成部署中，稍后重跑或手动补链接。</p>
+    </div>
+  </div>
+
+  <script>
+    // 若身在 iframe（预览面板）内，提示用浏览器打开
+    if (window.self !== window.top) {
+      document.getElementById('envHint').style.display = 'block';
+    }
+
+    // 公众号不会继承本页 <style>，所以复制前必须把视觉样式内联。
+    // 注意：不要复制计算后的 width / max-width / height，它们在手机端会变成固定像素并导致溢出。
+    const COPY_PROPERTIES = [
+      'color','background-color','font-family','font-size','font-weight','font-style',
+      'line-height','letter-spacing','text-align','text-decoration','white-space',
+      'margin-top','margin-right','margin-bottom','margin-left',
+      'padding-top','padding-right','padding-bottom','padding-left',
+      'border-top-width','border-right-width','border-bottom-width','border-left-width',
+      'border-top-style','border-right-style','border-bottom-style','border-left-style',
+      'border-top-color','border-right-color','border-bottom-color','border-left-color',
+      'border-top-left-radius','border-top-right-radius','border-bottom-right-radius','border-bottom-left-radius',
+      'display','box-sizing','vertical-align'
+    ];
+
+    function makeWechatHtml() {
+      const source = document.getElementById('article');
+      const clone = source.cloneNode(true);
+      clone.removeAttribute('id'); clone.removeAttribute('class'); clone.style.cssText = '';
+      clone.style.cssText = 'font-family:system-ui,"PingFang SC",sans-serif;color:#222;line-height:1.8;font-size:16px;width:auto;max-width:100%;overflow-wrap:break-word;';
+      const sourceNodes = [source, ...source.querySelectorAll('*')];
+      const cloneNodes = [clone, ...clone.querySelectorAll('*')];
+      sourceNodes.forEach((node, index) => {
+        const target = cloneNodes[index];
+        if (!target) return;
+        if (target.tagName === 'SCRIPT' || target.tagName === 'STYLE' || target.tagName === 'LINK') { target.remove(); return; }
+        const computed = window.getComputedStyle(node);
+        COPY_PROPERTIES.forEach((property) => target.style.setProperty(property, computed.getPropertyValue(property)));
+        if (target.tagName === 'IMG') {
+          target.style.cssText += ';width:100%;max-width:100%;height:auto;display:block;';
+        }
+        target.removeAttribute('class'); target.removeAttribute('id');
+      });
+      const wrapper = document.createElement('section');
+      wrapper.setAttribute('style', clone.getAttribute('style') || '');
+      wrapper.innerHTML = clone.innerHTML;
+      return wrapper.outerHTML;
+    }
+
+    function legacyRichCopy(html) {
+      const staging = document.createElement('div');
+      staging.contentEditable = 'true';
+      staging.style.cssText = 'position:fixed;left:-9999px;top:0;width:680px;opacity:0;pointer-events:none;';
+      staging.innerHTML = html; document.body.appendChild(staging);
+      const range = document.createRange(); range.selectNodeContents(staging);
+      const selection = window.getSelection(); selection.removeAllRanges(); selection.addRange(range);
+      let copied = false;
+      try { copied = document.execCommand('copy'); } catch (e) { copied = false; }
+      selection.removeAllRanges(); staging.remove();
+      return copied;
+    }
+
+    function setStatus(msg) { document.getElementById('copyStatus').textContent = msg; }
+
+    async function copyArticle() {
+      const source = document.getElementById('article');
+      const html = makeWechatHtml();
+      try {
+        if (navigator.clipboard && window.ClipboardItem) {
+          await navigator.clipboard.write([
+            new ClipboardItem({
+              'text/html': new Blob([html], { type: 'text/html' }),
+              'text/plain': new Blob([source.innerText], { type: 'text/plain' })
+            })
+          ]);
+          setStatus('✅ 已复制带行内样式富文本，去公众号后台 Ctrl/⌘+V 粘贴');
+          return;
+        }
+      } catch (e) { /* 落到兼容模式 */ }
+      if (legacyRichCopy(html)) {
+        setStatus('✅ 已复制（兼容模式），去公众号后台粘贴');
+        return;
+      }
+      setStatus('⚠️ 浏览器限制了复制，请点「⬇️ 下载 HTML」用浏览器打开后再复制');
+    }
+
+    function downloadHtml() {
+      const full = '<!doctype html>\n' + document.documentElement.outerHTML;
+      const blob = new Blob([full], { type: 'text/html;charset=utf-8' });
+      const a = document.createElement('a');
+      a.href = URL.createObjectURL(blob);
+      a.download = 'wechat-article.html';
+      document.body.appendChild(a); a.click(); a.remove();
+      setStatus('⬇️ 已下载，请用 Chrome/Safari 打开后再复制');
+    }
+  </script>
