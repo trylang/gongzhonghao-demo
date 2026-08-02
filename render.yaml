@@ -8,107 +8,27 @@
 # ⚠️ MINIMAX_API_KEY 的 value 单一来源 = 本文件（任意一处即可）。轮换 key 时只改本文件里所有
 #    `value: sk-cp-...` 行（一次性 find/replace 全部替换）即可；add_demo.sh 会自动从本文件读
 #    取 value，skill 文档也不再硬编码，无需同步其他位置。
+#
+# ★ 2026-08-03 现状：本文件**手工维护 8 个 canonical demos**（与 Render UI Active 一一对齐）——
+# Render Hobby 每工作区 25 服务上限，全量保留历史命名 demo 容易撞限。新 demo 走同名 slug 服务。
+# 此清单是 syncRenderService() 的「白名单」：不在此清单的 render.yaml 条目会被自动清理。
 
 services:
   - type: web
-    name: huangjiu-content-generator
+    name: time-machine-generator
     runtime: node
     plan: free
     branch: main
-    rootDir: demos/content-generator
+    rootDir: demos/time-machine-generator
     buildCommand: "echo 'no build needed'"
     startCommand: "node server.js"
-    healthCheckPath: "/"
+    healthCheckPath: "/healthz"
     envVars:
       - key: MINIMAX_API_KEY
         sync: true
         value: sk-cp-6TsmFqQh8no8k0od-0zXJoUxkpdJo2NeDUDHjbZeyDNhdWV3bN8EiJ1GMwPZS6Wlx-Q1imUMG0hKS9wbvRdqlxdGBxMNJher2J32Q48m8p0ALfB_LBfQ6BU
     # 注意：PORT 由 Render 自动注入，server.js 用 process.env.PORT 读取，勿在此固定
 
-  - type: web
-    name: huangjiu-after-sales
-    runtime: node
-    plan: free
-    branch: main
-    rootDir: demos/huangjiu-after-sales
-    buildCommand: "echo 'no build needed'"
-    startCommand: "node server.js"
-    healthCheckPath: "/"
-    envVars:
-      - key: MINIMAX_API_KEY
-        sync: true
-        value: sk-cp-6TsmFqQh8no8k0od-0zXJoUxkpdJo2NeDUDHjbZeyDNhdWV3bN8EiJ1GMwPZS6Wlx-Q1imUMG0hKS9wbvRdqlxdGBxMNJher2J32Q48m8p0ALfB_LBfQ6BU
-    # 注意：PORT 由 Render 自动注入，server.js 用 process.env.PORT 读取，勿在此固定
-
-  - type: web
-    name: self-maintaining-apis-reader
-    runtime: node
-    plan: free
-    branch: main
-    rootDir: demos/self-maintaining-apis-reader
-    buildCommand: "echo 'no build needed'"
-    startCommand: "node server.js"
-    healthCheckPath: "/"
-    envVars:
-      - key: MINIMAX_API_KEY
-        sync: true
-        value: sk-cp-6TsmFqQh8no8k0od-0zXJoUxkpdJo2NeDUDHjbZeyDNhdWV3bN8EiJ1GMwPZS6Wlx-Q1imUMG0hKS9wbvRdqlxdGBxMNJher2J32Q48m8p0ALfB_LBfQ6BU
-
-  - type: web
-    name: geo-studio
-    runtime: node
-    plan: free
-    branch: main
-    rootDir: demos/geo-studio
-    buildCommand: "echo 'no build needed'"
-    startCommand: "node server.js"
-    healthCheckPath: "/"
-    envVars:
-      - key: MINIMAX_API_KEY
-        sync: true
-        value: sk-cp-6TsmFqQh8no8k0od-0zXJoUxkpdJo2NeDUDHjbZeyDNhdWV3bN8EiJ1GMwPZS6Wlx-Q1imUMG0hKS9wbvRdqlxdGBxMNJher2J32Q48m8p0ALfB_LBfQ6BU
-
-  - type: web
-    name: pain-point-studio
-    runtime: node
-    plan: free
-    branch: main
-    rootDir: demos/pain-point-studio
-    buildCommand: "echo 'no build needed'"
-    startCommand: "node server.js"
-    healthCheckPath: "/"
-    envVars:
-      - key: MINIMAX_API_KEY
-        sync: true
-        value: sk-cp-6TsmFqQh8no8k0od-0zXJoUxkpdJo2NeDUDHjbZeyDNhdWV3bN8EiJ1GMwPZS6Wlx-Q1imUMG0hKS9wbvRdqlxdGBxMNJher2J32Q48m8p0ALfB_LBfQ6BU
-
-  - type: web
-    name: product-storyteller
-    runtime: node
-    plan: free
-    branch: main
-    rootDir: demos/product-storyteller
-    buildCommand: "echo 'no build needed'"
-    startCommand: "node server.js"
-    healthCheckPath: "/"
-    envVars:
-      - key: MINIMAX_API_KEY
-        sync: true
-        value: sk-cp-6TsmFqQh8no8k0od-0zXJoUxkpdJo2NeDUDHjbZeyDNhdWV3bN8EiJ1GMwPZS6Wlx-Q1imUMG0hKS9wbvRdqlxdGBxMNJher2J32Q48m8p0ALfB_LBfQ6BU
-
-  - type: web
-    name: ai-landing-workbench
-    runtime: node
-    plan: free
-    branch: main
-    rootDir: demos/ai-landing-workbench
-    buildCommand: "echo 'no build needed'"
-    startCommand: "node server.js"
-    healthCheckPath: "/"
-    envVars:
-      - key: MINIMAX_API_KEY
-        sync: true
-        value: sk-cp-6TsmFqQh8no8k0od-0zXJoUxkpdJo2NeDUDHjbZeyDNhdWV3bN8EiJ1GMwPZS6Wlx-Q1imUMG0hKS9wbvRdqlxdGBxMNJher2J32Q48m8p0ALfB_LBfQ6BU
 
   - type: web
     name: agent-boundary-board
@@ -124,337 +44,91 @@ services:
         sync: true
         value: sk-cp-6TsmFqQh8no8k0od-0zXJoUxkpdJo2NeDUDHjbZeyDNhdWV3bN8EiJ1GMwPZS6Wlx-Q1imUMG0hKS9wbvRdqlxdGBxMNJher2J32Q48m8p0ALfB_LBfQ6BU
 
+
   - type: web
-    name: time-machine-generator
+    name: ai-landing-workbench
     runtime: node
     plan: free
     branch: main
-    rootDir: demos/time-machine-generator
+    rootDir: demos/ai-landing-workbench
     buildCommand: "echo 'no build needed'"
     startCommand: "node server.js"
-    healthCheckPath: "/healthz"
+    healthCheckPath: "/"
     envVars:
       - key: MINIMAX_API_KEY
         sync: true
         value: sk-cp-6TsmFqQh8no8k0od-0zXJoUxkpdJo2NeDUDHjbZeyDNhdWV3bN8EiJ1GMwPZS6Wlx-Q1imUMG0hKS9wbvRdqlxdGBxMNJher2J32Q48m8p0ALfB_LBfQ6BU
 
+
   - type: web
-    name: drecvqzbirhn3kr-92ef
+    name: product-storyteller
     runtime: node
     plan: free
     branch: main
-    rootDir: demos/drecvqzbirhn3kr-92ef
-    buildCommand: npm install
-    startCommand: npm start
-    healthCheckPath: /healthz
+    rootDir: demos/product-storyteller
+    buildCommand: "echo 'no build needed'"
+    startCommand: "node server.js"
+    healthCheckPath: "/"
     envVars:
       - key: MINIMAX_API_KEY
         sync: true
         value: sk-cp-6TsmFqQh8no8k0od-0zXJoUxkpdJo2NeDUDHjbZeyDNhdWV3bN8EiJ1GMwPZS6Wlx-Q1imUMG0hKS9wbvRdqlxdGBxMNJher2J32Q48m8p0ALfB_LBfQ6BU
 
+
   - type: web
-    name: drecvqzbirhn3kr-4e24
+    name: pain-point-studio
     runtime: node
     plan: free
     branch: main
-    rootDir: demos/drecvqzbirhn3kr-4e24
-    buildCommand: npm install
-    startCommand: npm start
-    healthCheckPath: /healthz
+    rootDir: demos/pain-point-studio
+    buildCommand: "echo 'no build needed'"
+    startCommand: "node server.js"
+    healthCheckPath: "/"
     envVars:
       - key: MINIMAX_API_KEY
         sync: true
         value: sk-cp-6TsmFqQh8no8k0od-0zXJoUxkpdJo2NeDUDHjbZeyDNhdWV3bN8EiJ1GMwPZS6Wlx-Q1imUMG0hKS9wbvRdqlxdGBxMNJher2J32Q48m8p0ALfB_LBfQ6BU
 
+
   - type: web
-    name: drecvqzbirhn3kr-d51c
+    name: huangjiu-content-generator
     runtime: node
     plan: free
     branch: main
-    rootDir: demos/drecvqzbirhn3kr-d51c
-    buildCommand: npm install
-    startCommand: npm start
-    healthCheckPath: /healthz
+    rootDir: demos/content-generator
+    buildCommand: "echo 'no build needed'"
+    startCommand: "node server.js"
+    healthCheckPath: "/"
     envVars:
       - key: MINIMAX_API_KEY
         sync: true
         value: sk-cp-6TsmFqQh8no8k0od-0zXJoUxkpdJo2NeDUDHjbZeyDNhdWV3bN8EiJ1GMwPZS6Wlx-Q1imUMG0hKS9wbvRdqlxdGBxMNJher2J32Q48m8p0ALfB_LBfQ6BU
 
+
   - type: web
-    name: drecvqzblnqeomk-7050
+    name: geo-studio
     runtime: node
     plan: free
     branch: main
-    rootDir: demos/drecvqzblnqeomk-7050
-    buildCommand: npm install
-    startCommand: npm start
-    healthCheckPath: /healthz
+    rootDir: demos/geo-studio
+    buildCommand: "echo 'no build needed'"
+    startCommand: "node server.js"
+    healthCheckPath: "/"
     envVars:
       - key: MINIMAX_API_KEY
         sync: true
         value: sk-cp-6TsmFqQh8no8k0od-0zXJoUxkpdJo2NeDUDHjbZeyDNhdWV3bN8EiJ1GMwPZS6Wlx-Q1imUMG0hKS9wbvRdqlxdGBxMNJher2J32Q48m8p0ALfB_LBfQ6BU
 
-  - type: web
-    name: drecvqzbirhn3kr-7df1
-    runtime: node
-    plan: free
-    branch: main
-    rootDir: demos/drecvqzbirhn3kr-7df1
-    buildCommand: npm install
-    startCommand: npm start
-    healthCheckPath: /healthz
-    envVars:
-      - key: MINIMAX_API_KEY
-        sync: true
-        value: sk-cp-6TsmFqQh8no8k0od-0zXJoUxkpdJo2NeDUDHjbZeyDNhdWV3bN8EiJ1GMwPZS6Wlx-Q1imUMG0hKS9wbvRdqlxdGBxMNJher2J32Q48m8p0ALfB_LBfQ6BU
 
   - type: web
-    name: drecvqzbmyfuvjh-f69c
+    name: huangjiu-after-sales
     runtime: node
     plan: free
     branch: main
-    rootDir: demos/drecvqzbmyfuvjh-f69c
-    buildCommand: npm install
-    startCommand: npm start
-    healthCheckPath: /healthz
-    envVars:
-      - key: MINIMAX_API_KEY
-        sync: true
-        value: sk-cp-6TsmFqQh8no8k0od-0zXJoUxkpdJo2NeDUDHjbZeyDNhdWV3bN8EiJ1GMwPZS6Wlx-Q1imUMG0hKS9wbvRdqlxdGBxMNJher2J32Q48m8p0ALfB_LBfQ6BU
-
-  - type: web
-    name: drecvqzbmyfuvjh-b351
-    runtime: node
-    plan: free
-    branch: main
-    rootDir: demos/drecvqzbmyfuvjh-b351
-    buildCommand: npm install
-    startCommand: npm start
-    healthCheckPath: /healthz
-    envVars:
-      - key: MINIMAX_API_KEY
-        sync: true
-        value: sk-cp-6TsmFqQh8no8k0od-0zXJoUxkpdJo2NeDUDHjbZeyDNhdWV3bN8EiJ1GMwPZS6Wlx-Q1imUMG0hKS9wbvRdqlxdGBxMNJher2J32Q48m8p0ALfB_LBfQ6BU
-
-  - type: web
-    name: drecvqzblnqeomk-9fbb
-    runtime: node
-    plan: free
-    branch: main
-    rootDir: demos/drecvqzblnqeomk-9fbb
-    buildCommand: npm install
-    startCommand: npm start
-    healthCheckPath: /healthz
-    envVars:
-      - key: MINIMAX_API_KEY
-        sync: true
-        value: sk-cp-6TsmFqQh8no8k0od-0zXJoUxkpdJo2NeDUDHjbZeyDNhdWV3bN8EiJ1GMwPZS6Wlx-Q1imUMG0hKS9wbvRdqlxdGBxMNJher2J32Q48m8p0ALfB_LBfQ6BU
-
-  - type: web
-    name: drecvqzbmyfuvjh-564a
-    runtime: node
-    plan: free
-    branch: main
-    rootDir: demos/drecvqzbmyfuvjh-564a
-    buildCommand: npm install
-    startCommand: npm start
-    healthCheckPath: /healthz
-    envVars:
-      - key: MINIMAX_API_KEY
-        sync: true
-        value: sk-cp-6TsmFqQh8no8k0od-0zXJoUxkpdJo2NeDUDHjbZeyDNhdWV3bN8EiJ1GMwPZS6Wlx-Q1imUMG0hKS9wbvRdqlxdGBxMNJher2J32Q48m8p0ALfB_LBfQ6BU
-
-  - type: web
-    name: drecvqzblnqeomk-5f1d
-    runtime: node
-    plan: free
-    branch: main
-    rootDir: demos/drecvqzblnqeomk-5f1d
-    buildCommand: npm install
-    startCommand: npm start
-    healthCheckPath: /healthz
-    envVars:
-      - key: MINIMAX_API_KEY
-        sync: true
-        value: sk-cp-6TsmFqQh8no8k0od-0zXJoUxkpdJo2NeDUDHjbZeyDNhdWV3bN8EiJ1GMwPZS6Wlx-Q1imUMG0hKS9wbvRdqlxdGBxMNJher2J32Q48m8p0ALfB_LBfQ6BU
-
-  - type: web
-    name: compare-chat-writer-ed58
-    runtime: node
-    plan: free
-    branch: main
-    rootDir: demos/compare-chat-writer-ed58
-    buildCommand: npm install
-    startCommand: npm start
-    healthCheckPath: /healthz
-    envVars:
-      - key: MINIMAX_API_KEY
-        sync: true
-        value: sk-cp-6TsmFqQh8no8k0od-0zXJoUxkpdJo2NeDUDHjbZeyDNhdWV3bN8EiJ1GMwPZS6Wlx-Q1imUMG0hKS9wbvRdqlxdGBxMNJher2J32Q48m8p0ALfB_LBfQ6BU
-
-  - type: web
-    name: compare-chat-writer
-    runtime: node
-    plan: free
-    branch: main
-    rootDir: demos/compare-chat-writer
-    buildCommand: npm install
-    startCommand: npm start
-    healthCheckPath: /healthz
-    envVars:
-      - key: MINIMAX_API_KEY
-        sync: true
-        value: sk-cp-6TsmFqQh8no8k0od-0zXJoUxkpdJo2NeDUDHjbZeyDNhdWV3bN8EiJ1GMwPZS6Wlx-Q1imUMG0hKS9wbvRdqlxdGBxMNJher2J32Q48m8p0ALfB_LBfQ6BU
-
-  - type: web
-    name: compare-ai-biz
-    runtime: node
-    plan: free
-    branch: main
-    rootDir: demos/compare-ai-biz
-    buildCommand: npm install
-    startCommand: npm start
-    healthCheckPath: /healthz
-    envVars:
-      - key: MINIMAX_API_KEY
-        sync: true
-        value: sk-cp-6TsmFqQh8no8k0od-0zXJoUxkpdJo2NeDUDHjbZeyDNhdWV3bN8EiJ1GMwPZS6Wlx-Q1imUMG0hKS9wbvRdqlxdGBxMNJher2J32Q48m8p0ALfB_LBfQ6BU
-
-  - type: web
-    name: writer-ai
-    runtime: node
-    plan: free
-    branch: main
-    rootDir: demos/writer-ai
-    buildCommand: npm install
-    startCommand: npm start
-    healthCheckPath: /healthz
-    envVars:
-      - key: MINIMAX_API_KEY
-        sync: true
-        value: sk-cp-6TsmFqQh8no8k0od-0zXJoUxkpdJo2NeDUDHjbZeyDNhdWV3bN8EiJ1GMwPZS6Wlx-Q1imUMG0hKS9wbvRdqlxdGBxMNJher2J32Q48m8p0ALfB_LBfQ6BU
-
-  - type: web
-    name: writer-ai-905d
-    runtime: node
-    plan: free
-    branch: main
-    rootDir: demos/writer-ai-905d
-    buildCommand: npm install
-    startCommand: npm start
-    healthCheckPath: /healthz
-    envVars:
-      - key: MINIMAX_API_KEY
-        sync: true
-        value: sk-cp-6TsmFqQh8no8k0od-0zXJoUxkpdJo2NeDUDHjbZeyDNhdWV3bN8EiJ1GMwPZS6Wlx-Q1imUMG0hKS9wbvRdqlxdGBxMNJher2J32Q48m8p0ALfB_LBfQ6BU
-
-  - type: web
-    name: writer-ai-c0a5
-    runtime: node
-    plan: free
-    branch: main
-    rootDir: demos/writer-ai-c0a5
-    buildCommand: npm install
-    startCommand: npm start
-    healthCheckPath: /healthz
-    envVars:
-      - key: MINIMAX_API_KEY
-        sync: true
-        value: sk-cp-6TsmFqQh8no8k0od-0zXJoUxkpdJo2NeDUDHjbZeyDNhdWV3bN8EiJ1GMwPZS6Wlx-Q1imUMG0hKS9wbvRdqlxdGBxMNJher2J32Q48m8p0ALfB_LBfQ6BU
-
-  - type: web
-    name: writer-ai-65e1
-    runtime: node
-    plan: free
-    branch: main
-    rootDir: demos/writer-ai-65e1
-    buildCommand: npm install
-    startCommand: npm start
-    healthCheckPath: /healthz
-    envVars:
-      - key: MINIMAX_API_KEY
-        sync: true
-        value: sk-cp-6TsmFqQh8no8k0od-0zXJoUxkpdJo2NeDUDHjbZeyDNhdWV3bN8EiJ1GMwPZS6Wlx-Q1imUMG0hKS9wbvRdqlxdGBxMNJher2J32Q48m8p0ALfB_LBfQ6BU
-
-  - type: web
-    name: writer-ai-df18
-    runtime: node
-    plan: free
-    branch: main
-    rootDir: demos/writer-ai-df18
-    buildCommand: npm install
-    startCommand: npm start
-    healthCheckPath: /healthz
-    envVars:
-      - key: MINIMAX_API_KEY
-        sync: true
-        value: sk-cp-6TsmFqQh8no8k0od-0zXJoUxkpdJo2NeDUDHjbZeyDNhdWV3bN8EiJ1GMwPZS6Wlx-Q1imUMG0hKS9wbvRdqlxdGBxMNJher2J32Q48m8p0ALfB_LBfQ6BU
-
-  - type: web
-    name: writer-ai-c95f
-    runtime: node
-    plan: free
-    branch: main
-    rootDir: demos/writer-ai-c95f
-    buildCommand: npm install
-    startCommand: npm start
-    healthCheckPath: /healthz
-    envVars:
-      - key: MINIMAX_API_KEY
-        sync: true
-        value: sk-cp-6TsmFqQh8no8k0od-0zXJoUxkpdJo2NeDUDHjbZeyDNhdWV3bN8EiJ1GMwPZS6Wlx-Q1imUMG0hKS9wbvRdqlxdGBxMNJher2J32Q48m8p0ALfB_LBfQ6BU
-
-  - type: web
-    name: writer-ai-87b7
-    runtime: node
-    plan: free
-    branch: main
-    rootDir: demos/writer-ai-87b7
-    buildCommand: npm install
-    startCommand: npm start
-    healthCheckPath: /healthz
-    envVars:
-      - key: MINIMAX_API_KEY
-        sync: true
-        value: sk-cp-6TsmFqQh8no8k0od-0zXJoUxkpdJo2NeDUDHjbZeyDNhdWV3bN8EiJ1GMwPZS6Wlx-Q1imUMG0hKS9wbvRdqlxdGBxMNJher2J32Q48m8p0ALfB_LBfQ6BU
-
-  - type: web
-    name: compare-ai-biz-9e01
-    runtime: node
-    plan: free
-    branch: main
-    rootDir: demos/compare-ai-biz-9e01
-    buildCommand: npm install
-    startCommand: npm start
-    healthCheckPath: /healthz
-    envVars:
-      - key: MINIMAX_API_KEY
-        sync: true
-        value: sk-cp-6TsmFqQh8no8k0od-0zXJoUxkpdJo2NeDUDHjbZeyDNhdWV3bN8EiJ1GMwPZS6Wlx-Q1imUMG0hKS9wbvRdqlxdGBxMNJher2J32Q48m8p0ALfB_LBfQ6BU
-
-  - type: web
-    name: compare-chat-writer-adb2
-    runtime: node
-    plan: free
-    branch: main
-    rootDir: demos/compare-chat-writer-adb2
-    buildCommand: npm install
-    startCommand: npm start
-    healthCheckPath: /healthz
-    envVars:
-      - key: MINIMAX_API_KEY
-        sync: true
-        value: sk-cp-6TsmFqQh8no8k0od-0zXJoUxkpdJo2NeDUDHjbZeyDNhdWV3bN8EiJ1GMwPZS6Wlx-Q1imUMG0hKS9wbvRdqlxdGBxMNJher2J32Q48m8p0ALfB_LBfQ6BU
-
-  - type: web
-    name: checklist-planner-ai
-    runtime: node
-    plan: free
-    branch: main
-    rootDir: demos/checklist-planner-ai
-    buildCommand: npm install
-    startCommand: npm start
-    healthCheckPath: /healthz
+    rootDir: demos/huangjiu-after-sales
+    buildCommand: "echo 'no build needed'"
+    startCommand: "node server.js"
+    healthCheckPath: "/"
     envVars:
       - key: MINIMAX_API_KEY
         sync: true
