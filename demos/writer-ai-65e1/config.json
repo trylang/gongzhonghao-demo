@@ -1,0 +1,92 @@
+{
+  "title": "Diátaxis 文档诊断工具",
+  "subtitle": "通过结构化文档框架，快速识别并补全技术文档缺失内容，提升用户转化率",
+  "accent": "#2f6bff",
+  "fields": [
+    {
+      "key": "productDescription",
+      "label": "产品说明或 README 内容",
+      "type": "textarea",
+      "placeholder": "输入您的产品说明或 README 内容",
+      "required": true
+    },
+    {
+      "key": "documentType",
+      "label": "文档类型",
+      "type": "radio",
+      "options": [
+        "教程",
+        "操作指南",
+        "技术参考",
+        "原理阐述"
+      ],
+      "required": true
+    },
+    {
+      "key": "targetUser",
+      "label": "目标用户群体",
+      "type": "select",
+      "options": [
+        "新用户",
+        "中级用户",
+        "高级用户"
+      ],
+      "placeholder": "选择目标用户群体",
+      "required": true
+    },
+    {
+      "key": "industry",
+      "label": "所属行业",
+      "type": "select",
+      "options": [
+        "软件技术",
+        "制造业",
+        "食品饮料",
+        "其他"
+      ],
+      "placeholder": "选择所属行业",
+      "required": true
+    }
+  ],
+  "refine": false,
+  "result": {
+    "render": [
+      {
+        "field": "overallAnalysis",
+        "as": "heading",
+        "label": "总体分析"
+      },
+      {
+        "field": "missingSections",
+        "as": "cards",
+        "label": "缺失的文档类型",
+        "itemRender": [
+          {
+            "field": "type",
+            "as": "tag",
+            "map": {
+              "教程": "tutorials",
+              "操作指南": "how-to guides",
+              "技术参考": "technical reference",
+              "原理阐述": "explanation"
+            }
+          },
+          {
+            "field": "description",
+            "as": "text"
+          }
+        ]
+      },
+      {
+        "field": "recommendations",
+        "as": "section",
+        "label": "补写建议"
+      },
+      {
+        "field": "estimatedImpact",
+        "as": "section",
+        "label": "预期效果"
+      }
+    ]
+  }
+}
