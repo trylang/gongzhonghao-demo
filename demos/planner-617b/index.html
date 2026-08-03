@@ -1,0 +1,324 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI电商数据洞察工具</title>
+    <style>
+        :root {
+            --primary-color: #4a90e2;
+            --background-color: #f5f5f5;
+            --text-color: #333333;
+            --card-color: #ffffff;
+            --border-color: #dddddd;
+            --shadow-color: rgba(0, 0, 0, 0.1);
+            --button-color: var(--primary-color);
+            --button-text-color: #ffffff;
+            --button-hover-color: #357abD;
+        }
+        body {
+            font-family: Arial, sans-serif;
+            background-color: var(--background-color);
+            color: var(--text-color);
+            margin: 0;
+            padding: 0;
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+        }
+        header {
+            background-color: var(--primary-color);
+            color: var(--button-text-color);
+            padding: 20px;
+            text-align: center;
+        }
+        main {
+            flex: 1;
+            padding: 20px;
+            max-width: 800px;
+            margin: 0 auto;
+        }
+        .section {
+            margin-bottom: 30px;
+        }
+        .button-group {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+        .button {
+            background-color: var(--button-color);
+            color: var(--button-text-color);
+            border: none;
+            padding: 10px 15px;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+        .button:hover {
+            background-color: var(--button-hover-color);
+        }
+        .input-group {
+            margin-bottom: 15px;
+        }
+        label {
+            display: block;
+            margin-bottom: 5px;
+        }
+        input, select, textarea {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid var(--border-color);
+            border-radius: 4px;
+        }
+        .card {
+            background-color: var(--card-color);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 20px;
+            box-shadow: 0 2px 8px var(--shadow-color);
+        }
+        .chart-container {
+            width: 100%;
+            height: 300px;
+            margin-top: 20px;
+        }
+        footer {
+            background-color: var(--primary-color);
+            color: var(--button-text-color);
+            text-align: center;
+            padding: 15px;
+        }
+    </style>
+</head>
+<body>
+    <div id="data-intake"></div>
+    <div id="app">
+        <header>
+            <h1>AI电商数据洞察工具</h1>
+        </header>
+        <main>
+            <div class="section">
+                <div class="button-group">
+                    <button class="button" id="generate-button">生成分析</button>
+                    <button class="button" id="clear-button">清空/重填</button>
+                    <button class="button" id="copy-button">复制结果</button>
+                    <button class="button" id="export-button">导出 JSON</button>
+                    <button class="button" id="random-button">随机示例</button>
+                    <button class="button" id="scenario-a-button">场景A</button>
+                    <button class="button" id="scenario-b-button">场景B</button>
+                    <button class="button" id="scenario-c-button">场景C</button>
+                </div>
+                <div class="input-group">
+                    <label for="start-date">开始日期</label>
+                    <input type="date" id="start-date" value="2023-01-01">
+                </div>
+                <div class="input-group">
+                    <label for="end-date">结束日期</label>
+                    <input type="date" id="end-date" value="2023-12-31">
+                </div>
+                <div class="input-group">
+                    <label for="region">地区</label>
+                    <select id="region">
+                        <option value="全国">全国</option>
+                        <option value="东部">东部</option>
+                        <option value="中部">中部</option>
+                        <option value="西部">西部</option>
+                    </select>
+                </div>
+                <div class="input-group">
+                    <label for="platform">平台</label>
+                    <select id="platform">
+                        <option value="微信">微信</option>
+                        <option value="抖音">抖音</option>
+                        <option value="快手">快手</option>
+                    </select>
+                </div>
+            </div>
+            <div class="section">
+                <div class="card" id="example-result">
+                    <h2>示例结果</h2>
+                    <p>每日发货量：<strong>500</strong> 件</p>
+                    <p>复购率：<strong>30%</strong></p>
+                    <p>客单价：<strong>¥150</strong></p>
+                    <div class="chart-container" id="example-chart">
+                        <!-- 示例图表 -->
+                    </div>
+                    <p><em>（以上数据为示例，仅供参考）</em></p>
+                </div>
+                <div class="card" id="real-result" style="display: none;">
+                    <h2>分析结果</h2>
+                    <div id="result-content">
+                        <!-- 真实结果渲染 -->
+                    </div>
+                </div>
+            </div>
+        </main>
+        <footer>
+            <p>© 2023 AI电商数据洞察工具</p>
+        </footer>
+    </div>
+    <script>
+        // 种子数据
+        const SEED_DATA = {
+            scenarioA: [
+                { order_no: "SO1001", platform: "微信", region: "东部", sales: 120, repurchase: 35, unit_price: 180 },
+                { order_no: "SO1002", platform: "抖音", region: "中部", sales: 80, repurchase: 20, unit_price: 150 },
+                // 更多示例数据...
+            ],
+            scenarioB: [
+                { order_no: "SO2001", platform: "快手", region: "西部", sales: 200, repurchase: 40, unit_price: 200 },
+                { order_no: "SO2002", platform: "微信", region: "东部", sales: 150, repurchase: 30, unit_price: 160 },
+                // 更多示例数据...
+            ],
+            scenarioC: [
+                { order_no: "SO3001", platform: "抖音", region: "全国", sales: 300, repurchase: 50, unit_price: 220 },
+                { order_no: "SO3002", platform: "快手", region: "东部", sales: 180, repurchase: 25, unit_price: 170 },
+                // 更多示例数据...
+            ]
+        };
+
+        // 数据架构
+        window.DATA_SCHEMA = {
+            name: "订单明细",
+            columns: [
+                { key: "order_no", label: "订单号", type: "text", example: "SO...", required: true },
+                { key: "platform", label: "平台", type: "text", example: "微信", required: true },
+                { key: "region", label: "地区", type: "text", example: "东部", required: true },
+                { key: "sales", label: "销售量", type: "number", example: "100", required: true },
+                { key: "repurchase", label: "复购率 (%)", type: "number", example: "30", required: true },
+                { key: "unit_price", label: "客单价 (¥)", type: "number", example: "150", required: true }
+            ],
+            sample: [
+                { order_no: "SO1001", platform: "微信", region: "东部", sales: 120, repurchase: 35, unit_price: 180 },
+                { order_no: "SO1002", platform: "抖音", region: "中部", sales: 80, repurchase: 20, unit_price: 150 },
+                // 更多示例数据...
+            ],
+            maxRows: 300
+        };
+
+        // 切换场景
+        document.getElementById('scenario-a-button').addEventListener('click', () => {
+            loadScenario('scenarioA');
+        });
+        document.getElementById('scenario-b-button').addEventListener('click', () => {
+            loadScenario('scenarioB');
+        });
+        document.getElementById('scenario-c-button').addEventListener('click', () => {
+            loadScenario('scenarioC');
+        });
+
+        // 加载场景
+        function loadScenario(scenario) {
+            const data = SEED_DATA[scenario];
+            window.DataIntake.loadData(data);
+        }
+
+        // 清空/重填
+        document.getElementById('clear-button').addEventListener('click', () => {
+            window.DataIntake.clearData();
+        });
+
+        // 复制结果
+        document.getElementById('copy-button').addEventListener('click', () => {
+            const result = document.getElementById('result-content').innerText;
+            navigator.clipboard.writeText(result);
+            alert('结果已复制到剪贴板');
+        });
+
+        // 导出 JSON
+        document.getElementById('export-button').addEventListener('click', () => {
+            const result = document.getElementById('result-content').innerText;
+            const blob = new Blob([result], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'result.json';
+            a.click();
+            URL.revokeObjectURL(url);
+        });
+
+        // 随机示例
+        document.getElementById('random-button').addEventListener('click', () => {
+            const scenarios = ['scenarioA', 'scenarioB', 'scenarioC'];
+            const randomScenario = scenarios[Math.floor(Math.random() * scenarios.length)];
+            loadScenario(randomScenario);
+        });
+
+        // 生成分析
+        document.getElementById('generate-button').addEventListener('click', () => {
+            const inputs = {
+                start_date: document.getElementById('start-date').value,
+                end_date: document.getElementById('end-date').value,
+                region: document.getElementById('region').value,
+                platform: document.getElementById('platform').value,
+                data: window.DataIntake ? window.DataIntake.getPayload() : null
+            };
+            fetch('/api/generate', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ inputs: inputs })
+            })
+            .then(response => response.json())
+            .then(data => {
+                document.getElementById('real-result').style.display = 'block';
+                document.getElementById('example-result').style.display = 'none';
+                document.getElementById('result-content').innerHTML = `
+                    <p>每日发货量：<strong>${data.daily_shipments}</strong> 件</p>
+                    <p>复购率：<strong>${data.repurchase_rate}%</strong></p>
+                    <p>客单价：<strong>¥${data.average_order_value}</strong></p>
+                    <div class="chart-container" id="real-chart">
+                        <!-- 真实图表 -->
+                    </div>
+                `;
+                // 这里可以添加图表渲染逻辑
+            })
+            .catch(error => {
+                console.error('Error:', error);
+            });
+        });
+
+        // 示例图表渲染（使用 Chart.js）
+        const ctx = document.getElementById('example-chart').getContext('2d');
+        const exampleChart = new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: ['微信', '抖音', '快手'],
+                datasets: [{
+                    label: '销售量',
+                    data: [120, 80, 200],
+                    backgroundColor: 'rgba(75, 192, 192, 0.6)'
+                }]
+            },
+            options: {
+                responsive: true,
+                scales: {
+                    y: {
+                        beginAtZero: true
+                    }
+                }
+            }
+        });
+
+        // DataIntake 组件初始化
+        window.DataIntake = {
+            data: [],
+            isReady: function() {
+                return this.data.length > 0;
+            },
+            getPayload: function() {
+                return this.data;
+            },
+            loadData: function(data) {
+                this.data = data;
+            },
+            clearData: function() {
+                this.data = [];
+            }
+        };
+    </script>
+</body>
+</html>

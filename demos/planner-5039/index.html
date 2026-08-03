@@ -1,0 +1,492 @@
+```html
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>电商数据智能分析工具</title>
+    <style>
+        :root {
+            --primary-color: #4A90E2;
+            --secondary-color: #50E3C2;
+            --background-color: #F5F5F5;
+            --text-color: #333333;
+            --border-radius: 8px;
+            --box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        body {
+            margin: 0;
+            font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+            background-color: var(--background-color);
+            color: var(--text-color);
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background-color: #ffffff;
+            padding: 30px;
+            border-radius: var(--border-radius);
+            box-shadow: var(--box-shadow);
+        }
+
+        h1 {
+            text-align: center;
+            color: var(--primary-color);
+        }
+
+        .section {
+            margin-bottom: 40px;
+        }
+
+        .button-group {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        .button-group button {
+            flex: 1 1 150px;
+            padding: 10px;
+            border: none;
+            border-radius: var(--border-radius);
+            background-color: var(--secondary-color);
+            color: #ffffff;
+            cursor: pointer;
+            font-size: 16px;
+            transition: background-color 0.3s;
+        }
+
+        .button-group button:hover {
+            background-color: #40D9B1;
+        }
+
+        .input-group {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .input-group label {
+            font-weight: bold;
+        }
+
+        .input-group input, .input-group select {
+            padding: 8px;
+            border: 1px solid #cccccc;
+            border-radius: var(--border-radius);
+            font-size: 16px;
+        }
+
+        .result-panel {
+            background-color: #f9f9f9;
+            padding: 20px;
+            border-radius: var(--border-radius);
+            box-shadow: var(--box-shadow);
+        }
+
+        .result-panel h2 {
+            margin-top: 0;
+            color: var(--primary-color);
+        }
+
+        .result-panel table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 10px;
+        }
+
+        .result-panel table th, .result-panel table td {
+            padding: 10px;
+            border: 1px solid #dddddd;
+            text-align: left;
+        }
+
+        .result-panel table th {
+            background-color: var(--secondary-color);
+            color: #ffffff;
+        }
+
+        .chart-container {
+            width: 100%;
+            height: 400px;
+            margin-top: 20px;
+        }
+
+        @media (max-width: 768px) {
+            .button-group {
+                flex-direction: column;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div id="data-intake"></div>
+    <div class="container">
+        <h1>电商数据智能分析工具</h1>
+        <div class="section">
+            <div class="button-group">
+                <button id="generate-button">生成分析报告</button>
+                <button id="clear-button">清空 / 重填</button>
+                <button id="copy-button">复制结果</button>
+                <button id="export-button">导出 JSON</button>
+                <button id="random-button">随机示例</button>
+                <button id="preset-a">场景预设 A</button>
+                <button id="preset-b">场景预设 B</button>
+                <button id="preset-c">场景预设 C</button>
+            </div>
+            <div class="input-group">
+                <label for="start-date">开始日期</label>
+                <input type="date" id="start-date" name="start-date">
+            </div>
+            <div class="input-group">
+                <label for="end-date">结束日期</label>
+                <input type="date" id="end-date" name="end-date">
+            </div>
+            <div class="input-group">
+                <label for="sales-channel">销售渠道</label>
+                <select id="sales-channel" name="sales-channel">
+                    <option value="wechat">微信订单</option>
+                    <option value="douyin">抖音小店</option>
+                    <option value="kuaidi100">快递 100</option>
+                </select>
+            </div>
+        </div>
+        <div class="section">
+            <div class="result-panel" id="result-panel" style="display: none;">
+                <h2>分析结果</h2>
+                <div id="result-content">
+                    <!-- 示例结果面板 -->
+                    <p>请生成分析报告以查看结果。</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 示例数据
+        const SEED = {
+            'scenarioA': {
+                'start-date': '2023-01-01',
+                'end-date': '2023-12-31',
+                'sales-channel': 'wechat',
+                'data': [
+                    { 'order_no': 'SO1001', 'customer': '客户A', 'amount': 150, 'date': '2023-01-15' },
+                    { 'order_no': 'SO1002', 'customer': '客户B', 'amount': 200, 'date': '2023-02-20' },
+                    { 'order_no': 'SO1003', 'customer': '客户C', 'amount': 300, 'date': '2023-03-10' },
+                    { 'order_no': 'SO1004', 'customer': '客户D', 'amount': 250, 'date': '2023-04-05' },
+                    { 'order_no': 'SO1005', 'customer': '客户E', 'amount': 180, 'date': '2023-05-25' },
+                    { 'order_no': 'SO1006', 'customer': '客户F', 'amount': 220, 'date': '2023-06-30' },
+                    { 'order_no': 'SO1007', 'customer': '客户G', 'amount': 170, 'date': '2023-07-12' },
+                    { 'order_no': 'SO1008', 'customer': '客户H', 'amount': 210, 'date': '2023-08-18' },
+                    { 'order_no': 'SO1009', 'customer': '客户I', 'amount': 190, 'date': '2023-09-22' },
+                    { 'order_no': 'SO1010', 'customer': '客户J', 'amount': 230, 'date': '2023-10-28' },
+                    { 'order_no': 'SO1011', 'customer': '客户K', 'amount': 160, 'date': '2023-11-14' },
+                    { 'order_no': 'SO1012', 'customer': '客户L', 'amount': 240, 'date': '2023-12-10' }
+                ]
+            },
+            'scenarioB': {
+                'start-date': '2023-06-01',
+                'end-date': '2023-12-31',
+                'sales-channel': 'douyin',
+                'data': [
+                    { 'order_no': 'SO2001', 'customer': '客户M', 'amount': 180, 'date': '2023-06-05' },
+                    { 'order_no': 'SO2002', 'customer': '客户N', 'amount': 220, 'date': '2023-07-15' },
+                    { 'order_no': 'SO2003', 'customer': '客户O', 'amount': 160, 'date': '2023-08-20' },
+                    { 'order_no': 'SO2004', 'customer': '客户P', 'amount': 210, 'date': '2023-09-10' },
+                    { 'order_no': 'SO2005', 'customer': '客户Q', 'amount': 190, 'date': '2023-10-25' },
+                    { 'order_no': 'SO2006', 'customer': '客户R', 'amount': 230, 'date': '2023-11-30' },
+                    { 'order_no': 'SO2007', 'customer': '客户S', 'amount': 170, 'date': '2023-12-12' }
+                ]
+            },
+            'scenarioC': {
+                'start-date': '2023-03-01',
+                'end-date': '2023-09-30',
+                'sales-channel': 'kuaidi100',
+                'data': [
+                    { 'order_no': 'SO3001', 'customer': '客户T', 'amount': 160, 'date': '2023-03-10' },
+                    { 'order_no': 'SO3002', 'customer': '客户U', 'amount': 200, 'date': '2023-04-15' },
+                    { 'order_no': 'SO3003', 'customer': '客户V', 'amount': 180, 'date': '2023-05-20' },
+                    { 'order_no': 'SO3004', 'customer': '客户W', 'amount': 220, 'date': '2023-06-25' },
+                    { 'order_no': 'SO3005', 'customer': '客户X', 'amount': 210, 'date': '2023-07-30' },
+                    { 'order_no': 'SO3006', 'customer': '客户Y', 'amount': 190, 'date': '2023-08-10' },
+                    { 'order_no': 'SO3007', 'customer': '客户Z', 'amount': 170, 'date': '2023-09-15' }
+                ]
+            }
+        };
+
+        // 数据入口组件
+        window.DATA_SCHEMA = {
+            name: "订单明细",
+            columns: [
+                { key: "order_no", label: "订单号", type: "text", example: "SO...", required: true },
+                { key: "customer", label: "客户名称", type: "text", example: "客户A", required: true },
+                { key: "amount", label: "订单金额", type: "number", example: "100", required: true },
+                { key: "date", label: "订单日期", type: "date", example: "2023-01-01", required: true }
+            ],
+            sample: [
+                { 'order_no': 'SO1001', 'customer': '客户A', 'amount': 150, 'date': '2023-01-15' },
+                { 'order_no': 'SO1002', 'customer': '客户B', 'amount': 200, 'date': '2023-02-20' },
+                { 'order_no': 'SO1003', 'customer': '客户C', 'amount': 300, 'date': '2023-03-10' },
+                { 'order_no': 'SO1004', 'customer': '客户D', 'amount': 250, 'date': '2023-04-05' },
+                { 'order_no': 'SO1005', 'customer': '客户E', 'amount': 180, 'date': '2023-05-25' }
+            ],
+            maxRows: 300
+        };
+
+        // 获取数据入口组件的引用
+        const dataIntakeDiv = document.getElementById('data-intake');
+        dataIntakeDiv.innerHTML = `
+            <div id="data-intake-component"></div>
+        `;
+        // 假设平台会注入 /data-intake.js 并挂载 window.DataIntake
+        // 这里为了模拟效果，我们手动创建 DataIntake 对象
+        window.DataIntake = {
+            isReady: function() {
+                return true; // 假设数据已准备好
+            },
+            getPayload: function() {
+                return {
+                    data: SEED['scenarioA']['data'],
+                    summary: {
+                        totalOrders: SEED['scenarioA']['data'].length,
+                        totalAmount: SEED['scenarioA']['data'].reduce((sum, row) => sum + row.amount, 0)
+                    }
+                };
+            }
+        };
+
+        // 生成按钮点击事件
+        document.getElementById('generate-button').addEventListener('click', () => {
+            // 获取输入数据
+            const inputs = {
+                'start-date': document.getElementById('start-date').value,
+                'end-date': document.getElementById('end-date').value,
+                'sales-channel': document.getElementById('sales-channel').value
+            };
+
+            // 获取数据入口组件的数据
+            if (window.DataIntake && window.DataIntake.isReady()) {
+                const payload = window.DataIntake.getPayload();
+                inputs.data = payload.data;
+                inputs.summary = payload.summary;
+            } else {
+                // 使用 SEED 数据
+                const scenario = 'scenarioA'; // 默认使用场景A
+                inputs.data = SEED[scenario]['data'];
+                inputs.summary = {
+                    totalOrders: SEED[scenario]['data'].length,
+                    totalAmount: SEED[scenario]['data'].reduce((sum, row) => sum + row.amount, 0)
+                };
+            }
+
+            // 调用 API
+            fetch('/api/generate', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ inputs: inputs })
+            })
+            .then(response => response.json())
+            .then(data => {
+                // 渲染结果
+                renderResult(data);
+            })
+            .catch(error => {
+                console.error('Error:', error);
+            });
+        });
+
+        // 清空按钮点击事件
+        document.getElementById('clear-button').addEventListener('click', () => {
+            // 清空输入
+            document.getElementById('start-date').value = '';
+            document.getElementById('end-date').value = '';
+            document.getElementById('sales-channel').value = 'wechat';
+            // 清空结果
+            document.getElementById('result-panel').style.display = 'none';
+            document.getElementById('result-content').innerHTML = '<p>请生成分析报告以查看结果。</p>';
+        });
+
+        // 复制按钮点击事件
+        document.getElementById('copy-button').addEventListener('click', () => {
+            // 复制结果
+            const result = document.getElementById('result-content').innerText;
+            navigator.clipboard.writeText(result)
+                .then(() => {
+                    alert('结果已复制到剪贴板');
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                });
+        });
+
+        // 导出按钮点击事件
+        document.getElementById('export-button').addEventListener('click', () => {
+            // 导出 JSON
+            const result = document.getElementById('result-content').innerText;
+            const blob = new Blob([result], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = 'analysis_result.json';
+            link.click();
+        });
+
+        // 随机示例按钮点击事件
+        document.getElementById('random-button').addEventListener('click', () => {
+            // 随机选择一个场景
+            const scenarios = ['scenarioA', 'scenarioB', 'scenarioC'];
+            const scenario = scenarios[Math.floor(Math.random() * scenarios.length)];
+            // 设置输入
+            document.getElementById('start-date').value = SEED[scenario]['start-date'];
+            document.getElementById('end-date').value = SEEN[scenario]['end-date'];
+            document.getElementById('sales-channel').value = SEED[scenario]['sales-channel'];
+            // 设置数据
+            window.DataIntake = {
+                isReady: function() {
+                    return true;
+                },
+                getPayload: function() {
+                    return {
+                        data: SEED[scenario]['data'],
+                        summary: {
+                            totalOrders: SEED[scenario]['data'].length,
+                            totalAmount: SEED[scenario]['data'].reduce((sum, row) => sum + row.amount, 0)
+                }
+            };
+        }
+    };
+    // 调用生成按钮事件
+    document.getElementById('generate-button').click();
+});
+
+document.getElementById('preset-a').addEventListener('click', () => {
+    // 设置场景A的输入
+    document.getElementById('start-date').value = SEED['scenarioA']['start-date'];
+    document.getElementById('end-date').value = SEED['scenarioA']['end-date'];
+    document.getElementById('sales-channel').value = SEED['scenarioA']['sales-channel'];
+    // 设置数据
+    window.DataIntake = {
+        isReady: function() {
+            return true;
+        },
+        getPayload: function() {
+            return {
+                data: SEED['scenarioA']['data'],
+                summary: {
+                    totalOrders: SEED['scenarioA']['data'].length,
+                    totalAmount: SEEN['scenarioA']['data'].reduce((sum, row) => sum + row.amount, 0)
+                }
+            };
+        }
+    };
+    // 调用生成按钮事件
+    document.getElementById('generate-button').click();
+});
+
+document.getElementById('preset-b').addEventListener('click', () => {
+    // 设置场景B的输入
+    document.getElementById('start-date').value = SEED['scenarioB']['start-date'];
+    document.getElementById('end-date').value = SEED['scenarioB']['end-date'];
+    document.getElementById('sales-channel').value = SEED['scenarioB']['sales-channel'];
+    // 设置数据
+    window.DataIntake = {
+        isReady: function() {
+            return true;
+        },
+        getPayload: function() {
+            return {
+                data: SEED['scenarioB']['data'],
+                summary: {
+                    totalOrders: SEED['scenarioB']['data'].length,
+                    totalAmount: SEEN['scenarioB']['data'].reduce((sum, row) => sum + row.amount, 0)
+                }
+            };
+        }
+    };
+    // 调用生成按钮事件
+    document.getElementById('generate-button').click();
+});
+
+document.getElementById('preset-c').addEventListener('click', () => {
+    // 设置场景C的输入
+    document.getElementById('start-date').value = SEED['scenarioC']['start-date'];
+    document.getElementById('end-date').value = SEED['scenarioC']['end-date'];
+    document.getElementById('sales-channel').value = SEED['scenarioC']['sales-channel'];
+    // 设置数据
+    window.DataIntake = {
+        isReady: function() {
+            return true;
+        },
+        getPayload: function() {
+            return {
+                data: SEED['scenarioC']['data'],
+                summary: {
+                    totalOrders: SEED['scenarioC']['data'].length,
+                    totalAmount: SEEN['scenarioC']['data'].reduce((sum, row) => sum + row.amount, 0)
+                }
+            };
+        }
+    };
+    // 调用生成按钮事件
+    document.getElementById('generate-button').click();
+});
+
+// 渲染结果函数
+function renderResult(data) {
+    // 假设返回的数据结构为
+    // {
+    //     "totalOrders": 100,
+    //     "totalAmount": 20000,
+    //     "averageOrderAmount": 200,
+    //     "reorderRate": 30,
+    //     "chartData": {
+    //         "labels": ["Jan", "Feb", "Mar", "Apr", "May", "Jun"],
+    //         "data": [150, 200, 300, 250, 180, 220]
+    //     }
+    // }
+    const resultPanel = document.getElementById('result-panel');
+    resultPanel.style.display = 'block';
+    const resultContent = document.getElementById('result-content');
+    resultContent.innerHTML = `
+        <h3>总订单数: ${data.totalOrders}</h3>
+        <h3>总金额: ${data.totalAmount} 元</h3>
+        <h3>平均订单金额: ${data.averageOrderAmount} 元</h3>
+        <h3>复购率: ${data.reorderRate} %</h3>
+        <div class="chart-container">
+            <canvas id="chart"></canvas>
+        </div>
+    `;
+    const ctx = document.getElementById('chart').getContext('2d');
+    const chart = new Chart(ctx, {
+        type: 'bar',
+        data: {
+            labels: data.chartData.labels,
+            datasets: [{
+                label: '每月销售额',
+                data: data.chartData.data,
+                backgroundColor: 'rgba(74, 144, 226, 0.6)',
+                borderColor: 'rgba(74, 144, 226, 1)',
+                borderWidth: 1
+            }]
+        },
+        options: {
+            responsive: true,
+            scales: {
+                y: {
+                    beginAtZero: true
+                }
+            }
+        }
+    });
+}
+    </script>
+</body>
+</html>
+```

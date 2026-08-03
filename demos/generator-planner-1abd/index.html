@@ -1,0 +1,297 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>代州黄酒短视频脚本批量生成器</title>
+    <style>
+        :root {
+            --primary-color: #d68f5e;
+            --background-color: #fdfdfd;
+            --text-color: #333;
+            --button-color: #f0f0f0;
+            --button-hover: #e0e0e0;
+            --border-color: #ddd;
+            --radius: 8px;
+            --shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        }
+        body {
+            margin: 0;
+            font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+            background-color: var(--background-color);
+            color: var(--text-color);
+            padding: 20px;
+            line-height: 1.6;
+        }
+        h1 {
+            text-align: center;
+            margin-bottom: 30px;
+            color: var(--primary-color);
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background-color: #fff;
+            padding: 30px;
+            border-radius: var(--radius);
+            box-shadow: var(--shadow);
+        }
+        .section {
+            margin-bottom: 30px;
+        }
+        .button-group {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+        .button-group button {
+            flex: 1 1 150px;
+            padding: 12px;
+            border: none;
+            border-radius: var(--radius);
+            background-color: var(--button-color);
+            cursor: pointer;
+            font-size: 16px;
+            transition: background-color 0.3s;
+        }
+        .button-group button:hover {
+            background-color: var(--button-hover);
+        }
+        .seed-data-panel {
+            border: 1px solid var(--border-color);
+            padding: 20px;
+            border-radius: var(--radius);
+            background-color: #fafafa;
+        }
+        .seed-data-panel h3 {
+            margin-top: 0;
+        }
+        .seed-data-panel pre {
+            background-color: #f0f0f0;
+            padding: 15px;
+            border-radius: var(--radius);
+            overflow-x: auto;
+        }
+        .result-panel {
+            border: 1px solid var(--border-color);
+            padding: 20px;
+            border-radius: var(--radius);
+            background-color: #fafafa;
+        }
+        .result-panel h3 {
+            margin-top: 0;
+        }
+        .result-panel pre {
+            background-color: #fff;
+            padding: 15px;
+            border-radius: var(--radius);
+            overflow-x: auto;
+        }
+        .loading {
+            display: none;
+            margin-top: 20px;
+            font-size: 18px;
+            color: var(--primary-color);
+        }
+        .error {
+            margin-top: 20px;
+            color: red;
+            font-weight: bold;
+        }
+        @media (max-width: 768px) {
+            .button-group {
+                flex-direction: column;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div id="data-intake"></div>
+    <div class="container">
+        <h1>代州黄酒短视频脚本批量生成器</h1>
+        <div class="section">
+            <div class="button-group">
+                <button id="generate-button">生成脚本</button>
+                <button id="clear-button">清空/重填</button>
+                <button id="copy-button">复制结果</button>
+                <button id="export-button">导出 JSON</button>
+                <button id="random-button">随机示例</button>
+                <button id="scenario-a-button">场景预设A</button>
+                <button id="scenario-b-button">场景预设B</button>
+                <button id="scenario-c-button">场景预设C</button>
+            </div>
+            <div class="seed-data-panel" id="seed-data-panel">
+                <h3>示例数据面板</h3>
+                <pre id="seed-data-display">正在加载...</pre>
+            </div>
+            <div class="result-panel" id="result-panel">
+                <h3>示例结果面板 <span style="font-size: 0.8em; color: #888;">（点击“生成”以查看真实输出）</span></h3>
+                <pre id="result-display">暂无结果</pre>
+            </div>
+            <div class="loading" id="loading">正在生成，请稍候...</div>
+            <div class="error" id="error-message"></div>
+        </div>
+    </div>
+    <script>
+        // System Prompt
+        const SYSTEM_PROMPT = `
+        你是一位专业的黄酒短视频脚本生成助手。请基于用户输入的卖点信息，生成适合在抖音/快手等短视频平台上发布的30秒或60秒口播脚本，并提供分镜描述。脚本应符合以下要求：
+        1. 简洁有力，突出黄酒的独特卖点；
+        2. 语言口语化，贴近消费者；
+        3. 包含明确的行动号召，如“点击购买”或“立即下单”；
+        4. 分镜描述应详细，包括镜头类型、时长、场景和人物动作。
+        当用户提供多个卖点时，请选择其中最具吸引力的一个作为核心卖点进行创作。
+        如果用户上传了数据，请优先基于数据中的高频卖点生成脚本。
+        `;
+
+        // Seed Data
+        const SEED_DATA_A = [
+            {卖点: "传统工艺酿造", 场景: "家庭聚会", 时长: "30秒"},
+            {卖点: "富含多种氨基酸", 场景: "养生保健", 时长: "60秒"},
+            {卖点: "历史悠久", 场景: "文化传承", 时长: "45秒"},
+            {卖点: "天然发酵", 场景: "健康生活", 时长: "30秒"},
+            {卖点: "低酒精度", 场景: "轻松畅饮", 时长: "30秒"},
+            {卖点: "适合搭配中餐", 场景: "美食搭配", 时长: "45秒"},
+            {卖点: "手工采摘原料", 场景: "品质保证", 时长: "60秒"},
+            {卖点: "古法酿造技艺", 场景: "文化体验", 时长: "60秒"}
+        ];
+
+        const SEED_DATA_B = [
+            {卖点: "独特的酒香", 场景: "浪漫约会", 时长: "30秒"},
+            {卖点: "百年老字号", 场景: "品牌故事", 时长: "60秒"},
+            {卖点: "酒体醇厚", 场景: "高端品鉴", 时长: "45秒"},
+            {卖点: "纯天然原料", 场景: "健康饮品", 时长: "30秒"},
+            {卖点: "适合送礼", 场景: "节日礼品", 时长: "30秒"},
+            {卖点: "传统与现代结合", 场景: "创新工艺", 时长: "45秒"},
+            {卖点: "口感柔和", 场景: "日常饮用", 时长: "30秒"},
+            {卖点: "高品质保证", 场景: "消费者信赖", 时长: "60秒"}
+        ];
+
+        const SEED_DATA_C = [
+            {卖点: "非物质文化遗产", 场景: "文化传承", 时长: "60秒"},
+            {卖点: "独特的酿造环境", 场景: "自然之美", 时长: "45秒"},
+            {卖点: "酒体清澈", 场景: "视觉享受", 时长: "30秒"},
+            {卖点: "适合搭配各种美食", 场景: "美食伴侣", 时长: "45秒"},
+            {卖点: "历史名人推荐", 场景: "名人效应", 时长: "60秒"},
+            {卖点: "传统与现代工艺结合", 场景: "创新传承", 时长: "60秒"},
+            {卖点: "口感丰富", 场景: "味觉盛宴", 时长: "30秒"},
+            {卖点: "高品质黄酒", 场景: "消费者首选", 时长: "30秒"}
+        ];
+
+        // Sample Result
+        const SAMPLE_RESULT = {
+            script: "欢迎来到代州黄酒的世界！今天我们要介绍的是我们的传统工艺酿造的黄酒。每一滴都蕴含着百年的匠心与智慧。代州黄酒，富含多种氨基酸，滋养您的健康。无论是家庭聚会还是日常饮用，都是您的最佳选择。立即点击下方链接下单，把这份传统美味带回家吧！",
+            shots: [
+                {镜头: "开场镜头", 时长: "5秒", 场景: "温馨的家庭聚会", 描述: "展示代州黄酒瓶身，背景是热闹的家庭聚会。"},
+                {镜头: "特写镜头", 时长: "3秒", 场景: "产品展示", 描述: "特写镜头展示黄酒的色泽和质感。"},
+                {镜头: "中景镜头", 时长: "7秒", 场景: "人物互动", 描述: "人物拿起酒杯，轻轻摇晃，微笑展示。"},
+                {镜头: "结尾镜头", 时长: "5秒", 场景: "行动号召", 描述: "展示产品包装和购买链接，文字提示“点击购买”。"}
+            ]
+        };
+
+        // Initialize
+        document.addEventListener("DOMContentLoaded", () => {
+            // Load Seed Data
+            document.getElementById("seed-data-display").textContent = JSON.stringify(SEED_DATA_A, null, 2);
+            // Set up Scenario Buttons
+            document.getElementById("scenario-a-button").addEventListener("click", () => {
+                document.getElementById("seed-data-display").textContent = JSON.stringify(SEED_DATA_A, null, 2);
+            });
+            document.getElementById("scenario-b-button").addEventListener("click", () => {
+                document.getElementById("seed-data-display").textContent = JSON.stringify(SEED_DATA_B, null, 2);
+            });
+            document.getElementById("scenario-c-button").addEventListener("click", () => {
+                document.getElementById("seed-data-display").textContent = JSON.stringify(SEED_DATA_C, null, 2);
+            });
+            // Set up Random Button
+            document.getElementById("random-button").addEventListener("click", () => {
+                const seedDataList = [SEED_DATA_A, SEED_DATA_B, SEED_DATA_C];
+                const randomIndex = Math.floor(Math.random() * seedDataList.length);
+                document.getElementById("seed-data-display").textContent = JSON.stringify(seedDataList[randomIndex], null, 2);
+            });
+            // Set up Clear Button
+            document.getElementById("clear-button").addEventListener("click", () => {
+                document.getElementById("seed-data-display").textContent = JSON.stringify(SEED_DATA_A, null, 2);
+                document.getElementById("result-display").textContent = "暂无结果";
+            });
+            // Set up Generate Button
+            document.getElementById("generate-button").addEventListener("click", () => {
+                const seedData = JSON.parse(document.getElementById("seed-data-display").textContent);
+                const dataIntake = window.DataIntake;
+                let inputs = {};
+                if (dataIntake && dataIntake.isReady()) {
+                    inputs.data = dataIntake.getPayload();
+                } else {
+                    inputs.data = seedData;
+                }
+                document.getElementById("loading").style.display = "block";
+                document.getElementById("error-message").textContent = "";
+                fetch("/api/generate", {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json"
+                    },
+                    body: JSON.stringify({ inputs: inputs })
+                })
+                .then(response => response.json())
+                .then(data => {
+                    document.getElementById("loading").style.display = "none";
+                    if (data.result) {
+                        document.getElementById("result-display").textContent = JSON.stringify(data.result, null, 2);
+                    } else {
+                        document.getElementById("result-display").textContent = "生成失败，请稍后重试。";
+                    }
+                })
+                .catch(error => {
+                    document.getElementById("loading").style.display = "none";
+                    document.getElement("error-message").textContent = "发生错误，请稍后重试。";
+                });
+            });
+            // Set up Copy Button
+            document.getElementById("copy-button").addEventListener("click", () => {
+                const result = document.getElementById("result-display").textContent;
+                navigator.clipboard.writeText(result).then(() => {
+                    alert("结果已复制到剪贴板。");
+                }).catch(() => {
+                    alert("复制失败，请手动复制。");
+                });
+            });
+            // Set up Export Button
+            document.getElementById("export-button").addEventListener("click", () => {
+                const result = document.getElementById("result-display").textContent;
+                const blob = new Blob([result], { type: "application/json" });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement("a");
+                a.href = url;
+                a.download = "脚本结果.json";
+                a.click();
+                URL.revokeObjectURL(url);
+            });
+            // Initialize Seed Data
+            document.getElementById("seed-data-display").textContent = JSON.stringify(SEED_DATA_A, null, 2);
+            // Initialize Result Panel
+            document.getElementById("result-display").textContent = "暂无结果";
+        });
+        window.DATA_SCHEMA = {
+            name: "黄酒卖点数据",
+            columns: [
+                { key: "卖点", label: "卖点", type: "text", example: "传统工艺酿造", required: true },
+                { key: "场景", label: "场景", type: "text", example: "家庭聚会", required: true },
+                { key: "时长", label: "时长", type: "text", example: "30秒", required: true }
+            ],
+            sample: [
+                {卖点: "传统工艺酿造", 场景: "家庭聚会", 时长: "30秒"},
+                {卖点: "富含多种氨基酸", 场景: "养生保健", 时长: "60秒"},
+                {卖点: "历史悠久", 场景: "文化传承", 时长: "45秒"},
+                {卖点: "天然发酵", 场景: "健康生活", 时长: "30秒"},
+                {卖点: "低酒精度", 场景: "轻松畅饮", 时长: "30秒"},
+                {卖点: "适合搭配中餐", 场景: "美食搭配", 时长: "45秒"},
+                {卖点: "手工采摘原料", 场景: "品质保证", 时长: "60秒"},
+                {卖点: "古法酿造技艺", 场景: "文化体验", 时长: "60秒"}
+            ],
+            maxRows: 300
+        };
+    </script>
+</body>
+</html>
