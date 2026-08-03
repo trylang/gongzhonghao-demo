@@ -1,0 +1,208 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI视频生成工作流工具 - 传统企业短视频解决方案</title>
+    <style>
+        :root {
+            --primary-color: #4A90E2;
+            --background-color: #F5F5F5;
+            --text-color: #333333;
+            --border-color: #D9D9D9;
+            --button-color: #4A90E2;
+            --button-text-color: #FFFFFF;
+            --input-border: #CCCCCC;
+            --success-color: #28A745;
+            --error-color: #DC3545;
+            --shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+            --radius: 8px;
+        }
+        body {
+            margin: 0;
+            font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+            background-color: var(--background-color);
+            color: var(--text-color);
+            padding: 20px;
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background-color: #FFFFFF;
+            padding: 30px;
+            border-radius: var(--radius);
+            box-shadow: var(--shadow);
+        }
+        h1 {
+            text-align: center;
+            margin-bottom: 30px;
+            color: var(--primary-color);
+        }
+        .step {
+            margin-bottom: 25px;
+        }
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+        }
+        input[type="text"], input[type="number"], textarea, select {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid var(--input-border);
+            border-radius: var(--radius);
+            box-sizing: border-box;
+            margin-bottom: 15px;
+            font-size: 16px;
+        }
+        textarea {
+            resize: vertical;
+            height: 100px;
+        }
+        .options {
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
+        }
+        .options label {
+            font-weight: normal;
+        }
+        button {
+            background-color: var(--button-color);
+            color: var(--button-text-color);
+            border: none;
+            padding: 12px 20px;
+            border-radius: var(--radius);
+            font-size: 16px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+        button:hover {
+            background-color: #357ABD;
+        }
+        .loading, .error, .result {
+            display: none;
+            margin-top: 20px;
+        }
+        .loading {
+            text-align: center;
+            font-size: 18px;
+            color: var(--primary-color);
+        }
+        .error {
+            color: var(--error-color);
+            font-weight: 600;
+        }
+        .result {
+            background-color: #F0F8FF;
+            padding: 20px;
+            border-left: 4px solid var(--primary-color);
+            border-radius: 0 4px 4px 0;
+        }
+        .result pre {
+            white-space: pre-wrap;
+            word-wrap: break-word;
+        }
+        .video-preview {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
+            margin-top: 15px;
+        }
+        .video-preview video {
+            max-width: 100%;
+            border-radius: var(--radius);
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>AI视频生成工作流工具</h1>
+        <div class="step">
+            <label for="productName">产品名称</label>
+            <input type="text" id="productName" placeholder="例如：代州黄酒">
+        </div>
+        <div class="step">
+            <label for="productDescription">产品描述</label>
+            <textarea id="productDescription" placeholder="例如：传承古法酿造工艺，品味醇厚黄酒"></textarea>
+        </div>
+        <div class="step">
+            <label for="videoStyle">视频风格</label>
+            <select id="videoStyle">
+                <option value="modern">现代简约</option>
+                <option value="traditional">传统工艺</option>
+                <option value="lifestyle">生活方式</option>
+                <option value="storytelling">故事讲述</option>
+            </select>
+        </div>
+        <div class="step">
+            <label for="videoLength">视频时长（秒）</label>
+            <input type="number" id="videoLength" min="10" max="60" value="30">
+        </div>
+        <button id="generateButton">生成视频</button>
+
+        <div class="loading" id="loading">正在生成视频，请稍候...</div>
+        <div class="error" id="error"></div>
+        <div class="result" id="result">
+            <h2>生成结果</h2>
+            <div class="video-preview" id="videoPreview"></div>
+        </div>
+    </div>
+
+    <script>
+        document.getElementById('generateButton').addEventListener('click', () => {
+            // 显示 loading 态
+            document.getElementById('loading').style.display = 'block';
+            document.getElementById('error').style.display = 'none';
+            document.getElementById('result').style.display = 'none';
+
+            // 获取用户输入
+            const inputs = {
+                productName: document.getElementById('productName').value,
+                productDescription: document.getElementById('productDescription').value,
+                videoStyle: document.getElementById('videoStyle').value,
+                videoLength: parseInt(document.getElementById('videoLength').value, 10)
+            };
+
+            // 发送 POST 请求到 /api/generate
+            fetch('/api/generate', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ inputs: inputs })
+            })
+            .then(response => response.json())
+            .then(data => {
+                // 处理返回结果
+                document.getElementById('loading').style.display = 'none';
+                if (data.result) {
+                    const result = JSON.parse(data.result);
+                    // 渲染视频预览
+                    const videoContainer = document.getElementById('videoPreview');
+                    videoContainer.innerHTML = '';
+                    result.videoUrls.forEach(url => {
+                        const video = document.createElement('video');
+                        video.src = url;
+                        video.controls = true;
+                        video.width = 320;
+                        video.height = 180;
+                        videoContainer.appendChild(video);
+                    });
+                    document.getElementById('result').style.display = 'block';
+                } else {
+                    document.getElementById('error').innerText = '生成失败，请稍后重试。';
+                    document.getElementById('error').style.display = 'block';
+                }
+            })
+            .catch(error => {
+                // 处理错误
+                document.getElementById('loading').style.display = 'none';
+                document.getElementById('error').innerText = '请求出错，请稍后重试。';
+                document.getElementById('error').style.display = 'block';
+                console.error(error);
+            });
+        });
+    </script>
+</body>
+</html>

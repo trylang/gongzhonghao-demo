@@ -34,6 +34,7 @@ services:
 
 
 
+
   - type: web
     name: agent-boundary-board
     runtime: node
@@ -47,6 +48,7 @@ services:
       - key: MINIMAX_API_KEY
         sync: true
         value: sk-cp-6TsmFqQh8no8k0od-0zXJoUxkpdJo2NeDUDHjbZeyDNhdWV3bN8EiJ1GMwPZS6Wlx-Q1imUMG0hKS9wbvRdqlxdGBxMNJher2J32Q48m8p0ALfB_LBfQ6BU
+
 
 
 
@@ -72,6 +74,7 @@ services:
 
 
 
+
   - type: web
     name: product-storyteller
     runtime: node
@@ -85,6 +88,7 @@ services:
       - key: MINIMAX_API_KEY
         sync: true
         value: sk-cp-6TsmFqQh8no8k0od-0zXJoUxkpdJo2NeDUDHjbZeyDNhdWV3bN8EiJ1GMwPZS6Wlx-Q1imUMG0hKS9wbvRdqlxdGBxMNJher2J32Q48m8p0ALfB_LBfQ6BU
+
 
 
 
@@ -110,6 +114,7 @@ services:
 
 
 
+
   - type: web
     name: huangjiu-content-generator
     runtime: node
@@ -123,6 +128,7 @@ services:
       - key: MINIMAX_API_KEY
         sync: true
         value: sk-cp-6TsmFqQh8no8k0od-0zXJoUxkpdJo2NeDUDHjbZeyDNhdWV3bN8EiJ1GMwPZS6Wlx-Q1imUMG0hKS9wbvRdqlxdGBxMNJher2J32Q48m8p0ALfB_LBfQ6BU
+
 
 
 
@@ -148,6 +154,7 @@ services:
 
 
 
+
   - type: web
     name: huangjiu-after-sales
     runtime: node
@@ -161,6 +168,7 @@ services:
       - key: MINIMAX_API_KEY
         sync: true
         value: sk-cp-6TsmFqQh8no8k0od-0zXJoUxkpdJo2NeDUDHjbZeyDNhdWV3bN8EiJ1GMwPZS6Wlx-Q1imUMG0hKS9wbvRdqlxdGBxMNJher2J32Q48m8p0ALfB_LBfQ6BU
+
 
 
 
