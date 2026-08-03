@@ -1,0 +1,198 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI 红利评估工具：量化你的效率提升</title>
+    <style>
+        :root {
+            --primary-color: #2c3e50;
+            --secondary-color: #34495e;
+            --accent-color: #e74c3c;
+            --background-color: #f5f5f5;
+            --text-color: #333333;
+            --border-radius: 8px;
+            --box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            --font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+        }
+        body {
+            margin: 0;
+            font-family: var(--font-family);
+            background-color: var(--background-color);
+            color: var(--text-color);
+            line-height: 1.6;
+        }
+        .container {
+            max-width: 800px;
+            margin: 20px auto;
+            padding: 20px;
+            background-color: #ffffff;
+            border-radius: var(--border-radius);
+            box-shadow: var(--box-shadow);
+        }
+        h1, h2, h3 {
+            color: var(--primary-color);
+        }
+        .form-section, .result-section, .loading-section, .error-section {
+            margin-top: 20px;
+        }
+        .form-group {
+            margin-bottom: 15px;
+        }
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+        input[type="number"], select, textarea {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #cccccc;
+            border-radius: var(--border-radius);
+            box-sizing: border-box;
+        }
+        button {
+            background-color: var(--accent-color);
+            color: #ffffff;
+            padding: 12px 20px;
+            border: none;
+            border-radius: var(--border-radius);
+            cursor: pointer;
+            font-size: 16px;
+        }
+        button:hover {
+            background-color: #c0392b;
+        }
+        .loading-spinner {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid var(--accent-color);
+            border-radius: 50%;
+            width: 24px;
+            height: 24px;
+            animation: spin 1s linear infinite;
+            display: inline-block;
+            vertical-align: middle;
+            margin-left: 10px;
+        }
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+        .error-message {
+            color: var(--accent-color);
+            font-weight: bold;
+        }
+        .result-card {
+            border: 1px solid #dddddd;
+            padding: 15px;
+            border-radius: var(--border-radius);
+            background-color: #fafafa;
+        }
+        .result-item {
+            margin-bottom: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>AI 红利评估工具：量化你的效率提升</h1>
+        <p>工业革命带来的 15 倍加速在今天难以复制，但 AI 仍然能带来显著的效率提升。通过这个工具，您可以评估 AI 在您业务中的实际影响。</p>
+
+        <div class="form-section">
+            <h2>请输入您的业务数据</h2>
+            <div class="form-group">
+                <label for="current-cost">当前成本（万元）</label>
+                <input type="number" id="current-cost" placeholder="例如：100">
+            </div>
+            <div class="form-group">
+                <label for="expected-improvement">预期效率提升（%）</label>
+                <input type="number" id="expected-improvement" placeholder="例如：20">
+            </div>
+            <div class="form-group">
+                <label for="frequency">频率（次/月）</label>
+                <select id="frequency">
+                    <option value="1">1</option>
+                    <option value="2">2</option>
+                    <option value="4">4</option>
+                    <option value="8">8</option>
+                    <option value="12">12</option>
+                    <option value="20">20</option>
+                    <option value="30">30</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label for="description">描述您的业务场景</label>
+                <textarea id="description" rows="4" placeholder="例如：AI 辅助内容生成"></textarea>
+            </div>
+            <button id="generate-button">生成分析结果</button>
+        </div>
+
+        <div class="loading-section" style="display: none;">
+            <p>正在生成分析结果，请稍候...</p>
+            <div class="loading-spinner"></div>
+        </div>
+
+        <div class="error-section" style="display: none;">
+            <p class="error-message">发生错误，请稍后重试。</p>
+        </div>
+
+        <div class="result-section" style="display: none;">
+            <h2>分析结果</h2>
+            <div class="result-card">
+                <div class="result-item"><strong>当前成本：</strong><span id="result-current-cost"></span> 万元</div>
+                <div class="result-item"><strong>预期效率提升：</strong><span id="result-expected-improvement"></span> %</div>
+                <div class="result-item"><strong>月频次：</strong><span id="result-frequency"></span> 次</div>
+                <div class="result-item"><strong>月总成本节省：</strong><span id="result-monthly-savings"></span> 万元</div>
+                <div class="result-item"><strong>年总成本节省：</strong><span id="result-yearly-savings"></span> 万元</div>
+                <div class="result-item"><strong>您的描述：</strong><span id="result-description"></span></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.getElementById('generate-button').addEventListener('click', () => {
+            const currentCost = document.getElementById('current-cost').value;
+            const improvement = document.getElementById('expected-improvement').value;
+            const frequency = document.getElementById('frequency').value;
+            const description = document.getElementById('description').value;
+
+            if (!currentCost || !improvement || !frequency) {
+                alert('请填写所有必填项。');
+                return;
+            }
+
+            const inputs = {
+                current_cost: parseFloat(currentCost),
+                expected_improvement: parseFloat(improvement),
+                frequency: parseInt(frequency),
+                description: description
+            };
+
+            // Show loading
+            document.querySelector('.loading-section').style.display = 'block';
+            document.querySelector('.error-section').style.display = 'none';
+            document.querySelector('.result-section').style.display = 'none';
+
+            fetch('/api/generate', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ inputs: inputs })
+            })
+            .then(response => response.json())
+            .then(data => {
+                document.querySelector('.loading-section').style.display = 'none';
+                document.querySelector('.result-section').style.display = 'block';
+                document.getElementById('result-current-cost').textContent = inputs.current_cost;
+                document.getElementById('result-expected-improvement').textContent = inputs.expected_improvement;
+                document.getElementById('result-frequency').textContent = inputs.frequency;
+                document.getElementById('result-monthly-savings').textContent = (inputs.current_cost * (inputs.expected_improvement / 100)).toFixed(2);
+                document.getElementById('result-yearly-savings').textContent = (inputs.current_cost * (inputs.expected_improvement / 100) * inputs.frequency * 12).toFixed(2);
+                document.getElementById('result-description').textContent = inputs.description;
+            })
+            .catch(() => {
+                document.querySelector('.loading-section').style.display = 'none';
+                document.querySelector('.error-section').style.display = 'block';
+            });
+        });
+    </script>
+</body>
+</html>
