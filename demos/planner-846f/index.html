@@ -1,0 +1,596 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <title>电商用户画像与复购分析工具</title>
+    <style>
+        :root {
+            --primary-color: #4A90E2;
+            --background-color: #f5f5f5;
+            --text-color: #333333;
+            --border-radius: 8px;
+            --box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        }
+        body {
+            margin: 0;
+            font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+            background-color: var(--background-color);
+            color: var(--text-color);
+            padding: 20px;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background-color: #ffffff;
+            padding: 30px;
+            border-radius: var(--border-radius);
+            box-shadow: var(--box-shadow);
+        }
+        h1 {
+            text-align: center;
+            margin-bottom: 30px;
+            color: var(--primary-color);
+        }
+        .data-intake-section {
+            margin-bottom: 40px;
+        }
+        .data-intake-section h2 {
+            margin-bottom: 20px;
+            color: var(--primary-color);
+        }
+        .preset-buttons {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+        .preset-buttons button {
+            flex: 1;
+            padding: 10px;
+            border: none;
+            border-radius: var(--border-radius);
+            background-color: var(--primary-color);
+            color: #ffffff;
+            cursor: pointer;
+            font-size: 16px;
+            transition: background-color 0.3s;
+        }
+        .preset-buttons button:hover {
+            background-color: #357ab7;
+        }
+        .controls {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+        .controls button {
+            flex: 1;
+            padding: 10px;
+            border: none;
+            border-radius: var(--border-radius);
+            background-color: #cccccc;
+            color: #333333;
+            cursor: pointer;
+            font-size: 16px;
+            transition: background-color 0.3s;
+        }
+        .controls button.generate {
+            background-color: var(--primary-color);
+            color: #ffffff;
+        }
+        .controls button.generate:hover {
+            background-color: #357ab7;
+        }
+        .controls button.clear {
+            background-color: #ff4d4d;
+            color: #ffffff;
+        }
+        .controls button.clear:hover {
+            background-color: #cc0000;
+        }
+        .result-section {
+            margin-top: 40px;
+        }
+        .result-section h2 {
+            margin-bottom: 20px;
+            color: var(--primary-color);
+        }
+        .result-panel {
+            background-color: #fafafa;
+            padding: 20px;
+            border-radius: var(--border-radius);
+            box-shadow: var(--box-shadow);
+        }
+        .result-panel h3 {
+            margin-top: 0;
+            color: var(--primary-color);
+        }
+        .result-panel table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 20px;
+        }
+        .result-panel table th, .result-panel table td {
+            padding: 10px;
+            border: 1px solid #dddddd;
+            text-align: left;
+        }
+        .result-panel table th {
+            background-color: #f0f0f0;
+        }
+        .result-panel .chart {
+            width: 100%;
+            height: 300px;
+        }
+        .footer {
+            margin-top: 40px;
+            text-align: center;
+            color: #777777;
+            font-size: 14px;
+        }
+        @media (max-width: 768px) {
+            .preset-buttons, .controls {
+                flex-direction: column;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div id="data-intake"></div>
+    <div class="container">
+        <h1>电商用户画像与复购分析工具</h1>
+        <div class="data-intake-section">
+            <h2>数据来源</h2>
+            <!-- 平台会自动挂载数据入口组件 -->
+        </div>
+        <div class="preset-buttons">
+            <button id="preset-a">场景A：微信订单分析</button>
+            <button id="preset-b">场景B：抖音小店分析</button>
+            <button id="preset-c">场景C：快递100分析</button>
+        </div>
+        <div class="controls">
+            <button class="generate" id="generate">生成分析报告</button>
+            <button class="clear" id="clear">清空/重填</button>
+        </div>
+        <div class="result-section" id="result-section" style="display: none;">
+            <h2>分析结果</h2>
+            <div class="result-panel" id="result-panel">
+                <!-- 示例结果面板 -->
+                <h3>示例结果</h3>
+                <p>请注意：以下结果为示例数据，仅供参考。</p>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>指标</th>
+                            <th>数值</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>总订单数</td>
+                            <td>500</td>
+                        </tr>
+                        <tr>
+                            <td>复购率</td>
+                            <td>30%</td>
+                        </tr>
+                        <tr>
+                            <td>平均客单价</td>
+                            <td>¥200</td>
+                        </script>
+                    </tbody>
+                </table>
+                <canvas id="example-chart" class="chart"></canvas>
+                <p>结论：基于示例数据，用户的复购率较高，客单价也较为稳定。建议进一步优化营销策略以提高总订单数。</p>
+            </div>
+        </div>
+        <div class="controls">
+            <button id="copy-result">复制结果</button>
+            <button id="export-json">导出 JSON</button>
+            <button id="random-example">随机示例</button>
+        </div>
+    </div>
+    <div class="footer">
+        © 2023 电商用户画像与复购分析工具
+    </div>
+    <script>
+        // window.DATA_SCHEMA 声明
+        window.DATA_SCHEMA = {
+            name: "电商订单数据",
+            columns: [
+                { key: "order_no", label: "订单号", type: "text", example: "SO123456", required: true },
+                { key: "customer_id", label: "客户ID", type: "text", example: "CUST123", required: true },
+                { key: "purchase_date", label: "购买日期", type: "date", example: "2023-01-01", required: true },
+                { key: "product_id", label: "产品ID", type: "text", example: "PROD123", required: true },
+                { key: "quantity", label: "数量", type: "number", example: "2", required: true },
+                { key: "price", label: "单价", type: "number", example: "100", required: true },
+                { key: "shipping_address", label: "配送地址", type: "text", example: "北京市朝阳区...", required: true },
+                { key: "customer_segment", label: "客户细分", type: "text", example: "VIP", required: false }
+            ],
+            sample: [
+                { order_no: "SO123456", customer_id: "CUST123", purchase_date: "2023-01-01", product_id: "PROD123", quantity: 2, price: 100, shipping_address: "北京市朝阳区...", customer_segment: "VIP" },
+                { order_no: "SO123457", customer_id: "CUST124", purchase_date: "2023-01-02", product_id: "PROD124", quantity: 1, price: 150, shipping_address: "上海市浦东新区...", customer_segment: "Regular" },
+                // ... 15-30 条示例数据
+            ],
+            maxRows: 300
+        };
+
+        // SEED 示例数据
+        const SEED = {
+            scenario: "scenario_a",
+            data: [
+                { order_no: "SO123456", customer_id: "CUST123", purchase_date: "2023-01-01", product_id: "PROD123", quantity: 2, price: 100, shipping_address: "北京市朝阳区...", customer_segment: "VIP" },
+                { order_no: "SO123457", customer_id: "CUST124", purchase_date: "2023-01-02", product_id: "PROD124", quantity: 1, price: 150, shipping_address: "上海市浦东新区...", customer_segment: "Regular" },
+                // ... 8-15 条示例数据
+            ]
+        };
+
+        // 示例图表数据
+        const exampleChartData = {
+            labels: ['复购率', '客单价'],
+            datasets: [{
+                label: '示例数据',
+                data: [30, 200],
+                backgroundColor: [
+                    'rgba(75, 192, 192, 0.6)',
+                    'rgba(54, 162, 235, 0.6)'
+                ],
+                borderColor: [
+                    'rgba(75, 192, 192, 1)',
+                    'rgba(54, 162, 235, 1)'
+                ],
+                borderWidth: 1
+            }]
+        };
+
+        // 渲染示例图表
+        const ctx = document.getElementById('example-chart').getContext('2d');
+        const exampleChart = new Chart(ctx, {
+            type: 'bar',
+            data: exampleChartData,
+            options: {
+                responsive: true,
+                scales: {
+                    y: {
+                        beginAtZero: true
+                    }
+                }
+            }
+        });
+
+        // 事件处理
+        document.getElementById('generate').addEventListener('click', () => {
+            // 获取数据入口组件的数据
+            let inputs = {};
+            if (window.DataIntake && window.DataIntake.isReady()) {
+                inputs.data = window.DataIntake.getPayload();
+            } else {
+                inputs.data = SEED.data;
+            }
+            fetch('/api/generate', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ inputs: inputs })
+            })
+            .then(response => response.json())
+            .then(data => {
+                // 渲染结果
+                document.getElementById('result-panel').innerHTML = `
+                    <h3>分析结果</h3>
+                    <pre>${JSON.stringify(data, null, 2)}</pre>
+                `;
+                document.getElementById('result-section').style.display = 'block';
+            })
+            .catch(error => {
+                console.error('Error:', error);
+            });
+        });
+
+        document.getElementById('clear').addEventListener('click', () => {
+            // 清空数据入口组件的数据
+            if (window.DataIntake) {
+                window.DataIntake.clear();
+            }
+            document.getElementById('result-section').style.display = 'none';
+        });
+
+        document.getElementById('copy-result').addEventListener('click', () => {
+            // 复制结果
+            const result = document.getElementById('result-panel').innerText;
+            navigator.clipboard.writeText(result);
+        });
+
+        document.getElementById('export-json').addEventListener('click', () => {
+            // 导出 JSON
+            const result = document.getElementById('result-panel').innerText;
+            const blob = new Blob([result], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'result.json';
+            a.click();
+            URL.revokeObjectURL(url);
+        });
+
+        document.getElementById('random-example').addEventListener('click', () => {
+            // 随机示例
+            const scenarios = ['scenario_a', 'scenario_b', 'scenario_c'];
+            const randomScenario = scenarios[Math.floor(Math.random() * scenarios.length)];
+            // 假设每个场景有不同的 SEED 数据
+            // 这里只是示例，实际需要根据不同场景定义 SEED 数据
+            const randomSeed = {
+                scenario: randomScenario,
+                data: [
+                    // 示例数据
+                    { order_no: "SO123458", customer_id: "CUST125", purchase_date: "2023-01-03", product_id: "PROD125", quantity: 3, price: 120, shipping_address: "广东省深圳市...", customer_segment: "VIP" },
+                    { order_no: "SO123459", customer_id: "CUST126", purchase_date: "2023-01-04", product_id: "PROD126", quantity: 1, price: 180, shipping_address: "浙江省杭州市...", customer_segment: "Regular" },
+                    // ... 8-15 条示例数据
+                ]
+            };
+            // 填充数据入口组件
+            if (window.DataIntake) {
+                window.DataIntake.setPayload(randomSeed.data);
+            }
+            // 渲染示例结果
+            document.getElementById('result-panel').innerHTML = `
+                <h3>示例结果</h3>
+                <p>请注意：以下结果为随机示例数据，仅供参考。</p>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>指标</th>
+                            <th>数值</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>总订单数</td>
+                            <td>${randomSeed.data.length}</td>
+                        </tr>
+                        <tr>
+                            <td>复购率</td>
+                            <td>${Math.floor(Math.random() * 50)}%</td>
+                        </tr>
+                        <tr>
+                            <td>平均客单价</td>
+                            <td>¥${Math.floor(Math.random() * 300) + 50}</td>
+                        </tr>
+                    </tbody>
+                </table>
+                <canvas id="random-example-chart" class="chart"></canvas>
+                <p>结论：基于随机示例数据，用户的复购率和客单价均较为稳定。建议根据具体数据进一步分析。</p>
+            `;
+            // 渲染随机示例图表
+            const randomChartData = {
+                labels: ['复购率', '客单价'],
+                datasets: [{
+                    label: '随机示例数据',
+                    data: [Math.floor(Math.random() * 50), Math.floor(Math.random() * 300) + 50],
+                    backgroundColor: [
+                        'rgba(255, 99, 132, 0.6)',
+                        'rgba(255, 159, 64, 0.6)'
+                    ],
+                    borderColor: [
+                        'rgba(255,99,132, 1)',
+                        'rgba(255, 159, 64, 1)'
+                    ],
+                    borderWidth: 1
+                }]
+            };
+            const randomCtx = document.getElementById('random-example-chart').getContext('2d');
+            new Chart(randomCtx, {
+                type: 'bar',
+                data: randomChartData,
+                options: {
+                    responsive: true,
+                    scales: {
+                        y: {
+                            beginAtZero: true
+                        }
+                    }
+                }
+            });
+        });
+
+        // 场景预设按钮事件处理
+        document.getElementById('preset-a').addEventListener('click', () => {
+            // 填充数据入口组件
+            if (window.DataIntake) {
+                window.DataIntake.setPayload(SEED.data);
+            }
+            // 渲染示例结果
+            document.getElementById('result-panel').innerHTML = `
+                <h3>示例结果</h3>
+                <p>请注意：以下结果为场景A的示例数据，仅供参考。</p>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>指标</th>
+                            <th>数值</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>总订单数</td>
+                            <td>${SEED.data.length}</td>
+                        </tr>
+                        <tr>
+                            <td>复购率</td>
+                            <td>30%</td>
+                        </tr>
+                        <tr>
+                            <td>平均客单价</td>
+                            <td>¥200</td>
+                        </tr>
+                    </tbody>
+                </table>
+                <canvas id="preset-a-chart" class="chart"></canvas>
+                <p>结论：基于场景A的示例数据，用户的复购率较高，客单价也较为稳定。建议进一步优化营销策略以提高总订单数。</p>
+            `;
+            // 渲染示例图表
+            const presetAChartData = {
+                labels: ['复购率', '客单价'],
+                datasets: [{
+                    label: '场景A示例数据',
+                    data: [30, 200],
+                    backgroundColor: [
+                        'rgba(75, 192, 192, 0.6)',
+                        'rgba(54, 162, 235, 0.6)'
+                    ],
+                    borderColor: [
+                        'rgba(75, 192, 192, 1)',
+                        'rgba(54, 162, 235, 1)'
+                    ],
+                    borderWidth: 1
+                }]
+            };
+            const presetAChartCtx = document.getElementById('preset-a-chart').getContext('2d');
+            new Chart(presetAChartCtx, {
+                type: 'bar',
+                data: presetAChartData,
+                options: {
+                    responsive: true,
+                    scales: {
+                        y: {
+                            beginAtZero: true
+                        }
+                    }
+                }
+            });
+        });
+
+        document.getElementById('preset-b').addEventListener('click', () => {
+            // 填充数据入口组件
+            if (window.DataIntake) {
+                window.DataIntake.setPayload(SEED.data);
+            }
+            // 渲染示例结果
+            document.getElementById('result-panel').innerHTML = `
+                <h3>示例结果</h3>
+                <p>请注意：以下结果为场景B的示例数据，仅供参考。</p>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>指标</th>
+                            <th>数值</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>总订单数</td>
+                            <td>${SEED.data.length}</td>
+                        </tr>
+                        <tr>
+                            <td>复购率</td>
+                            <td>25%</td>
+                        </tr>
+                        <tr>
+                            <td>平均客单价</td>
+                            <td>¥180</td>
+                        </tr>
+                    </tbody>
+                </table>
+                <canvas id="preset-b-chart" class="chart"></canvas>
+                <p>结论：基于场景B的示例数据，用户的复购率和客单价均较为稳定。建议根据具体数据进一步分析。</p>
+            `;
+            // 渲染示例图表
+            const presetBChartData = {
+                labels: ['复购率', '客单价'],
+                datasets: [{
+                    label: '场景B示例数据',
+                    data: [25, 180],
+                    backgroundColor: [
+                        'rgba(255, 206, 86, 0.6)',
+                        'rgba(75, 192, 192, 0.6)'
+                    ],
+                    borderColor: [
+                        'rgba(255, 206, 86, 1)',
+                        'rgba(75, 192, 192, 1)'
+                    ],
+                    borderWidth: 1
+                }]
+            };
+            const presetBChartCtx = document.getElementById('preset-b-chart').getContext('2d');
+            new Chart(presetBChartCtx, {
+                type: 'bar',
+                data: presetBChartData,
+                options: {
+                    responsive: true,
+                    scales: {
+                        y: {
+                            beginAtZero: true
+                        }
+                    }
+                }
+            });
+        });
+
+        document.getElementById('preset-c').addEventListener('click', () => {
+            // 填充数据入口组件
+            if (window.DataIntake) {
+                window.DataIntake.setPayload(SEED.data);
+            }
+            // 渲染示例结果
+            document.getElementById('result-panel').innerHTML = `
+                <h3>示例结果</h3>
+                <p>请注意：以下结果为场景C的示例数据，仅供参考。</p>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>指标</th>
+                            <th>数值</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>总订单数</td>
+                            <td>${SEED.data.length}</td>
+                        </tr>
+                        <tr>
+                            <td>复购率</td>
+                            <td>35%</td>
+                        </tr>
+                        <tr>
+                            <td>平均客单价</td>
+                            <td>¥220</td>
+                        </tr>
+                    </tbody>
+                </table>
+                <canvas id="preset-c-chart" class="chart"></canvas>
+                <p>结论：基于场景C的示例数据，用户的复购率和客单价均较高。建议进一步优化产品策略以提高总订单数。</p>
+            `;
+            // 渲染示例图表
+            const presetCChartData = {
+                labels: ['复购率', '客单价'],
+                datasets: [{
+                    label: '场景C示例数据',
+                    data: [35, 220],
+                    backgroundColor: [
+                        'rgba(153, 102, 255, 0.6)',
+                        'rgba(255, 159, 64, 0.6)'
+                    ],
+                    borderColor: [
+                        'rgba(153, 102, 255, 1)',
+                        'rgba(255, 159, 64, 1)'
+                    ],
+                    borderWidth: 1
+                }]
+            };
+            const presetCChartCtx = document.getElementBy复证" id="preset-c-chart").getContext('2d');
+            new Chart(presetCChartCtx, {
+                type: 'bar',
+                data: presetCChartData,
+                options: {
+                    responsive: true,
+                    scales: {
+                        y: {
+                            beginAtZero: true
+                        }
+                    }
+                }
+            });
+        });
+    </script>
+</body>
+</html>

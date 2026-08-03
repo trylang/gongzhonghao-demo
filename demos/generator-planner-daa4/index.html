@@ -1,0 +1,418 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>代州黄酒短视频脚本批量生成器</title>
+    <style>
+        :root {
+            --main-color: #d68f4a;
+            --background-color: #f9f5f0;
+            --text-color: #333;
+            --border-color: #e0d7c9;
+            --button-color: #f5f0e5;
+            --button-hover: #e8e0d1;
+            --shadow: 0 4px 6px rgba(0,0,0,0.1);
+            --radius: 8px;
+        }
+        body {
+            font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+            background-color: var(--background-color);
+            color: var(--text-color);
+            margin: 0;
+            padding: 0;
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+        }
+        header {
+            background-color: var(--main-color);
+            color: white;
+            padding: 20px;
+            text-align: center;
+            box-shadow: var(--shadow);
+        }
+        header h1 {
+            margin: 0;
+            font-size: 1.8em;
+        }
+        main {
+            flex: 1;
+            padding: 20px;
+            max-width: 1200px;
+            margin: 0 auto;
+            position: relative;
+        }
+        .panel {
+            background-color: white;
+            padding: 20px;
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius);
+            margin-bottom: 20px;
+            box-shadow: var(--shadow);
+        }
+        .panel h2 {
+            margin-top: 0;
+            font-size: 1.4em;
+            color: var(--main-color);
+        }
+        .input-group {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+        .input-group label {
+            flex: 1 1 200px;
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+        }
+        .input-group input, .input-group select, .input-group textarea {
+            flex: 1;
+            padding: 10px;
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius);
+            font-size: 1em;
+        }
+        .buttons {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+        .buttons button {
+            flex: 1;
+            padding: 12px;
+            border: none;
+            border-radius: var(--radius);
+            background-color: var(--button-color);
+            cursor: pointer;
+            font-size: 1em;
+            transition: background-color 0.3s;
+        }
+        .buttons button:hover {
+            background-color: var(--button-hover);
+        }
+        .buttons button.primary {
+            background-color: var(--main-color);
+            color: white;
+        }
+        .buttons button.primary:hover {
+            background-color: #c27c3e;
+        }
+        .example-result {
+            background-color: #fcf8f3;
+            padding: 20px;
+            border: 1px solid #f5e9d7;
+            border-radius: var(--radius);
+            position: relative;
+        }
+        .example-result::before {
+            content: "示例结果";
+            position: absolute;
+            top: -10px;
+            left: 20px;
+            background-color: var(--main-color);
+            color: white;
+            padding: 5px 10px;
+            border-radius: 4px;
+            font-size: 0.9em;
+        }
+        .example-result h3 {
+            margin-top: 0;
+            color: var(--main-color);
+        }
+        .example-result p {
+            margin: 10px 0;
+        }
+        .chart-container {
+            width: 100%;
+            height: 300px;
+        }
+        footer {
+            background-color: var(--main-color);
+            color: white;
+            text-align: center;
+            padding: 10px;
+            box-shadow: var(--shadow);
+        }
+        @media (max-width: 768px) {
+            .input-group {
+                flex-direction: column;
+            }
+            .buttons button {
+                flex: 1 1 45%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div id="data-intake"></div>
+    <header>
+        <h1>代州黄酒短视频脚本批量生成器</h1>
+    </header>
+    <main>
+        <div class="panel">
+            <h2>输入卖点信息</h2>
+            <div class="input-group">
+                <label>
+                    产品名称
+                    <input type="text" id="product-name" placeholder="例如：代州黄酒">
+                </label>
+                <label>
+                    产品卖点
+                    <textarea id="product-sell-point" rows="3" placeholder="例如：传承千年酿造工艺，口感醇厚"></textarea>
+                </label>
+            </div>
+            <div class="buttons">
+                <button id="generate-button" class="primary">生成脚本</button>
+                <button id="reset-button">清空/重填</button>
+                <button id="copy-result-button">复制结果</button>
+                <button id="export-json-button">导出 JSON</button>
+                <button id="random-example-button">随机示例</button>
+            </div>
+        </div>
+        <div class="panel">
+            <h2>场景预设</h2>
+            <div class="buttons">
+                <button id="preset-a-button">场景 A: 产品介绍</button>
+                <button id="preset-b-button">场景 B: 品牌故事</button>
+                <button id="preset-c-button">场景 C: 促销信息</button>
+            </div>
+        </div>
+        <div class="panel example-result" id="example-result-panel" style="display: none;">
+            <h3>示例结果</h3>
+            <p>30 秒口播脚本：</p>
+            <p>（示例内容）</p>
+            <p>60 秒口播脚本：</p>
+            <p>（示例内容）</p>
+            <p>分镜描述：</p>
+            <p>（示例内容）</p>
+        </div>
+        <div class="panel" id="result-panel" style="display: none;">
+            <h2>生成结果</h2>
+            <div id="result-content">
+                <!-- 生成内容将在这里展示 -->
+            </div>
+        </div>
+        <div class="panel">
+            <h2>数据分析与可视化</h2>
+            <div id="chart-container" class="chart-container">
+                <!-- 图表将在这里展示 -->
+            </div>
+        </div>
+    </main>
+    <footer>
+        <p>© 2023 代州黄酒短视频脚本批量生成器</p>
+    </footer>
+    <script>
+        // ==== 数据入口组件声明 ====
+        window.DATA_SCHEMA = {
+            name: "产品卖点与用户数据",
+            columns: [
+                {key:"product_name", label:"产品名称", type:"text", example:"代州黄酒", required:true},
+                {key:"product_sell_point", label:"产品卖点", type:"textarea", example:"传承千年酿造工艺，口感醇厚", required:true},
+                {key:"user_comments", label:"用户评论", type:"textarea", example:"口感很好，回购了！", required:false},
+                {key:"target_audience", label:"目标受众", type:"text", example:"年轻人", required:false},
+                {key:"marketing_channel", label:"营销渠道", type:"text", example:"小红书", required:false}
+            ],
+            sample: [
+                {product_name:"代州黄酒", product_sell_point:"传承千年酿造工艺，口感醇厚", user_comments:"口感很好，回购了！", target_audience:"年轻人", marketing_channel:"小红书"},
+                {product_name:"代州黄酒", product_sell_point:"传统酿造工艺，品质保证", user_comments:"包装精美，送礼佳品", target_audience:"中年人", marketing_channel:"抖音"},
+                {product_name:"代州黄酒", product_sell_point:"黄酒养生，滋补佳品", user_comments:"喝了感觉身体暖暖的", target_audience:"老年人", marketing_channel:"电商平台"},
+                {product_name:"代州黄酒", product_sell_point:"历史悠久，文化传承", user_comments:"喝的是酒，品的是文化", target_audience:"文化爱好者", marketing_channel:"博物馆"},
+                {product_name:"代州黄酒", product_sell_point:"酒香浓郁，回味无穷", user_comments:"喝过一次就忘不了", target_audience:"酒类爱好者", marketing_channel:"酒吧"},
+                {product_name:"代州黄酒", product_sell_point:"健康饮品，养生首选", user_comments:"每天一杯，健康生活", target_audience:"健康生活追求者", marketing_channel:"健身房"},
+                {product_name:"代州黄酒", product_sell_point:"口感细腻，入口顺滑", user_comments:"喝起来很舒服，不上头", target_audience:"上班族", marketing_channel:"办公室"},
+                {product_name:"代州黄酒", product_sell_point:"性价比高，物超所值", user_comments:"价格实惠，质量好", target_audience:"大众消费者", marketing_channel:"超市"},
+                {product_name:"代州黄酒", product_sell_point:"独特风味，别具一格", user_comments:"有特色，不一样的体验", target_audience:"年轻人", marketing_channel:"社交媒体"},
+                {product_name:"代州黄酒", product_sell_point:"酒体丰满，香气扑鼻", user_comments:"香气浓郁，口感丰富", target_audience:"酒类专家", marketing_channel:"品酒会"},
+                {product_name:"代州黄酒", product_sell_point:"文化底蕴深厚", user_comments:"感受到了历史的厚重", target_audience:"文化爱好者", marketing_channel:"文化活动"},
+                {product_name:"代州黄酒", product_sell_point:"养生佳品，延年益寿", user_comments:"喝了对身体好", target_audience:"老年人", marketing_channel:"保健品店"},
+                {product_name:"代州黄酒", product_sell_point:"酒香四溢，回味悠长", user_comments:"喝完唇齿留香", target_audition:"酒类爱好者", marketing_channel:"酒吧"},
+                {product_name:"代州黄酒", product_sell_point:"独特口感，匠心酿造", user_comments:"喝起来很特别", target_audience:"美食爱好者", marketing_channel:"美食节"}
+            ],
+            maxRows: 300
+        };
+
+        // ==== 示例数据 ====
+        const SEED = {
+            product_name: "代州黄酒",
+            product_sell_point: "传承千年酿造工艺，口感醇厚",
+            user_comments: "口感很好，回购了！",
+            target_audience: "年轻人",
+            marketing_channel: "小红书"
+        };
+
+        // ==== 状态管理 ====
+        let currentData = { ...SEED };
+        let exampleResult = {
+            "30秒口播脚本": "欢迎来到代州黄酒的奇妙世界！我们的黄酒传承千年酿造工艺，口感醇厚，带给您无与伦比的味觉体验。",
+            "60秒口播脚本": "大家好，今天我要给大家介绍一款传承千年的佳酿——代州黄酒。代州黄酒以其独特的口感和深厚的文化底蕴深受消费者喜爱。代州黄酒采用传统酿造工艺，选用优质原料，经过多道工序精心酿制而成。其口感醇厚，香气扑鼻，是您日常饮用和送礼的绝佳选择。快来尝试代州黄酒，感受中华传统文化的魅力吧！",
+            "分镜描述": "1. 开场镜头：展示代州黄酒产品，镜头缓慢推进，配以悠扬的古风音乐。\n2. 产品特写：展示产品包装和细节，突出品牌标识。\n3. 酿造工艺展示：展示酿造过程中的关键步骤，如发酵、蒸馏等。\n4. 品尝体验：展示人们品尝黄酒的场景，表情愉悦，配以欢快的音乐。\5. 产品展示：展示不同包装和规格的代州黄酒产品。\6. 结尾镜头：展示品牌标识和宣传口号，镜头缓慢拉远。"
+        };
+
+        // ==== UI交互逻辑 ====
+        document.getElementById("generate-button").addEventListener("click", () => {
+            if (window.DataIntake && window.DataIntake.isReady()) {
+                const payload = window.DataIntake.getPayload();
+                generateScript(payload);
+            } else {
+                generateScript(currentData);
+            }
+        });
+
+        document.getElementById("reset-button").addEventListener("click", () => {
+            currentData = { ...SEED };
+            document.getElementById("product-name").value = currentData.product_name;
+            document.getElementById("product-sell-point").value = currentData.product_sell_point;
+            document.getElementById("user-comments").value = currentData.user_comments;
+            document.getElementById("target-audience").value = currentData.target_audience;
+            document.getElementById("marketing-channel").value = currentData.marketing_channel;
+            document.getElementById("result-panel").style.display = "none";
+            document.getElementById("example-result-panel").style.display = "none";
+            document.getElementById("chart-container").innerHTML = "";
+        });
+
+        document.getElementById("copy-result-button").addEventListener("click", () => {
+            const result = document.getElementById("result-content").innerText;
+            navigator.clipboard.writeText(result);
+            alert("结果已复制到剪贴板");
+        });
+
+        document.getElementById("export-json-button").addEventListener("click", () => {
+            const result = document.getElementById("result-content").innerText;
+            const blob = new Blob([result], { type: "application/json" });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement("a");
+            a.href = url;
+            a.download = "script.json";
+            a.click();
+            URL.revokeObjectURL(url);
+        });
+
+        document.getElementById("random-example-button").addEventListener("click", () => {
+            const randomIndex = Math.floor(Math.random() * SEED.sample.length);
+            currentData = SEED.sample[randomIndex];
+            document.getElementById("product-name").value = currentData.product_name;
+            document.getElementById("product-sell-point").value = currentData.product_sell_point;
+            document.getElementById"user-comments").value = currentData.user_comments;
+            document.getElementById("target-audience").value = currentData.target_audience;
+            document.getElementById("marketing-channel").value = currentData.marketing_channel;
+            generateScript(currentData);
+        });
+
+        document.getElementById("preset-a-button").addEventListener("click", () => {
+            currentData = {
+                product_name: "代州黄酒",
+                product_sell_point: "传承千年酿造工艺，口感醇厚",
+                user_comments: "口感很好，回购了！",
+                target_audience: "年轻人",
+                marketing_channel: "小红书"
+            };
+            document.getElementById("product-name").value = currentData.product_name;
+            document.getElementById("product-sell-point").value = currentData.product_sell_point;
+            document.getElementById("user-comments").value = currentData.user_comments;
+            document.getElementById("target-audience").value = currentData.target_audience;
+            document.getElementById("marketing-channel").value = currentData.marketing_channel;
+            generateScript(currentData);
+        });
+
+        document.getElementById("preset-b-button").addEventListener("click", () => {
+            currentData = {
+                product_name: "代州黄酒",
+                product_sell_point: "传统酿造工艺，品质保证",
+                user_comments: "包装精美，送礼佳品",
+                target_audience: "中年人",
+                marketing_channel: "抖音"
+            };
+            document.getElementById("product-name").value = currentData.product_name;
+            document.getElementById("product-sell-point").value = currentData.product_sell_point;
+            document.getElementById("user-comments").value = currentData.user_comments;
+            document.getElementById("target-audience").value = currentData.target_audience;
+            document.getElementById("marketing-channel").value = currentData.marketing_channel;
+            generateScript(currentData);
+        });
+
+        document.getElementById("preset-c-button").addEventListener("click", () => {
+            currentData = {
+                product_name: "代州黄酒",
+                product_sell-point: "养生佳品，延年益寿",
+                user_comments: "喝了对身体好",
+                target_audience: "老年人",
+                marketing_channel: "保健品店"
+            };
+            document.getElementById("product-name").value = currentData.product_name;
+            document.getElementById("product-sell-point").value = currentData.product_sell_point;
+            document.getElementById("user-comments").value = currentData.user_comments;
+            document.getElementById("target-audience").value = currentData.target_audience;
+            document.getElementById("marketing-channel").value = currentData.marketing_channel;
+            generateScript(currentData);
+        });
+
+        function generateScript(data) {
+            document.getElementById("result-panel").style.display = "block";
+            document.getElementById("example-result-panel").style.display = "none";
+            document.getElementById("result-content").innerText = "生成中，请稍候...";
+            fetch("/api/generate", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify({
+                    inputs: data
+                })
+            })
+            .then(response => response.json())
+            .then(result => {
+                document.getElementById("result-content").innerText = JSON.stringify(result, null, 2);
+                // ==== 数据可视化 ====
+                const chartData = {
+                    labels: ["30秒脚本长度", "60秒脚本长度"],
+                    datasets: [
+                        {
+                            label: "脚本长度",
+                            data: [result["30秒脚本长度"], result["60秒脚本长度"]],
+                            backgroundColor: ["#f5a623", "#f8e71c"]
+                        }
+                    ]
+                };
+                const ctx = document.getElementById("chart-container").getContext("2d");
+                if (window.chartInstance) {
+                    window.chartInstance.destroy();
+                }
+                window.chartInstance = new Chart(ctx, {
+                    type: "bar",
+                    data: chartData,
+                    options: {
+                        responsive: true,
+                        scales: {
+                            y: {
+                                beginAtZero: true,
+                                title: {
+                                    display: true,
+                                    text: "长度（字符）"
+                                }
+                            }
+                        },
+                        plugins: {
+                            title: {
+                                display: true,
+                                text: "脚本长度分析"
+                            },
+                            legend: {
+                                display: false
+                            }
+                        }
+                    }
+                });
+            })
+            .catch(error => {
+                document.getElementById("result-content").innerText = "生成失败，请稍后再试。";
+                console.error(error);
+            });
+        }
+    </script>
+    <script src="/data-intake.js"></script>
+</body>
+</html>

@@ -1,0 +1,415 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI 电商用户画像与复购分析工具</title>
+    <style>
+        :root {
+            --main-color: #2c3e50;
+            --background-color: #f5f5f5;
+            --text-color: #333;
+            --button-color: #3498db;
+            --button-hover: #2980b9;
+            --card-color: #ffffff;
+            --shadow-color: rgba(0,0,0,0.1);
+            --border-radius: 8px;
+        }
+        body {
+            font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+            background-color: var(--background-color);
+            color: var(--text-color);
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100vh;
+        }
+        h1 {
+            font-size: 2em;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+        .container {
+            background-color: var(--card-color);
+            border-radius: var(--border-radius);
+            box-shadow: 0 4px 6px var(--shadow-color);
+            padding: 30px;
+            width: 100%;
+            max-width: 900px;
+            box-sizing: border-box;
+        }
+        .data-intake {
+            margin-bottom: 20px;
+        }
+        .controls {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+        .controls button {
+            flex: 1 1 100px;
+            padding: 10px;
+            background-color: var(--button-color);
+            color: #ffffff;
+            border: none;
+            border-radius: var(--border-radius);
+            cursor: pointer;
+            font-size: 1em;
+            transition: background-color 0.3s;
+        }
+        .controls button:hover {
+            background-color: var(--button-hover);
+        }
+        .controls .preset-buttons {
+            display: flex;
+            gap: 10px;
+            flex: 1 1 200px;
+        }
+        .example-result {
+            margin-bottom: 30px;
+        }
+        .example-result h2 {
+            font-size: 1.5em;
+            margin-bottom: 10px;
+            text-align: center;
+        }
+        .example-result .card {
+            background-color: #e3f2fd;
+            padding: 20px;
+            border-radius: var(--border-radius);
+            position: relative;
+        }
+        .example-result .card::before {
+            content: '示例';
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background-color: #90caf9;
+            padding: 5px 10px;
+            border-radius: var(--border-radius);
+            font-size: 0.8em;
+            color: #ffffff;
+        }
+        .example-result table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 10px;
+        }
+        .example-result th, .example-result td {
+            padding: 8px;
+            border: 1px solid #90caf9;
+            text-align: center;
+        }
+        .example-result th {
+            background-color: #bbdefb;
+        }
+        .generated-result {
+            margin-bottom: 30px;
+        }
+        .generated-result h2 {
+            font-size: 1.5em;
+            margin-bottom: 10px;
+            text-align: center;
+        }
+        .generated-result .chart-container {
+            width: 100%;
+            height: 400px;
+            margin-bottom: 20px;
+        }
+        .generated-result .insights {
+            background-color: #e8f5e9;
+            padding: 20px;
+            border-radius: var(--border-radius);
+        }
+        .footer {
+            text-align: center;
+            margin-top: 20px;
+            font-size: 0.9em;
+        }
+        @media (max-width: 600px) {
+            .controls {
+                flex-direction: column;
+            }
+            .controls .preset-buttons {
+                flex-direction: column;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div id="data-intake"></div>
+    <div class="container">
+        <h1>AI 电商用户画像与复购分析工具</h1>
+        <div class="controls">
+            <div class="preset-buttons">
+                <button id="preset-a">场景A: 微信订单数据</button>
+                <button id="preset-b">场景B: 抖音小店数据</button>
+                <button id="preset-c">场景C: 快递100数据</button>
+            </div>
+            <button id="random-example">随机示例</button>
+            <button id="generate">生成分析</button>
+            <button id="clear">清空/重填</button>
+        </div>
+        <div class="example-result" id="example-result">
+            <h2>示例结果</h2>
+            <div class="card">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>指标</th>
+                            <th>数据</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>总订单数</td>
+                            <td>1,200</td>
+                        </tr>
+                        <tr>
+                            <td>复购率</td>
+                            <td>35%</td>
+                        </tr>
+                        <tr>
+                            <td>平均客单价</td>
+                            <td>¥150</td>
+                        </tr>
+                        <tr>
+                            <td>每日发货量</td>
+                            <td>40</td>
+                        </tr>
+                    </tbody>
+                </table>
+                <div class="insights">
+                    <p>用户画像：主要消费群体为25-35岁，女性占比60%。</p>
+                    <p>建议：加强针对女性用户的营销活动，提高复购率。</p>
+                </div>
+            </div>
+        </div>
+        <div class="generated-result" id="generated-result" style="display:none;">
+            <h2>分析结果</h2>
+            <div id="chart-container" class="chart-container"></div>
+            <div class="insights" id="insights">
+                <!-- Insights will be populated by AI response -->
+            </div>
+        </div>
+        <button id="copy-result">复制结果</button>
+        <button id="export-json">导出 JSON</button>
+    </div>
+    <div class="footer">
+        &copy; 2023 AI 电商分析工具. 版权所有.
+    </div>
+    <script>
+        // DATA_SCHEMA
+        window.DATA_SCHEMA = {
+            name: "电商订单数据",
+            columns: [
+                { key: "order_no", label: "订单号", type: "text", example: "SO123456", required: true },
+                { key: "customer_id", label: "客户ID", type: "text", example: "CUST123", required: true },
+                { key: "purchase_date", label: "购买日期", type: "date", example: "2023-10-01", required: true },
+                { key: "product_id", label: "产品ID", type: "text", example: "PROD123", required: true },
+                { key: "quantity", label: "数量", type: "number", example: "2", required: true },
+                { key: "price", label: "单价", type: "number", example: "150", required: true },
+                { key: "customer_age", label: "客户年龄", type: "number", example: "28", required: false },
+                { key: "customer_gender", label: "客户性别", type: "text", example: "女", required: false },
+                { key: "shipping_address", label: "配送地址", type: "text", example: "北京市朝阳区", required: false }
+            ],
+            sample: [
+                { order_no: "SO1001", customer_id: "CUST1001", purchase_date: "2023-10-01", product_id: "PROD1001", quantity: 1, price: 150, customer_age: 28, customer_gender: "女", shipping_address: "北京市朝阳区" },
+                { order_no: "SO1002", customer_id: "CUST1002", purchase_date: "2023-10-02", product_id: "PROD1002", quantity: 2, price: 200, customer_age: 35, customer_gender: "男", shipping_address: "上海市浦东新区" },
+                { order_no: "SO1003", customer_id: "CUST1003", purchase_date: "2023-10-03", product_id: "PROD1003", quantity: 3, price: 180, customer_age: 22, customer_gender: "女", shipping_address: "广州市天河区" },
+                { order_no: "SO1004", customer_id: "CUST1004", purchase_date: "2023-10-04", product_id: "PROD1004", quantity: 1, price: 220, customer_age: 40, customer_gender: "男", shipping_address: "深圳市南山区" },
+                { order_no: "SO1005", customer_id: "CUST1005", purchase_date: "2023-10-05", product_id: "PROD1005", quantity: 5, price: 130, customer_age: 25, customer_gender: "女", shipping_address: "成都市武侯区" }
+            ],
+            maxRows: 300
+        };
+
+        // SEED DATA
+        const SEED = {
+            "scenarioA": {
+                "data": [
+                    { order_no: "SO1001", customer_id: "CUST1001", purchase_date: "2023-10-01", product_id: "PROD1001", quantity: 1, price: 150, customer_age: 28, customer_gender: "女", shipping_address: "北京市朝阳区" },
+                    { order_no: "SO1002", customer_id: "CUST1002", purchase_date: "2023-10-02", product_id: "PROD1002", quantity: 2, price: 200, customer_age: 35, customer_gender: "男", shipping_address: "上海市浦东新区" },
+                    { order_no: "SO1003", customer_id: "CUST1003", purchase_date: "2023-10-03", product_id: "PROD1003", quantity: 3, price: 180, customer_age: 22, customer_gender: "女", shipping_address: "广州市天河区" },
+                    { order_no: "SO1004", customer_id: "CUST1004", purchase_date: "2023-10-04", product_id: "PROD1004", quantity: 1, price: 220, customer_age: 40, customer_gender: "男", shipping_address: "深圳市南山区" },
+                    { order_no: "SO1005", customer_id: "CUST1005", purchase_date: "2023-10-05", product_id: "PROD1005", quantity: 5, price: 130, customer_age: 25, customer_gender: "女", shipping_address: "成都市武侯区" }
+                ],
+                "result": {
+                    "total_orders": 5,
+                    "repurchase_rate": "40%",
+                    "average_order_value": "¥170",
+                    "daily_shipments": "2",
+                    "user_profile": "主要消费群体为25-35岁，女性占比60%",
+                    "recommendations": "针对女性用户加强营销活动，提高复购率"
+                }
+            },
+            "scenarioB": {
+                "data": [
+                    { order_no: "SO2001", customer_id: "CUST2001", purchase_date: "2023-10-01", product_id: "PROD2001", quantity: 2, price: 100, customer_age: 30, customer_gender: "女", shipping_address: "杭州市西湖区" },
+                    { order_no: "SO2002", customer_id: "CUST2002", purchase_date: "2023-10-02", product_id: "PROD2002", quantity: 1, price: 150, customer_age: 22, customer_gender: "男", shipping_address: "苏州市工业园区" },
+                    { order_no: "SO2003", customer_id: "CUST2003", purchase_date: "2023-10-03", product_id: "PROD2003", quantity: 4, price: 120, customer_age: 35, customer_gender: "女", shipping_address: "南京市鼓楼区" },
+                    { order_no: "SO2004", customer_id: "CUST2004", purchase_date: "2023-10-04", product_id: "PROD2004", quantity: 3, price: 180, customer_age: 40, customer_gender: "男", shipping_address: "宁波市海曙区" },
+                    { order_no: "SO2005", customer_id: "CUST2005", purchase_date: "2023-10-05", product_id: "PROD2005", quantity: 2, price: 200, customer_age: 28, customer_gender: "女", shipping_address: "温州市鹿城区" }
+                ],
+                "result": {
+                    "total_orders": 5,
+                    "repurchase_rate": "60%",
+                    "average_order_value": "¥130",
+                    "daily_shipments": "3",
+                    "user_profile": "主要消费群体为22-35岁，女性占比80%",
+                    "recommendations": "针对女性用户开展促销活动，提高客单价"
+                }
+            },
+            "scenarioC": {
+                "data": [
+                    { order_no: "SO3001", customer_id: "CUST3001", purchase_date: "2023-10-01", product_id: "PROD3001", quantity: 5, price: 90, customer_age: 25, customer_gender: "女", shipping_address: "厦门市思明区" },
+                    { order_no: "SO3002", customer_id: "CUST3002", purchase_date: "2023-10-02", product_id: "PROD3002", quantity: 3, price: 110, customer_age: 30, customer_gender: "男", shipping_address: "福州市鼓楼区" },
+                    { order_no: "SO3003", customer_id: "CUST3003", purchase日期: "2023-10-03", product_id: "PROD3003", quantity: 2, price: 130, customer_age: 22, customer_gender: "女", shipping_address: "泉州市丰泽区" },
+                    { order_no: "SO3004", customer_id: "CUST3004", purchase_date: "2023-10-04", product_id: "PROD3004", quantity: 4, price: 100, customer_age: 35, customer_gender: "男", shipping_address: "漳州市龙文区" },
+                    { order_no: "SO3005", customer_id: "CUST3005", purchase_date: "2023-10-05", product_id: "PROD3005", quantity: 1, price: 160, customer_age: 40, customer_gender: "女", shipping_address: "莆田市城厢区" }
+                ],
+                "result": {
+                    "total_orders": 5,
+                    "repurchase_rate": "50%",
+                    "average_order_value": "¥115",
+                    "daily_shipments": "2.5",
+                    "user_profile": "主要消费群体为22-40岁，女性占比70%",
+                    "recommendations": "针对女性用户进行精准营销，提高复购率"
+                }
+            }
+        };
+
+        // Preset buttons
+        document.getElementById("preset-a").addEventListener("click", function() {
+            loadPreset("scenarioA");
+        });
+        document.getElementById("preset-b").addEventListener("click", function() {
+            loadPreset("scenarioB");
+        });
+        document.getElementById("preset-c").addEventListener("click", function() {
+            loadPreset("scenarioC");
+        });
+
+        function loadPreset(scenario) {
+            const data = SEED[scenario].data;
+            window.DataIntake.loadData(data);
+            document.getElementById("example-result").style.display = "block";
+            document.getElementById("generated-result").style.display = "none";
+            document.getElementById("chart-container").innerHTML = "";
+            document.getElementById("insights").innerHTML = "";
+            document.getElementById("example-result").querySelector(".insights").innerHTML = `<p>用户画像：${SEED[scenario].result.user_profile}</p><p>建议：${SEED[scenario].result.recommendations}</p>`;
+        }
+
+        // Random example button
+        document.getElementById("random-example").addEventListener("click", function() {
+            const scenarios = ["scenarioA", "scenarioB", "scenarioC"];
+            const randomScenario = scenarios[Math.floor(Math.random() * scenarios.length)];
+            loadPreset(randomScenario);
+        });
+
+        // Clear button
+        document.getElementById("clear").addEventListener("click", function() {
+            window.DataIntake.clearData();
+            document.getElementById("example-result").style.display = "block";
+            document.getElementById("generated-result").style.display = "none";
+            document.getElementById("chart-container").innerHTML = "";
+            document.getElementById("insights").innerHTML = "";
+            document.getElementById("example-result").querySelector(".insights").innerHTML = `<p>用户画像：主要消费群体为25-35岁，女性占比60%</p><p>建议：针对女性用户加强营销活动，提高复购率</p>`;
+        });
+
+        // Generate button
+        document.getElementById("generate").addEventListener("click", function() {
+            const isReady = window.DataIntake && window.DataIntake.isReady();
+            const payload = isReady ? window.DataIntake.getPayload() : {};
+            const inputs = {
+                data: payload
+            };
+            fetch("/api/generate", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify({ "inputs": inputs })
+            })
+            .then(response => response.json())
+            .then(data => {
+                document.getElementById("example-result").style.display = "none";
+                document.getElementById("generated-result").style.display = "block";
+                document.getElementById("chart-container").innerHTML = `<canvas id="chart"></canvas>`;
+                const ctx = document.getElementById("chart").getContext("2d");
+                const chartData = {
+                    labels: ["总订单数", "复购率", "平均客单价", "每日发货量"],
+                    datasets: [{
+                        label: "指标",
+                        data: [
+                            data.total_orders,
+                            data.repurchase_rate,
+                            data.average_order_value,
+                            data.daily_shipments
+                        ],
+                        backgroundColor: [
+                            "#3e95cd",
+                            "#8e44ad",
+                            "#2980b9",
+                            "#f1c40f"
+                        ],
+                        borderColor: "#ffffff",
+                        borderWidth: 2
+                    }]
+                };
+                const myChart = new Chart(ctx, {
+                    type: "bar",
+                    data: chartData,
+                    options: {
+                        scales: {
+                            y: {
+                                beginAtZero: true
+                            }
+                        }
+                    }
+                });
+                document.getElementById("insights").innerHTML = `<p>${data.user_profile}</p><p>${data.recommendations}</p>`;
+            })
+            .catch(error => {
+                console.error("Error:", error);
+            });
+        });
+
+        // Copy result button
+        document.getElementById("copy-result").addEventListener("click", function() {
+            const result = document.getElementById("generated-result").innerText;
+            navigator.clipboard.writeText(result);
+        });
+
+        // Export JSON button
+        document.getElementById("export-json").addEventListener("click", function() {
+            const result = document.getElementById("generated-result").innerText;
+            const blob = new Blob([result], { type: "application/json" });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement("a");
+            a.href = url;
+            a.download = "analysis_result.json";
+            a.click();
+        });
+
+        // DataIntake component
+        window.DataIntake = {
+            data: [],
+            isReady: function() {
+                return this.data.length > 0;
+            },
+            loadData: function(data) {
+                this.data = data;
+            },
+            getPayload: function() {
+                return this.data;
+            },
+            clearData: function() {
+                this.data = [];
+            }
+        };
+    </script>
+</body>
+</html>

@@ -1,0 +1,410 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>代州黄酒短视频脚本批量生成器</title>
+    <style>
+        :root {
+            --main-color: #d68b00;
+            --background-color: #fdfdfd;
+            --text-color: #333;
+            --border-radius: 8px;
+            --box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            --button-bg: #f0f0f0;
+            --button-hover-bg: #e0e0e0;
+        }
+        body {
+            margin: 0;
+            font-family: Arial, sans-serif;
+            background-color: var(--background-color);
+            color: var(--text-color);
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        h1 {
+            color: var(--main-color);
+            margin-bottom: 20px;
+        }
+        .container {
+            width: 100%;
+            max-width: 800px;
+            background-color: #fff;
+            padding: 30px;
+            border-radius: var(--border-radius);
+            box-shadow: var(--box-shadow);
+        }
+        .input-group {
+            margin-bottom: 20px;
+        }
+        .input-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: bold;
+        }
+        .input-group input, .input-group textarea {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: var(--border-radius);
+            box-sizing: border-box;
+        }
+        .button-group {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+        .button-group button {
+            flex: 1 1 45%;
+            padding: 12px;
+            border: none;
+            border-radius: var(--border-radius);
+            background-color: var(--button-bg);
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+        .button-group button:hover {
+            background-color: var(--button-hover-bg);
+        }
+        .result-panel {
+            margin-top: 30px;
+            padding: 20px;
+            border: 1px solid #ddd;
+            border-radius: var(--border-radius);
+            position: relative;
+        }
+        .result-panel h2 {
+            margin-top: 0;
+            color: var(--main-color);
+        }
+        .result-panel pre {
+            background-color: #f9f9f9;
+            padding: 15px;
+            border-radius: var(--border-radius);
+            overflow-x: auto;
+        }
+        .example-result {
+            margin-top: 20px;
+            border-top: 1px solid #eee;
+            padding-top: 20px;
+        }
+        .example-result h3 {
+            color: var(--main-color);
+        }
+        .example-result .video-script {
+            margin-top: 10px;
+        }
+        .example-result .video-script p {
+            margin: 5px 0;
+        }
+        .export-buttons {
+            margin-top: 20px;
+        }
+        .export-buttons button {
+            padding: 8px 12px;
+            border: none;
+            border-radius: var(--border-radius);
+            background-color: var(--button-bg);
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+        .export-buttons button:hover {
+            background-color: var(--button-hover-bg);
+        }
+        @media (max-width: 600px) {
+            .button-group button {
+                flex: 1 1 100%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div id="data-intake"></div>
+    <div class="container">
+        <h1>代州黄酒短视频脚本批量生成器</h1>
+        <div class="input-group">
+            <label for="product-feature">产品卖点</label>
+            <textarea id="product-feature" rows="4" placeholder="请输入产品的核心卖点，例如：传统工艺酿造，百年传承工艺"></textarea>
+        </div>
+        <div class="button-group">
+            <button id="generate-button">生成脚本</button>
+            <button id="clear-button">清空 / 重填</button>
+            <button id="copy-button">复制结果</button>
+            <button id="export-button">导出 JSON</button>
+            <button id="random-button">随机示例</button>
+            <button id="scene-a-button">场景A</button>
+            <button id="scene-b-button">场景B</button>
+            <button id="scene-c-button">场景C</button>
+        </div>
+        <div id="result-panel" class="result-panel">
+            <h2>示例结果</h2>
+            <div class="example-result">
+                <h3>30秒口播脚本</h3>
+                <div class="video-script">
+                    <p>代州黄酒，百年传承，匠心酿造。采用传统工艺，保留最纯正的黄酒风味。每一口都是历史的沉淀，每一滴都是匠心的凝聚。代州黄酒，品味经典，传承文化。</p>
+                </div>
+                <h3>60秒口播脚本</h3>
+                <div class="video-script">
+                    <p>代州黄酒，百年传承，匠心酿造。我们坚持使用传统工艺，经过多道复杂工序，只为保留最纯正的黄酒风味。代州黄酒，不仅仅是酒，更是一种文化的传承。每一口都是历史的沉淀，每一滴都是匠心的凝聚。无论是家庭聚会还是商务宴请，代州黄酒都是您的最佳选择。品味经典，传承文化，代州黄酒，与您共度美好时光。</p>
+                </div>
+                <h3>分镜脚本</h3>
+                <div class="video-script">
+                    <p>1. 开场镜头：代州黄酒的酿造场景，工匠们忙碌的身影。</p>
+                    <p>2. 中景镜头：代州黄酒的成品展示，瓶身精致，标签古朴。</p>
+                    <p>3. 特写镜头：倒入杯中的黄酒，酒液清澈，香气四溢。</p>
+                    <p>4. 结尾镜头：人们举杯共饮，欢声笑语，其乐融融。</p>
+                </div>
+            </div>
+        </div>
+        <div class="export-buttons">
+            <button id="copy-result-button">复制结果</button>
+            <button id="download-button">下载 JSON</button>
+        </div>
+    </div>
+    <script>
+        // window.DATA_SCHEMA 声明
+        window.DATA_SCHEMA = {
+            name: "产品卖点",
+            columns: [
+                {key: "product_feature", label: "产品卖点", type: "text", example: "传统工艺酿造，百年传承工艺", required: true}
+            ],
+            sample: [
+                {product_feature: "传统工艺酿造，百年传承工艺"},
+                {product_feature: "精选优质原料，口感醇厚"},
+                {product_feature: "独特酿造工艺，品质保证"},
+                {product_feature: "历史悠久，文化传承"},
+                {product_feature: "口感丰富，回味悠长"}
+            ],
+            maxRows: 300
+        };
+
+        // SEED 数据
+        const SEED = [
+            {
+                product_feature: "传统工艺酿造，百年传承工艺",
+                scripts: {
+                    "30秒": "代州黄酒，百年传承，匠心酿造。采用传统工艺，保留最纯正的黄酒风味。每一口都是历史的沉淀，每一滴都是匠心的凝聚。代州黄酒，品味经典，传承文化。",
+                    "60秒": "代州黄酒，百年传承，匠心酿造。我们坚持使用传统工艺，经过多道复杂工序，只为保留最纯正的黄酒风味。代州黄酒，不仅仅是酒，更是一种文化的传承。每一口都是历史的沉淀，每一滴都是匠心的凝聚。无论是家庭聚会还是商务宴请，代州黄酒都是您的最佳选择。品味经典，传承文化，代州黄酒，与您共度美好时光。",
+                    "分镜": "1. 开场镜头：代州黄酒的酿造场景，工匠们忙碌的身影。\n2. 中景镜头：代州黄酒的成品展示，瓶身精致，标签古朴。\n3. 特写镜头：倒入杯中的黄酒，酒液清澈，香气四溢。\n4. 结尾镜头：人们举杯共饮，欢声笑语，其乐融融。"
+                }
+            },
+            {
+                product_feature: "精选优质原料，口感醇厚",
+                scripts: {
+                    "30秒": "代州黄酒，精选优质原料，口感醇厚。采用传统酿造工艺，保留了黄酒的独特风味。代州黄酒，醇厚口感，回味无穷。",
+                    "60秒": "代州黄酒，精选优质原料，经过多道工序精心酿造。我们致力于为您提供最醇厚的黄酒体验。代州黄酒，入口柔顺，回味悠长。无论是独自小酌还是与朋友分享，代州黄酒都是您的理想选择。",
+                    "分镜": "1. 开场镜头：代州黄酒的原料展示，优质大米、小麦等。\n2. 中景镜头：代州黄酒的酿造过程，工匠们细致操作。\n3. 特写镜头：倒入杯中的黄酒，酒液清澈，香气四溢。\n4. 结尾镜头：人们品尝黄酒，露出满意的笑容。"
+                }
+            },
+            {
+                product_feature: "独特酿造工艺，品质保证",
+                scripts: {
+                    "30秒": "代州黄酒，独特酿造工艺，品质保证。经过多道严格工序，确保每一瓶黄酒的品质。代州黄酒，品质如一，值得信赖。",
+                    "60秒": "代州黄酒，独特酿造工艺，结合现代科技与传统工艺。我们严格控制每一个环节，确保为您带来最优质的黄酒。代州黄酒，品质如一，值得信赖。无论是自用还是送礼，代州黄酒都是您的最佳选择。",
+                    "分景": "1. 开场镜头：代州黄酒的酿造车间，现代化的设备。\n2. 中景镜头：代州黄酒的质检过程，技术人员细致检查。\n3. 特写镜头：代州黄酒的成品展示，瓶身精致。\n4. 结尾镜头：人们打开瓶盖，倒入杯中，享受黄酒的美味。"
+                }
+            }
+        ];
+
+        // UI 元素
+        const generateButton = document.getElementById('generate-button');
+        const clearButton = document.getElementById('clear-button');
+        const copyButton = document.getElementById('copy-button');
+        const exportButton = document.getElementById('export-button');
+        const randomButton = document.getElementById('random-button');
+        const sceneAButton = document.getElementById('scene-a-button');
+        const sceneBButton = document.getElementById('scene-b-button');
+        const sceneCButton = document.getElementById('scene-c-button');
+        const resultPanel = document.getElementById('result-panel');
+        const copyResultButton = document.getElementById('copy-result-button');
+        const downloadButton = document.getElementById('download-button');
+
+        // 预设场景数据
+        const scenes = {
+            '场景A': SEED[0],
+            '场景B': SEED[1],
+            '场景C': SEED[2]
+        };
+
+        // 当前选中的场景
+        let currentScene = null;
+
+        // 填充示例数据
+        function fillExampleData(scene) {
+            document.getElementById('product-feature').value = scene.product_feature;
+            currentScene = scene;
+            renderExampleResult(scene);
+        }
+
+        // 渲染示例结果
+        function renderExampleResult(scene) {
+            const resultPanelContent = `
+                <h2>示例结果</h2>
+                <div class="example-result">
+                    <h3>30秒口播脚本</h3>
+                    <div class="video-script">
+                        <p>${scene.scripts["30秒"]}</p>
+                    </div>
+                    <h3>60秒口播脚本</h3>
+                    <div class="video-script">
+                        <p>${scene.scripts["60秒"]}</p>
+                    </div>
+                    <h3>分镜脚本</h3>
+                    <div class="video-script">
+                        <p>${scene.scripts["分镜"]}</p>
+                    </div>
+                </div>
+            `;
+            resultPanel.innerHTML = resultPanelContent;
+        }
+
+        // 场景切换
+        sceneAButton.addEventListener('click', () => {
+            fillExampleData(scenes['场景A']);
+        });
+        sceneBButton.addEventListener('click', () => {
+            fillExampleData(scenes['场景B']);
+        });
+        sceneCButton.addEventListener('click', () => {
+            fillExampleData(scenes['场景C']);
+        });
+
+        // 生成脚本
+        generateButton.addEventListener('click', () => {
+            const productFeature = document.getElementById('product-feature').value.trim();
+            if (productFeature === "") {
+                alert("请输入产品卖点");
+                return;
+            }
+            const payload = {
+                inputs: {
+                    product_feature: productFeature
+                }
+            };
+            fetch('/api/generate', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(payload)
+            })
+            .then(response => response.json())
+            .then(data => {
+                const scripts = data;
+                const resultPanelContent = `
+                    <h2>生成结果</h2>
+                    <div class="example-result">
+                        <h3>30秒口播脚本</h3>
+                        <div class="video-script">
+                            <p>${scripts["30秒"]}</p>
+                        </div>
+                        <h3>60秒口播脚本</h3>
+                        <div class="video-script">
+                            <p>${scripts["60秒"]}</p>
+                        </div>
+                        <h3>分镜脚本</h3>
+                        <div class="video-script">
+                            <p>${scripts["分镜"]}</p>
+                        </div>
+                    </div>
+                `;
+                resultPanel.innerHTML = resultPanelContent;
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert("生成失败，请稍后重试");
+            });
+        });
+
+        // 清空 / 重填
+        clearButton.addEventListener('click', () => {
+            document.getElementById('product-feature').value = "";
+            currentScene = null;
+            resultPanel.innerHTML = `
+                <h2>示例结果</h2>
+                <div class="example-result">
+                    <h3>30秒口播脚本</h3>
+                    <div class="video-script">
+                        <p>代州黄酒，百年传承，匠心酿造。采用传统工艺，保留最纯正的黄酒风味。每一口都是历史的沉淀，每一滴都是匠心的凝聚。代州黄酒，品味经典，传承文化。</p>
+                    </div>
+                    <h3>60秒口播脚本</h3>
+                    <div class="video-script">
+                        <p>代州黄酒，百年传承，匠心酿造。我们坚持使用传统工艺，经过多道复杂工序，只为保留最纯正的黄酒风味。代州黄酒，不仅仅是酒，更是一种文化的传承。代州黄酒，品味经典，传承文化。</p>
+                    </div>
+                    <h3>分镜脚本</h3>
+                    <div class="video-script">
+                        <p>1. 开场镜头：代州黄酒的酿造场景，工匠们忙碌的身影。\n2. 中景镜头：代州黄酒的成品展示，瓶身精致，标签古朴。\n3. 特写镜头：倒入杯中的黄酒，酒液清澈，香气四溢。\n4. 结尾镜头：人们举杯共饮，欢声笑语，其乐融融。</p>
+                    </div>
+                </div>
+            `;
+        });
+
+        // 复制结果
+        copyButton.addEventListener('click', () => {
+            const scripts = resultPanel.querySelectorAll('.video-script p');
+            let scriptsText = "";
+            scripts.forEach(script => {
+                scriptsText += script.innerText + "\n\n";
+            });
+            navigator.clipboard.writeText(scriptsText.trim());
+            alert("结果已复制到剪贴板");
+        });
+
+        // 复制生成结果
+        copyResultButton.addEventListener('click', () => {
+            const scripts = resultPanel.querySelectorAll('.video-script p');
+            let scriptsText = "";
+            scripts.forEach(script => {
+                scriptsText += script.innerText + "\n\n";
+            });
+            navigator.clipboard.writeText(scriptsText.trim());
+            alert("结果已复制到剪贴板");
+        });
+
+        // 下载 JSON
+        exportButton.addEventListener('click', () => {
+            const scripts = resultPanel.querySelectorAll('.video-script p');
+            const scriptsObj = {
+                "30秒": scripts[0].innerText,
+                "60秒": scripts[1].innerText,
+                "分镜": scripts[2].innerText
+            };
+            const jsonContent = JSON.stringify(scriptsObj, null, 2);
+            const blob = new Blob([jsonContent], { type: "application/json" });
+            const url = URL.createObjectURL(blob);
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = "scripts.json";
+            link.click();
+            URL.revokeObjectURL(url);
+        });
+
+        // 下载生成结果 JSON
+        downloadButton.addEventListener('click', () => {
+            const scripts = resultPanel.querySelectorAll('.video-script p');
+            const scriptsObj = {
+                "30秒": scripts[0].innerText,
+                "60秒": scripts[1].innerText,
+                "分镜": scripts[2].innerText
+            };
+            const jsonContent = JSON.stringify(scriptsObj, null, 2);
+            const blob = new Blob([jsonContent], { type: "application/json" });
+            const url = URL.createObjectURL(blob);
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = "scripts.json";
+            link.click();
+            URL.revokeObjectURL(url);
+        });
+
+        // 随机示例
+        randomButton.addEventListener('click', () => {
+            const randomScene = SEED[Math.floor(Math.random() * SEED.length)];
+            fillExampleData(randomScene);
+        });
+    </script>
+</body>
+</html>

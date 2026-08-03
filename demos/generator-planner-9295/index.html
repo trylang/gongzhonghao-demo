@@ -1,0 +1,358 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <title>代州黄酒短视频脚本批量生成器</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>
+        :root {
+            --primary-color: #d4ac6e;
+            --secondary-color: #f9f5f0;
+            --text-color: #333;
+            --border-radius: 8px;
+            --box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            --font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+        }
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: var(--font-family);
+            background-color: var(--secondary-color);
+            color: var(--text-color);
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+        }
+        header {
+            background-color: var(--primary-color);
+            padding: 20px;
+            text-align: center;
+            color: white;
+            box-shadow: var(--box-shadow);
+        }
+        main {
+            flex: 1;
+            padding: 20px;
+            max-width: 1200px;
+            margin: 0 auto;
+            width: 100%;
+        }
+        .container {
+            background-color: white;
+            padding: 20px;
+            border-radius: var(--border-radius);
+            box-shadow: var(--box-shadow);
+            margin-bottom: 20px;
+        }
+        .section-title {
+            font-size: 1.5em;
+            margin-bottom: 10px;
+            color: var(--primary-color);
+        }
+        .input-group {
+            margin-bottom: 15px;
+        }
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+        input[type="text"], textarea, select {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: var(--border-radius);
+            font-size: 1em;
+        }
+        textarea {
+            resize: vertical;
+            height: 100px;
+        }
+        .button-group {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+        .button-group button {
+            flex: 1;
+            padding: 10px;
+            border: none;
+            border-radius: var(--border-radius);
+            background-color: var(--primary-color);
+            color: white;
+            font-size: 1em;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+        .button-group button:hover {
+            background-color: #c39a5c;
+        }
+        .button-group button:disabled {
+            background-color: #e0e0e0;
+            cursor: not-allowed;
+        }
+        .result-panel {
+            background-color: var(--secondary-color);
+            padding: 20px;
+            border-radius: var(--border-radius);
+            box-shadow: var(--box-shadow);
+        }
+        .result-panel h3 {
+            margin-top: 0;
+            color: var(--primary-color);
+        }
+        .result-panel pre {
+            background-color: white;
+            padding: 15px;
+            border: 1px solid #ddd;
+            border-radius: var(--border-radius);
+            overflow: auto;
+        }
+        .result-panel table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 10px;
+        }
+        .result-panel table th, .result-panel table td {
+            padding: 10px;
+            border: 1px solid #ddd;
+            text-align: left;
+        }
+        .result-panel table th {
+            background-color: var(--primary-color);
+            color: white;
+        }
+        footer {
+            background-color: var(--secondary-color);
+            padding: 20px;
+            text-align: center;
+            color: var(--text-color);
+        }
+        /* Mobile Responsive */
+        @media (max-width: 768px) {
+            .button-group {
+                flex-direction: column;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div id="data-intake"></div>
+    <header>
+        <h1>代州黄酒短视频脚本批量生成器</h1>
+    </header>
+    <main>
+        <div class="container">
+            <div class="section-title">输入卖点</div>
+            <div class="input-group">
+                <label for="product-feature">产品卖点</label>
+                <input type="text" id="product-feature" placeholder="例如：纯手工酿造，传统工艺">
+            </div>
+            <div class="section-title">选择脚本类型</div>
+            <div class="input-group">
+                <label for="script-type">类型</label>
+                <select id="script-type">
+                    <option value="30秒">30秒口播脚本</option>
+                    <option value="60秒">60秒口播脚本</option>
+                </select>
+            </div>
+            <div class="button-group">
+                <button id="generate-button">生成脚本</button>
+                <button id="reset-button">清空/重填</button>
+                <button id="scenario-a-button">场景A</button>
+                <button id="scenario-b-button">场景B</button>
+                <button id="scenario-c-button">场景C</button>
+                <button id="random-example-button">随机示例</button>
+            </div>
+            <div class="section-title">结果展示</div>
+            <div class="result-panel" id="result-panel">
+                <h3>示例结果</h3>
+                <p>请输入产品卖点并点击“生成脚本”以查看结果。</p>
+            </div>
+            <div class="button-group">
+                <button id="copy-button">复制结果</button>
+                <button id="export-json-button">导出 JSON</button>
+            </div>
+        </div>
+    </main>
+    <footer>
+        <p>© 2023 代州黄酒短视频脚本批量生成器</p>
+    </footer>
+    <script>
+        // SEED 数据
+        const SEED_DATA = {
+            "场景A": {
+                "product_feature": "纯手工酿造，传统工艺",
+                "script_type": "30秒",
+                "result": {
+                    "script": "欢迎来到代州黄酒的世界！我们坚持纯手工酿造，传承传统工艺，为您带来最纯正的口感。每一瓶黄酒都凝聚了匠人的心血与智慧，让您品味到真正的传统美味。立即选购，感受代州黄酒的独特魅力！",
+                    "details": [
+                        {"镜头": "开场", "描述": "展示代州黄酒酿造场景"},
+                        {"镜头": "特写", "描述": "展示手工酿造细节"},
+                        {"镜头": "产品展示", "描述": "展示黄酒成品"}
+                    ]
+                }
+            },
+            "场景B": {
+                "product_feature": "富含多种营养成分",
+                "script_type": "60秒",
+                "result": {
+                    "script": "代州黄酒不仅口感醇厚，更富含多种营养成分，包括氨基酸、维生素和矿物质。每天适量饮用，有助于促进新陈代谢，增强免疫力。代州黄酒，守护您的健康与美味。赶快行动，体验健康生活新方式！",
+                    "details": [
+                        {"镜头": "开场", "描述": "展示黄酒产品及营养成分表"},
+                        {"镜头": "特写", "描述": "展示黄酒倒入杯中"},
+                        {"镜头": "产品展示", "描述": "展示黄酒瓶及包装"}
+                    ]
+                }
+            },
+            "场景C": {
+                "product_feature": "历史悠久，文化传承",
+                "script_type": "30秒",
+                "result": {
+                    "script": "代州黄酒，源自千年酿酒文化，传承百年酿造技艺。我们坚持古法酿造，保留传统风味，让您品味到历史的厚重与文化的深邃。代州黄酒，传承经典，品味非凡。立即选购，感受历史的魅力！",
+                    "details": [
+                        {"镜头": "开场", "描述": "展示代州黄酒历史资料"},
+                        {"镜头": "特写", "描述": "展示黄酒瓶及标签"},
+                        {"镜头": "产品展示", "描述": "展示黄酒成品及酿造场景"}
+                    ]
+                }
+            }
+        };
+
+        // DATA_SCHEMA
+        window.DATA_SCHEMA = {
+            "name": "产品卖点",
+            "columns": [
+                {"key": "product_feature", "label": "产品卖点", "type": "text", "example": "纯手工酿造", "required": true},
+                {"key": "script_type", "label": "脚本类型", "type": "select", "options": ["30秒", "60秒"], "required": true}
+            ],
+            "sample": [
+                {"product_feature": "纯手工酿造", "script_type": "30秒"},
+                {"product_feature": "传统工艺", "script_type": "60秒"},
+                {"product_feature": "营养丰富", "script_type": "30秒"},
+                {"product_feature": "历史悠久", "script_type": "60秒"},
+                {"product_feature": "文化传承", "script_type": "30秒"}
+            ],
+            "maxRows": 100
+        };
+
+        // 初始化
+        let inputs = {};
+        let resultData = {};
+
+        const resultPanel = document.getElementById('result-panel');
+        const generateButton = document.getElementById('generate-button');
+        const resetButton = document.getElementById('reset-button');
+        const copyButton = document.getElementById('copy-button');
+        const exportJsonButton = document.getElementById('export-json-button');
+        const scenarioAButton = document.getElementById('scenario-a-button');
+        const scenarioBButton = document.getElementById('scenario-b-button');
+        const scenarioCButton = document.getElementById('scenario-c-button');
+        const randomExampleButton = document.getElementById('random-example-button');
+
+        // 填充示例数据
+        function fillExample(data) {
+            document.getElementById('product-feature').value = data.product_feature;
+            document.getElementById('script-type').value = data.script_type;
+        }
+
+        // 显示结果
+        function showResult(data) {
+            resultPanel.innerHTML = `<h3>${data.title}</h3><p>${data.script}</p><table><tr><th>镜头</th><th>描述</th></tr>${data.details.map(item => `<tr><td>${item.lens}</td><td>${item.description}</td></tr>`).join('')}</table>`;
+        }
+
+        // 使用示例数据
+        scenarioAButton.addEventListener('click', () => {
+            fillExample(SEED_DATA['场景A']);
+            resultPanel.innerHTML = `<h3>示例结果</h3><p>${SEED_DATA['场景A'].result.script}</p>`;
+            resultPanel.innerHTML += `<table><tr><th>镜头</th><th>描述</th></tr>${SEED_DATA['场景A'].result.details.map(item => `<tr><td>${item.镜头}</td><td>${item.描述}</td></tr>`).join('')}</table>`;
+        });
+
+        scenarioBButton.addEventListener('click', () => {
+            fillExample(SEED_DATA['场景B']);
+            resultPanel.innerHTML = `<h3>示例结果</h3><p>${SEED_DATA['场景B'].result.script}</p>`;
+            resultPanel.innerHTML += `<table><tr><th>镜头</th><th>描述</th></tr>${SEED_DATA['场景B'].result.details.map(item => `<tr><td>${item.镜头}</td><td>${item.描述}</td></tr>`).join('')}</table>`;
+        });
+
+        scenarioCButton.addEventListener('click', () => {
+            fillExample(SEED_DATA['场景C']);
+            resultPanel.innerHTML = `<h3>示例结果</h3><p>${SEED_DATA['场景C'].result.script}</p>`;
+            resultPanel.innerHTML += `<table><tr><th>镜头</th><th>描述</th></tr>${SEED_DATA['场景C'].result.details.map(item => `<tr><td>${item.镜头}</td><td>${item.描述}</td></tr>`).join('')}</table>`;
+        });
+
+        randomExampleButton.addEventListener('click', () => {
+            const scenarios = Object.keys(SEED_DATA);
+            const randomScenario = scenarios[Math.floor(Math.random() * scenarios.length)];
+            fillExample(SEED_DATA[randomScenario]);
+            resultPanel.innerHTML = `<h3>示例结果</h3><p>${SEED_DATA[randomScenario].result.script}</p>`;
+            resultPanel.innerHTML += `<table><tr><th>镜头</th><th>描述</th></tr>${SEED_DATA[randomScenario].result.details.map(item => `<tr><td>${item.镜头}</td><td>${item.描述}</td></tr>`).join('')}</table>`;
+        });
+
+        // 重置数据
+        resetButton.addEventListener('click', () => {
+            document.getElementById('product-feature').value = '';
+            document.getElementById('script-type').value = '30秒';
+            resultPanel.innerHTML = `<h3>示例结果</h3><p>请输入产品卖点并点击“生成脚本”以查看结果。</p>`;
+        });
+
+        // 生成脚本
+        generateButton.addEventListener('click', async () => {
+            inputs = {
+                "product_feature": document.getElementById('product-feature').value,
+                "script_type": document.getElementById('script-type').value
+            };
+            if (window.DataIntake && window.DataIntake.isReady()) {
+                inputs.data = window.DataIntake.getPayload();
+            }
+            const response = await fetch('/api/generate', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ "inputs": inputs })
+            });
+            const data = await response.json();
+            if (data.script) {
+                resultPanel.innerHTML = `<h3>生成结果</h3><p>${data.script}</p>`;
+                resultPanel.innerHTML += `<table><tr><th>镜头</th><th>描述</th></tr>${data.details.map(item => `<tr><td>${item.lens}</td><td>${item.description}</td></tr>`).join('')}</table>`;
+            } else {
+                resultPanel.innerHTML = `<h3>生成结果</h3><p>${data.result}</p>`;
+            }
+        });
+
+        // 复制结果
+        copyButton.addEventListener('click', () => {
+            const resultText = resultPanel.innerText;
+            navigator.clipboard.writeText(resultText);
+            alert('结果已复制到剪贴板');
+        });
+
+        // 导出 JSON
+        exportJsonButton.addEventListener('click', () => {
+            const resultData = {
+                "script": resultPanel.querySelector('p').innerText,
+                "details": []
+            };
+            const tableRows = resultPanel.querySelectorAll('table tr');
+            tableRows.forEach(row => {
+                const cols = row.querySelectorAll('td');
+                if (cols.length > 0) {
+                    resultData.details.push({
+                        "lens": cols[0].innerText,
+                        "description": cols[1].innerText
+                    });
+                }
+            });
+            const jsonString = JSON.stringify(resultData, null, 2);
+            const blob = new Blob([jsonString], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = 'script_details.json';
+            link.click();
+            URL.revokeObjectURL(url);
+        });
+    </script>
+</body>
+</html>

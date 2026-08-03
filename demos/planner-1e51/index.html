@@ -1,0 +1,436 @@
+```html
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <title>电商数据自动化分析看板生成器</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>
+        :root {
+            --main-color: #4CAF50;
+            --background-color: #f5f5f5;
+            --text-color: #333;
+            --border-color: #ddd;
+            --button-color: #4CAF50;
+            --button-hover-color: #45a049;
+            --card-background: #fff;
+            --shadow: 0 2px 8px rgba(0,0,0,0.1);
+            --radius: 8px;
+        }
+        body {
+            font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+            background-color: var(--background-color);
+            color: var(--text-color);
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        h1 {
+            margin-bottom: 20px;
+            text-align: center;
+        }
+        .container {
+            width: 100%;
+            max-width: 1200px;
+            background-color: var(--card-background);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius);
+            box-shadow: var(--shadow);
+            padding: 20px;
+            box-sizing: border-box;
+        }
+        .data-intake {
+            margin-bottom: 20px;
+        }
+        .controls {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+        .button {
+            background-color: var(--button-color);
+            color: white;
+            border: none;
+            padding: 10px 15px;
+            border-radius: var(--radius);
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+        .button:hover {
+            background-color: var(--button-hover-color);
+        }
+        .preset-buttons {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 10px;
+        }
+        .preset-button {
+            background-color: #008CBA;
+        }
+        .preset-button:hover {
+            background-color: #007bb5;
+        }
+        .result {
+            margin-top: 20px;
+            padding: 20px;
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius);
+            box-shadow: var(--shadow);
+            background-color: #fff;
+        }
+        .example-result {
+            background-color: #f0f8ff;
+        }
+        .chart {
+            width: 100%;
+            height: 400px;
+            margin-top: 20px;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 10px;
+        }
+        th, td {
+            padding: 10px;
+            border: 1px solid var(--border-color);
+            text-align: left;
+        }
+        th {
+            background-color: var(--main-color);
+            color: white;
+        }
+        @media (max-width: 768px) {
+            .controls {
+                flex-direction: column;
+                align-items: center;
+            }
+            .preset-buttons {
+                flex-direction: column;
+                align-items: center;
+            }
+        }
+    </style>
+</head>
+<body>
+    <h1>电商数据自动化分析看板生成器</h1>
+    <div id="data-intake" class="data-intake"></div>
+    <div class="container">
+        <div class="controls">
+            <div class="preset-buttons">
+                <button class="button preset-button" data-preset="A">场景A：微信订单分析</button>
+                <button class="button preset-button" data-preset="B">场景B：抖音小店分析</button>
+                <button class="button preset-button" data-preset="C">场景C：快递100分析</button>
+            </div>
+            <button id="generate-button" class="button">生成分析</button>
+            <button id="clear-button" class="button">清空/重填</button>
+            <button id="copy-button" class="button">复制结果</button>
+            <button id="export-button" class="button">导出 JSON</button>
+            <button id="random-button" class="button">随机示例</button>
+        </div>
+        <div id="result" class="result" style="display: none;">
+            <h2>分析结果</h2>
+            <div id="result-content"></div>
+        </div>
+    </div>
+
+    <script>
+        // SEED 数据
+        const SEED = {
+            A: {
+                inputs: {
+                    data: [
+                        { order_no: "SO-12345", customer_name: "张三", product: "苹果", quantity: 10, price: 5.0, order_date: "2023-10-01", shipping_address: "北京市朝阳区" },
+                        { order_no: "SO-12346", customer_name: "李四", product: "香蕉", quantity: 5, price: 2.0, order_date: "2023-10-02", shipping_address: "上海市浦东新区" },
+                        { order_no: "SO-12347", customer_name: "王五", product: "橙子", quantity: 8, price: 3.5, order_date: "2023-10-03", shipping_address: "广州市天河区" },
+                        { order_no: "SO-12348", customer_name: "赵六", product: "葡萄", quantity: 12, price: 4.0, order_date: "2023-10-04", shipping_address: "深圳市南山区" },
+                        { order_no: "SO-12349", customer_name: "孙七", product: "西瓜", quantity: 3, price: 10.0, order_date: "2023-10-05", shipping_address: "成都市武侯区" },
+                        { order_no: "SO-12350", customer_name: "周八", product: "芒果", quantity: 7, price: 6.0, order_date: "2023-10-06", shipping_address: "杭州市西湖区" },
+                        { order_no: "SO-12351", customer_name: "吴九", product: "草莓", quantity: 20, price: 2.5, order_date: "2023-10-07", shipping_address: "苏州市姑苏区" },
+                        { order_no: "SO-12352", customer_name: "郑十", product: "蓝莓", quantity: 15, price: 3.0, order_date: "2023-10-08", shipping_address: "南京市鼓楼区" }
+                    ]
+                },
+                exampleResult: {
+                    summary: {
+                        totalOrders: 8,
+                        totalCustomers: 8,
+                        totalRevenue: 220.5,
+                        averageOrderValue: 27.56,
+                        topProduct: "草莓",
+                        topCustomer: "郑十"
+                    },
+                    analysis: {
+                        "复购率": "25%",
+                        "客单价": "27.56",
+                        "发货量": "80",
+                        "平均发货时间": "2天"
+                    },
+                    chart: {
+                        type: "bar",
+                        data: {
+                            labels: ["苹果", "香蕉", "橙子", "葡萄", "西瓜", "芒果", "草莓", "蓝莓"],
+                            datasets: [
+                                {
+                                    label: "销量",
+                                    data: [10, 5, 8, 12, 3, 7, 20, 15],
+                                    backgroundColor: "rgba(75, 192, 192, 0.6)"
+                                }
+                            ]
+                        }
+                    }
+                }
+            },
+            B: {
+                inputs: {
+                    data: [
+                        { order_no: "SO-22345", customer_name: "张三", product: "手机", quantity: 1, price: 500.0, order_date: "2023-10-01", shipping_address: "北京市朝阳区" },
+                        { order_no: "SO-22346", customer_name: "李四", product: "耳机", quantity: 2, price: 100.0, order_date: "2023-10-02", shipping_address: "上海市浦东新区" },
+                        { order_no: "SO-22347", customer_name: "王五", product: "充电宝", quantity: 3, price: 50.0, order_date: "2023-10-03", shipping_address: "广州市天河区" },
+                        { order_no: "SO-22348", customer_name: "赵六", product: "手机壳", quantity: 10, price: 10.0, order_date: "2023-10-04", shipping_address: "深圳市南山区" },
+                        { order_no: "SO-22349", customer_name: "孙七", product: "数据线", quantity: 5, price: 20.0, order_date: "2023-10-05", shipping_address: "成都市武侯区" },
+                        { order_no: "SO-22350", customer_name: "周八", product: "笔记本电脑", quantity: 1, price: 1000.0, order_date: "2023-10-06", shipping_address: "杭州市西湖区" },
+                        { order_no: "SO-22351", customer_name: "吴九", product: "平板电脑", quantity: 2, price: 300.0, order_date: "2023-10-07", shipping_address: "苏州市姑苏区" },
+                        { order_no: "SO-22352", customer_name: "郑十", product: "智能手表", quantity: 1, price: 400.0, order_date: "2023-10-08", shipping_address: "南京市鼓楼区" }
+                    ]
+                },
+                exampleResult: {
+                    summary: {
+                        totalOrders: 8,
+                        totalCustomers: 8,
+                        totalRevenue: 3070.0,
+                        averageOrderValue: 383.75,
+                        topProduct: "笔记本电脑",
+                        topCustomer: "周八"
+                    },
+                    analysis: {
+                        "复购率": "12.5%",
+                        "客单价": "383.75",
+                        "发货量": "26",
+                        "平均发货时间": "1.5天"
+                    },
+                    chart: {
+                        type: "pie",
+                        data: {
+                            labels: ["手机", "耳机", "充电宝", "手机壳", "数据线", "笔记本电脑", "平板电脑", "智能手表"],
+                            datasets: [
+                                {
+                                    label: "销售额",
+                                    data: [500, 200, 150, 100, 100, 1000, 600, 400],
+                                    backgroundColor: ["#FF6384", "#36A2EB", "#FFCE56", "#4BC0C0", "#9966FF", "#C9CBCF", "#FF9F40", "#FFC300"]
+                                }
+                            ]
+                        }
+                    }
+                }
+            },
+            C: {
+                inputs: {
+                    data: [
+                        { order_no: "SO-32345", customer_name: "张三", product: "书籍", quantity: 5, price: 20.0, order_date: "2023-10-01", shipping_address: "北京市朝阳区" },
+                        { order_no: "SO-32346", customer_name: "李四", product: "杂志", quantity: 10, price: 5.0, order_date: "2023-10-02", shipping_address: "上海市浦东新区" },
+                        { order_no: "SO-32347", customer_name: "王五", product: "小说", quantity: 3, price: 15.0, order_date: "2023-10-03", shipping_address: "广州市天河区" },
+                        { order_no: "SO-32348", customer_name: "赵六", product: "教材", quantity: 8, price: 25.0, order_date: "2023-10-04", shipping_address: "深圳市南山区" },
+                        { order_no: "SO-32349", customer_name: "孙七", product: "漫画", quantity: 20, price: 10.0, order_date: "2023-10-05", shipping_address: "成都市武侯区" },
+                        { order_no: "SO-32350", customer_name: "周八", product: "诗歌集", quantity: 2, price: 30.0, order_date: "2023-10-06", shipping地址: "杭州市西湖区" },
+                        { order_no: "SO-32351", customer_name: "吴九", product: "散文集", quantity: 4, price: 18.0, order_date: "2023-10-07", shipping_address: "苏州市姑苏区" },
+                        { order_no: "SO-32352", customer_name: "郑十", product: "诗选", quantity: 1, price: 40.0, order_date: "2023-10-08", shipping_address: "南京市鼓楼区" }
+                    ]
+                },
+                exampleResult: {
+                    summary: {
+                        totalOrders: 8,
+                        totalCustomers: 8,
+                        totalRevenue: 655.0,
+                        averageOrderValue: 81.88,
+                        topProduct: "漫画",
+                        topCustomer: "孙七"
+                    },
+                    analysis: {
+                        "复购率": "0%",
+                        "客单价": "81.88",
+                        "发货量": "53",
+                        "平均发货时间": "2天"
+                    },
+                    chart: {
+                        type: "bar",
+                        data: {
+                            labels: ["书籍", "杂志", "小说", "教材", "漫画", "诗歌集", "散文集", "诗选"],
+                            datasets: [
+                                {
+                                    label: "销量",
+                                    data: [5, 10, 3, 8, 20, 2, 4, 1],
+                                    backgroundColor: "rgba(75, 192, 192, 0.6)"
+                                }
+                            ]
+                        }
+                    }
+                }
+            }
+        };
+
+        // DATA_SCHEMA
+        window.DATA_SCHEMA = {
+            name: "订单明细",
+            columns: [
+                { key: "order_no", label: "订单号", type: "text", example: "SO-12345", required: true },
+                { key: "customer_name", label: "客户姓名", type: "text", example: "张三", required: true },
+                { key: "product", label: "产品名称", type: "text", example: "苹果", required: true },
+                { key: "quantity", label: "数量", type: "number", example: "10", required: true },
+                { key: "price", label: "单价", type: "number", example: "5.0", required: true },
+                { key: "order_date", label: "订单日期", type: "date", example: "2023-10-01", required: true },
+                { key: "shipping_address", label: "发货地址", type: "text", example: "北京市朝阳区", required: true }
+            ],
+            sample: [
+                { order_no: "SO-12345", customer_name: "张三", product: "苹果", quantity: 10, price: 5.0, order_date: "2023-10-01", shipping_address: "北京市朝阳区" },
+                { order_no: "SO-12346", customer_name: "李四", product: "香蕉", quantity: 5, price: 2.0, order_date: "2023-10-02", shipping_address: "上海市浦东新区" },
+                { order_no: "SO-12347", customer_name: "王五", product: "橙子", quantity: 8, price: 3.5, order_date: "2023-10-03", shipping_address: "广州市天河区" },
+                { order_no: "SO-12348", customer_name: "赵六", product: "葡萄", quantity: 12, price: 4.0, order_date: "2023-10-04", shipping_address: "深圳市南山区" },
+                { order_no: "SO-12349", customer_name: "孙七", product: "西瓜", quantity: 3, price: 10.0, order_date: "2023-10-05", shipping_address: "成都市武侯区" },
+                { order_no: "SO-12350", customer_name: "周八", product: "芒果", quantity: 7, price: 6.0, order_date: "2023-10-06", shipping_address: "杭州市西湖区" },
+                { order_no: "SO-12351", customer_name: "吴九", product: "草莓", quantity: 20, price: 2.5, order_date: "2023-10-07", shipping_address: "苏州市姑苏区" },
+                { order_no: "SO-12352", customer_name: "郑十", product: "蓝莓", quantity: 15, price: 3.0, order_date: "2023-10-08", shipping_address: "南京市鼓楼区" }
+            ],
+            maxRows: 300
+        };
+
+        // 复制结果到剪贴板
+        document.getElementById("copy-button").addEventListener("click", () => {
+            const result = document.getElementById("result-content").innerText;
+            navigator.clipboard.writeText(result);
+            alert("结果已复制到剪贴板");
+        });
+
+        // 导出结果为 JSON 文件
+        document.getElementById("export-button").addEventListener("click", () => {
+            const result = document.getElementById("result-content").innerText;
+            const blob = new Blob([result], { type: "application/json" });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement("a");
+            a.href = url;
+            a.download = "analysis_result.json";
+            a.click();
+            URL.revokeObjectURL(url);
+        });
+
+        // 随机示例
+        document.getElementById("random-button").addEventListener("click", () => {
+            const presets = Object.keys(SEED);
+            const randomPreset = presets[Math.floor(Math.random() * presets.length)];
+            loadPreset(randomPreset);
+        });
+
+        // 加载预设
+        function loadPreset(preset) {
+            const data = SEED[preset].inputs.data;
+            const exampleResult = SEED[preset].exampleResult;
+            window.DataIntake.setData(data);
+            document.getElementById("result-content").innerHTML = `
+                <div class="example-result">
+                    <h3>示例结果</h3>
+                    <p>${JSON.stringify(exampleResult.summary, null, 2)}</p>
+                    <p>${JSON.stringify(exampleResult.analysis, null, 2)}</p>
+                    <div class="chart" id="example-chart"></div>
+                </div>
+            `;
+            renderChart(exampleResult.chart);
+        }
+
+        // 渲染图表
+        function renderChart(chart) {
+            const ctx = document.getElementById("example-chart").getContext("2d");
+            new Chart(ctx, chart);
+        }
+
+        // 清除数据
+        document.getElementById("clear-button").addEventListener("click", () => {
+            window.DataIntake.clearData();
+            document.getElementById("result").style.display = "none";
+            document.getElementById("result-content").innerHTML = "";
+        });
+
+        // 生成分析
+        document.getElementById("generate-button").addEventListener("click", () => {
+            if (window.DataIntake && window.DataIntake.isReady()) {
+                const payload = window.DataIntake.getPayload();
+                fetch("/api/generate", {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json"
+                    },
+                    body: JSON.stringify({ inputs: payload })
+                })
+                .then(response => response.json())
+                .then(data => {
+                    document.getElementById("result").style.display = "block";
+                    document.getElementById("result-content").innerText = data.result;
+                })
+                .catch(error => {
+                    alert("生成失败，请稍后重试");
+                });
+            } else {
+                alert("请先上传数据或选择场景预设");
+            }
+        });
+
+        // 预设按钮事件
+        document.querySelectorAll(".preset-button").forEach(button => {
+            button.addEventListener("click", () => {
+                const preset = button.getAttribute("data-preset");
+                loadPreset(preset);
+            });
+        });
+
+        // 初始化 DataIntake
+        window.DataIntake = {
+            data: [],
+            isReady: function() {
+                return this.data.length > 0;
+            },
+            setData: function(data) {
+                this.data = data;
+            },
+            getPayload: function() {
+                return {
+                    data: this.data,
+                    summary: {
+                        totalOrders: this.data.length,
+                        totalCustomers: [...new Set(this.data.map(item => item.customer_name))].length,
+                        totalRevenue: this.data.reduce((sum, item) => sum + (item.quantity * item.price), 0),
+                        averageOrderValue: this.data.reduce((sum, item) => sum + (item.quantity * item.price), 0) / this.data.length,
+                        topProduct: this.data.sort((a, b) => (a.quantity * a.price) - (b.quantity * b.price)).slice(-1)[0].product,
+                        topCustomer: this.data.sort((a, b) => a.customer_name.localeCompare(b.customer_name)).slice(-1)[0].customer_name
+                    },
+                    analysis: {
+                        "复购率": "0%",
+                        "客单价": (this.data.reduce((sum, item) => sum + (item.quantity * item.price), 0) / this.data.length).toFixed(2),
+                        "发货量": this.data.length,
+                        "平均发货时间": "2天"
+                    },
+                    chart: {
+                        type: "bar",
+                        data: {
+                            labels: [...new Set(this.data.map(item => item.product))],
+                            datasets: [
+                                {
+                                    label: "销量",
+                                    data: [...new Set(this.data.map(item => item.product))].map(product => {
+                                        return this.data.filter(item => item.product === product).reduce((sum, item) => sum + item.quantity, 0);
+                                    }),
+                                    backgroundColor: "rgba(75, 192, 192, 0.6"
+                                }
+                            ]
+                        }
+                    }
+                };
+            },
+            clearData: function() {
+                this.data = [];
+            }
+        };
+    </script>
+</body>
+</html>
+```

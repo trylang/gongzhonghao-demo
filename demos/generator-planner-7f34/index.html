@@ -1,0 +1,349 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>代州黄酒短视频脚本批量生成器</title>
+    <style>
+        :root {
+            --main-color: #d4a373;
+            --background-color: #fcfcfc;
+            --text-color: #333;
+            --border-color: #e0e0e0;
+            --button-color: #faedcd;
+            --button-hover: #f5cba7;
+            --shadow: 0 4px 6px rgba(0,0,0,0.1);
+            --radius: 8px;
+        }
+        body {
+            margin: 0;
+            font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+            background-color: var(--background-color);
+            color: var(--text-color);
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        h1 {
+            margin-bottom: 20px;
+            color: var(--main-color);
+        }
+        .container {
+            width: 100%;
+            max-width: 1200px;
+            padding: 20px;
+            background-color: #fff;
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius);
+            box-shadow: var(--shadow);
+        }
+        .controls {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+        .controls button {
+            flex: 1 1 150px;
+            padding: 10px;
+            border: none;
+            border-radius: var(--radius);
+            background-color: var(--button-color);
+            cursor: pointer;
+            font-size: 16px;
+            transition: background-color 0.3s;
+        }
+        .controls button:hover {
+            background-color: var(--button-hover);
+        }
+        .inputs {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+        .inputs input, .inputs select, .inputs textarea {
+            flex: 1 1 200px;
+            padding: 10px;
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius);
+            font-size: 16px;
+        }
+        .generate-button {
+            flex: 1 1 100%;
+            padding: 15px;
+            background-color: var(--main-color);
+            color: #fff;
+            font-size: 18px;
+            border: none;
+            border-radius: var(--radius);
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+        .generate-button:hover {
+            background-color: #b08968;
+        }
+        .results {
+            width: 100%;
+            margin-top: 30px;
+        }
+        .results h2 {
+            margin-bottom: 20px;
+            color: var(--main-color);
+        }
+        .results .example-result {
+            border: 1px solid var(--border-color);
+            padding: 20px;
+            border-radius: var(--radius);
+            position: relative;
+        }
+        .results .example-result::after {
+            content: "示例";
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background-color: #f0f0f0;
+            padding: 5px 10px;
+            border-radius: var(--radius);
+            font-size: 14px;
+            color: #777;
+        }
+        .results .real-result {
+            border: 1px solid var(--border-color);
+            padding: 20px;
+            border-radius: var(--radius);
+        }
+        .results pre {
+            background-color: #f9f9f9;
+            padding: 15px;
+            border-radius: var(--radius);
+            overflow-x: auto;
+        }
+        .results table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 20px;
+        }
+        .results table th, .results table td {
+            padding: 10px;
+            border: 1px solid var(--border-color);
+            text-align: left;
+        }
+        .results table th {
+            background-color: var(--button-color);
+        }
+        .hidden {
+            display: none;
+        }
+        @media (max-width: 768px) {
+            .controls, .inputs {
+                flex-direction: column;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div id="data-intake"></div>
+    <div class="container">
+        <h1>代州黄酒短视频脚本批量生成器</h1>
+        <div class="controls">
+            <button id="preset-a">场景A: 新品上市</button>
+            <button id="preset-b">场景B: 节日促销</button>
+            <button id="preset-c">场景C: 文化故事</button>
+            <button id="random-example">随机示例</button>
+            <button id="clear-inputs">清空/重填</button>
+        </div>
+        <div class="inputs">
+            <input type="text" id="product-name" placeholder="产品名称" required>
+            <input type="text" id="product-feature" placeholder="产品卖点" required>
+            <textarea id="product-description" placeholder="产品描述" rows="4" required></textarea>
+            <select id="script-length">
+                <option value="30">30秒</option>
+                <option value="60">60秒</option>
+            </select>
+        </div>
+        <button class="generate-button" id="generate-button">生成脚本</button>
+        <div class="results" id="results">
+            <h2>示例结果</h2>
+            <div class="example-result" id="example-result">
+                <h3>30秒口播脚本</h3>
+                <p>欢迎来到代州黄酒的世界！我们为您带来一款传承百年工艺的佳酿，口感醇厚，回味无穷。无论是节日庆典还是日常小酌，代州黄酒都是您的理想选择。立即选购，享受传统与品质的完美结合。</p>
+                <h3>分镜描述</h3>
+                <ol>
+                    <li>开场镜头：代州黄酒瓶身特写，背景音乐轻柔</li>
+                    <li>中景镜头：人们欢聚一堂，举杯共饮</li>
+                    <li>特写镜头：酒液倒入杯中，晶莹剔透</li>
+                    <li>结尾镜头：产品包装展示，附上品牌Logo</li>
+                </ol>
+            </div>
+            <div class="real-result hidden" id="real-result">
+                <h3>30秒口播脚本</h3>
+                <pre id="script-30s"></pre>
+                <h3>60秒口播脚本</h3>
+                <pre id="script-60s"></pre>
+                <h3>分镜描述</h3>
+                <pre id="storyboard"></pre>
+            </div>
+        </div>
+        <div class="controls">
+            <button id="copy-result">复制结果</button>
+            <button id="export-json">导出 JSON</button>
+        </div>
+    </div>
+    <script>
+        const SEED = [
+            {
+                product_name: "代州黄酒",
+                product_feature: "传统工艺，百年传承",
+                product_description: "代州黄酒，传承百年工艺，采用优质原料，经过多道工序精心酿制而成。口感醇厚，回味悠长，是您节日庆典和日常小酌的理想选择。",
+                script_length: "30",
+                script_30s: "欢迎来到代州黄酒的世界！我们为您带来一款传承百年工艺的佳酿，口感醇厚，回味无穷。无论是节日庆典还是日常小酌，代州黄酒都是您的理想选择。立即选购，享受传统与品质的完美结合。",
+                script_60s: "欢迎来到代州黄酒的世界！我们为您带来一款传承百年工艺的佳酿。代州黄酒采用优质原料，经过多道工序精心酿制而成，口感醇厚，回味悠长。无论是节日庆典还是日常小酌，它都是您的理想选择。立即选购，享受传统与品质的完美结合，让代州黄酒为您的美好时刻增添光彩。",
+                storyboard: "1. 开场镜头：代州黄酒瓶身特写，背景音乐轻柔\n2. 中景镜头：人们欢聚一堂，举杯共饮\n3. 特写镜头：酒液倒入杯中，晶莹剔透\n4. 结尾镜头：产品包装展示，附上品牌Logo"
+            },
+            {
+                product_name: "代州黄酒",
+                product_feature: "独特口感，回味无穷",
+                product_description: "代州黄酒以其独特的口感著称，入口醇厚，回味悠长。经过精心调配和酿制，每一口都能带给你不一样的体验。无论是搭配美食还是单独品尝，代州黄酒都能带给你无与伦比的享受。",
+                script_length: "60",
+                script_30s: "体验代州黄酒的独特魅力！我们的黄酒以其独特的口感著称，入口醇厚，回味悠长。每一口都能带给你不一样的体验。无论是搭配美食还是单独品尝，代州黄酒都是您的最佳选择。立即选购，享受无与伦比的味觉盛宴。",
+                script_60s: "体验代州黄酒的独特魅力！我们的黄酒以其独特的口感著称，入口醇厚，回味悠长。经过精心调配和酿制，每一口都能带给你不一样的体验。无论是搭配美食还是单独品尝，它都能带给你无与伦比的享受。立即选购，让代州黄酒成为您餐桌上的亮点。",
+                storyboard: "1. 开场镜头：代州黄酒瓶身特写，背景音乐温馨\n2. 中景镜头：人们品尝黄酒，露出满意的笑容\n3. 特写镜头：酒液在杯中晃动，色泽诱人\n4. 结尾镜头：产品包装展示，附上品牌Logo"
+            },
+            {
+                product_name: "代州黄酒",
+                product_feature: "文化传承，历史悠久",
+                product_description: "代州黄酒不仅是一款酒，更是一种文化的传承。代州黄酒的历史可以追溯到数百年前，它承载着代州人民的智慧和勤劳。作为一种文化符号，代州黄酒是您了解中国传统酒文化的最佳选择。",
+                script_length: "30",
+                script_30s: "代州黄酒，传承历史文化！作为一款承载着代州人民智慧和勤劳的酒，代州黄酒不仅是酒，更是一种文化的传承。立即选购，感受中国传统酒文化的魅力。",
+                script_60s: "代州黄酒，传承历史文化！作为一款承载着代州人民智慧和勤劳的酒，代州黄酒的历史可以追溯到数百年前。它不仅是一款酒，更是一种文化的象征。立即选购，让代州黄酒带你领略中国传统酒文化的魅力。",
+                storyboard: "1. 开场镜头：代州黄酒瓶身特写，背景音乐庄重\n2. 中景镜头：人们围坐在一起，品味黄酒\n3. 特写镜头：酒瓶上的历史标志\n4. 结尾镜头：产品包装展示，附上品牌Logo"
+            }
+        ];
+
+        const DATA_SCHEMA = {
+            name: "产品信息",
+            columns: [
+                { key: "product_name", label: "产品名称", type: "text", example: "代州黄酒", required: true },
+                { key: "product_feature", label: "产品卖点", type: "text", example: "传统工艺", required: true },
+                { key: "product_description", label: "产品描述", type: "textarea", example: "代州黄酒，传承百年工艺...", required: true },
+                { key: "script_length", label: "脚本时长", type: "select", options: ["30", "60"], required: true }
+            ],
+            sample: [
+                { product_name: "代州黄酒", product_feature: "传统工艺", product_description: "代州黄酒，传承百年工艺...", script_length: "30" },
+                { product_name: "代州黄酒", product_feature: "独特口感", product_description: "代州黄酒以其独特的口感著称...", script_length: "60" },
+                { product_name: "代州黄酒", product_feature: "文化传承", product_description: "代州黄酒不仅是一款酒，更是一种文化的传承...", script_length: "30" }
+            ],
+            maxRows: 300
+        };
+
+        window.DATA_SCHEMA = DATA_SCHEMA;
+
+        document.getElementById("preset-a").addEventListener("click", () => {
+            document.getElementById("product-name").value = "代州黄酒";
+            document.getElementById("product-feature").value = "新品上市";
+            document.getElementById("product-description").value = "代州黄酒新品上市，限量发售，速来抢购！";
+            document.getElementById("script-length").value = "30";
+        });
+
+        document.getElementById("preset-b").addEventListener("click", () => {
+            document.getElementById("product-name").value = "代州黄酒";
+            document.getElementById("product-feature").value = "节日促销";
+            document.getElementById("product-description").value = "代州黄酒节日促销，优惠多多，惊喜不断！";
+            document.getElementById"script-length".value = "60";
+        });
+
+        document.getElementById("preset-c").addEventListener("click", () => {
+            document.getElementById("product-name").value = "代州黄酒";
+            document.getElementById("product-feature").value = "文化故事";
+            document.getElementById("product-description").value = "代州黄酒，传承历史文化，讲述代州人民的智慧和勤劳。";
+            document.getElementById("script-length").value = "30";
+        });
+
+        document.getElementById("random-example").addEventListener("click", () => {
+            const randomIndex = Math.floor(Math.random() * SEED.length);
+            const data = SEED[randomIndex];
+            document.getElementById("product-name").value = data.product_name;
+            document.getElementById("product-feature").value = data.product_feature;
+            document.getElementById("product-description").value = data.product_description;
+            document.getElementById("script-length").value = data.script_length;
+        });
+
+        document.getElementById("clear-inputs").addEventListener("click", () => {
+            document.getElementById("product-name").value = "";
+            document.getElementById("product-feature").value = "";
+            document.getElementById("product-description").value = "";
+            document.getElementById("script-length").value = "30";
+            document.getElementById("results").classList.add("hidden");
+        });
+
+        document.getElementById("generate-button").addEventListener("click", () => {
+            const dataIntakeReady = window.DataIntake && window.DataIntake.isReady();
+            let inputs = {
+                product_name: document.getElementById("product-name").value,
+                product_feature: document.getElementById("product-feature").value,
+                product_description: document.getElementById("product-description").value,
+                script_length: document.getElementById("script-length").value
+            };
+            if (dataIntakeReady) {
+                inputs.data = window.DataIntake.getPayload();
+            }
+            fetch("/api/generate", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify({ inputs: inputs })
+            })
+            .then(response => response.json())
+            .then(data => {
+                document.getElementById("script-30s").innerText = data.script_30s;
+                document.getElementById("script-60s").innerText = data.script_60s;
+                document.getElementById("storyboard").innerText = data.storyboard;
+                document.getElementById("example-result").classList.add("hidden");
+                document.getElement"results"classList.remove("hidden");
+            })
+            .catch(error => {
+                console.error("Error:", error);
+            });
+        });
+
+        document.getElementById("copy-result").addEventListener("click", () => {
+            const script_30s = document.getElementById("script-30s").innerText;
+            const script_60s = document.getElementById("script-60s").innerText;
+            const storyboard = document.getElementById("storyboard").innerText;
+            const result = {
+                "30秒脚本": script_30s,
+                "60秒脚本": script_60s,
+                "分镜描述": storyboard
+            };
+            navigator.clipboard.writeText(JSON.stringify(result, null, 2))
+                .then(() => {
+                    alert("结果已复制到剪贴板");
+                })
+                .catch(error => {
+                    console.error("Copy failed", error);
+                });
+        });
+
+        document.getElementById("export-json").addEventListener("click", () => {
+            const script_30s = document.getElementById("script-30s").innerText;
+            const script_60s = document.getElementById("script-60s").innerText;
+            const storyboard = document.getElementById("storyboard").innerText;
+            const result = {
+                "30秒脚本": script_30s,
+                "60秒脚本": script_60s,
+                "分镜描述": storyboard
+            };
+            const blob = new Blob([JSON.stringify(result, null, 2)], { type: "application/json" });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement("a");
+            a.href = url;
+            a.download = "script.json";
+            a.click();
+            URL.revokeObjectURL(url);
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,364 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <title>电商用户画像与复购分析工具</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>
+        :root {
+            --main-color: #4A90E2;
+            --background-color: #F5F5F5;
+            --text-color: #333333;
+            --button-color: #4A90E2;
+            --button-text-color: #FFFFFF;
+            --card-background: #FFFFFF;
+            --card-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+            --border-radius: 8px;
+            --font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+        }
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: var(--font-family);
+            background-color: var(--background-color);
+            color: var(--text-color);
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+        }
+        header {
+            background-color: var(--main-color);
+            color: #FFFFFF;
+            padding: 20px;
+            text-align: center;
+        }
+        main {
+            flex: 1;
+            padding: 20px;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        .controls {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+        .button {
+            background-color: var(--button-color);
+            color: var(--button-text-color);
+            border: none;
+            padding: 10px 20px;
+            border-radius: var(--border-radius);
+            cursor: pointer;
+            font-size: 16px;
+            transition: background-color 0.3s;
+        }
+        .button:hover {
+            background-color: #357ABD;
+        }
+        .button.secondary {
+            background-color: #E0E0E0;
+            color: var(--text-color);
+        }
+        .button.secondary:hover {
+            background-color: #CCCCCC;
+        }
+        .data-panel {
+            background-color: var(--card-background);
+            border-radius: var(--border-radius);
+            box-shadow: var(--card-shadow);
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+        .data-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 10px;
+        }
+        .data-table th, .data-table td {
+            padding: 10px;
+            border: 1px solid #E0E0E0;
+            text-align: left;
+        }
+        .data-table th {
+            background-color: #F0F0F0;
+        }
+        .chart-container {
+            width: 100%;
+            height: 400px;
+            margin-top: 20px;
+        }
+        .footer {
+            background-color: #F0F0F0;
+            text-align: center;
+            padding: 10px;
+            font-size: 14px;
+        }
+        @media (max-width: 768px) {
+            .controls {
+                flex-direction: column;
+            }
+            .button {
+                width: 100%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div id="data-intake"></div>
+    <header>
+        <h1>电商用户画像与复购分析工具</h1>
+    </header>
+    <main>
+        <div class="controls">
+            <button id="generate-button" class="button">生成分析报告</button>
+            <button id="clear-button" class="button secondary">清空 / 重填</button>
+            <button id="copy-button" class="button secondary">复制结果</button>
+            <button id="export-button" class="button secondary">导出 JSON</button>
+            <button id="random-button" class="button secondary">随机示例</button>
+            <button id="preset-a" class="button secondary">场景A</button>
+            <button id="preset-b" class="button secondary">场景B</button>
+            <button id="preset-c" class="button secondary">场景C</button>
+        </div>
+        <div id="result-panel" class="data-panel" style="display: none;">
+            <h2>分析结果</h2>
+            <div id="result-content">
+                <!-- 示例结果 -->
+                <p>请先点击「生成分析报告」按钮以查看结果。</p>
+            </div>
+        </div>
+        <div id="example-result" class="data-panel" style="display: block;">
+            <h2>示例结果</h2>
+            <p>以下是一个基于示例数据的示例结果：</p>
+            <div id="example-result-content">
+                <h3>用户画像概览</h3>
+                <ul>
+                    <li>总用户数：5000</li>
+                    <li>平均客单价：¥150</li>
+                    <li>复购率：30%</li>
+                    <li>主要购买时段：晚上 7 点至 10 点</li>
+                </ul>
+                <h3>复购用户分析</h3>
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>用户类型</th>
+                            <th>数量</th>
+                            <th>占比</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>首次购买用户</td>
+                            <td>3500</td>
+                            <td>70%</td>
+                        </tr>
+                        <tr>
+                            <td>复购用户</td>
+                            <td>1500</td>
+                            <td>30%</td>
+                        </tr>
+                    </tbody>
+                </table>
+                <h3>用户来源分析</h3>
+                <canvas id="example-chart" class="chart-container"></canvas>
+            </div>
+        </div>
+        <script>
+            // 数据入口组件声明
+            window.DATA_SCHEMA = {
+                name: "订单明细",
+                columns: [
+                    { key: "order_no", label: "订单号", type: "text", example: "SO123456", required: true },
+                    { key: "customer_id", label: "客户ID", type: "text", example: "CUST123", required: true },
+                    { key: "purchase_date", label: "购买日期", type: "date", example: "2023-10-01", required: true },
+                    { key: "product_id", label: "产品ID", type: "text", example: "PROD123", required: true },
+                    { key: "product_name", label: "产品名称", type: "text", example: "黄酒", required: true },
+                    { key: "quantity", label: "数量", type: "number", example: "2", required: true },
+                    { key: "price", label: "单价", type: "number", example: "75", required: true },
+                    { key: "total_price", label: "总价", type: "number", example: "150", required: true },
+                    { key: "customer_location", label: "客户所在地", type: "text", example: "北京", required: true },
+                    { key: "customer_segment", label: "客户细分", type: "text", example: "高端", required: true }
+                ],
+                sample: [
+                    { order_no: "SO123456", customer_id: "CUST123", purchase_date: "2023-10-01", product_id: "PROD123", product_name: "黄酒", quantity: 2, price: 75, total_price: 150, customer_location: "北京", customer_segment: "高端" },
+                    { order_no: "SO123457", customer_id: "CUST124", purchase_date: "2023-10-02", product_id: "PROD124", product_name: "白酒", quantity: 1, price: 100, total_price: 100, customer_location: "上海", customer_segment: "中端" },
+                    { order_no: "SO123458", customer_id: "CUST125", purchase_date: "2023-10-03", product_id: "PROD125", product_name: "啤酒", quantity: 6, price: 15, total_price: 90, customer_location: "广州", customer_segment: "大众" },
+                    { order_no: "SO123459", customer_id: "CUST126", purchase_date: "2023-10-04", product_id: "PROD126", product_name: "红酒", quantity: 3, price: 200, total_price: 600, customer_location: "深圳", customer_segment: "高端" },
+                    { order_no: "SO123460", customer_id: "CUST127", purchase_date: "2023-10-05", product_id: "PROD127", product_name: "白酒", quantity: 2, price: 100, total_price: 200, customer_location: "成都", customer_segment: "中端" },
+                    { order_no: "SO123461", customer_id: "CUST128", purchase_date: "2023-10-06", product_id: "PROD128", product_name: "啤酒", quantity: 10, price: 15, total_price: 150, customer_location: "杭州", customer_segment: "大众" },
+                    { order_no: "SO123462", customer_id: "CUST129", purchase_date: "2023-10-07", product_id: "PROD129", product_name: "黄酒", quantity: 1, price: 75, total_price: 75, customer_location: "武汉", customer_segment: "高端" },
+                    { order_no: "SO123463", customer_id: "CUST130", purchase_date: "2023-10-08", product_id: "PROD130", product_name: "白酒", quantity: 3, price: 100, total_price: 300, customer_location: "西安", customer_segment: "中端" },
+                    { order_no: "SO123464", customer_id: "CUST131", purchase_date: "2023-10-09", product_id: "PROD131", product_name: "啤酒", quantity: 5, price: 15, total_price: 75, customer_location: "重庆", customer_segment: "大众" },
+                    { order_no: "SO123465", customer_id: "CUST132", purchase_date: "2023-10-10", product_id: "PROD132", product_name: "红酒", quantity: 2, price: 200, total_price: 400, customer_location: "厦门", customer_segment: "高端" }
+                ],
+                maxRows: 300
+            };
+            // 示例结果数据
+            const exampleResult = {
+                user_profile: {
+                    total_users: 5000,
+                    average_order_value: "¥150",
+                    repurchase_rate: "30%",
+                    peak_purchase_time: "晚上 7 点至 10 点"
+                },
+                repurchase_analysis: {
+                    first_time_buyers: 3500,
+                    repurchase_customers: 1500,
+                    repurchase_percentage: "30%"
+                },
+                user_source_analysis: {
+                    data: {
+                        labels: ["微信", "抖音", "其他"],
+                        datasets: [{
+                            label: "用户来源",
+                            data: [2500, 2000, 500],
+                            backgroundColor: ["#4A90E2", "#50E3C2", "#F8E71C"]
+                        }]
+                    }
+                }
+            };
+            // 事件处理
+            document.getElementById("generate-button").addEventListener("click", () => {
+                if (window.DataIntake && window.DataIntake.isReady()) {
+                    const data = window.DataIntake.getPayload();
+                    fetch("/api/generate", {
+                        method: "POST",
+                        headers: {
+                            "Content-Type": "application/json"
+                        },
+                        body: JSON.stringify({ inputs: data })
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        renderResult(data);
+                    })
+                    .catch(error => {
+                        console.error("Error:", error);
+                    });
+                } else {
+                    fetch("/api/generate", {
+                        method: "POST",
+                        headers: {
+                            "Content-Type": "application/json"
+                        },
+                        body: JSON.stringify({ inputs: getSeedData() })
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        renderResult(data);
+                    })
+                    .catch(error => {
+                        console.error("Error:", error);
+                    });
+                }
+            });
+            document.getElementById("clear-button").addEventListener("click", () => {
+                document.getElementById("result-panel").style.display = "none";
+                document.getElementById("example-result").style.display = "block";
+            });
+            document.getElementById("copy-button").addEventListener("click", () => {
+                const result = document.getElementById("result-content").innerText;
+                navigator.clipboard.writeText(result);
+            });
+            document.getElementById("export-button").addEventListener("click", () => {
+                const result = document.getElementById("result-content").innerText;
+                const blob = new Blob([result], { type: "application/json" });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement("a");
+                a.href = url;
+                a.download = "result.json";
+                a.click();
+                URL.revokeObjectURL(url);
+            });
+            document.getElementById("random-button").addEventListener("click", () => {
+                const seedData = getSeedData();
+                const randomIndex = Math.floor(Math.random() * seedData.length);
+                const randomData = seedData[randomIndex];
+                window.DataIntake.setPayload(randomData);
+            });
+            document.getElementById("preset-a").addEventListener("click", () => {
+                const seedData = getSeedData();
+                const presetA = seedData.filter(item => item.customer_segment === "高端");
+                window.DataIntake.setPayload(presetA);
+            });
+            document.getElementById("preset-b").addEventListener("click", () => {
+                const seedData = getSeedData();
+                const presetB = seedData.filter(item => item.customer_segment === "中端");
+                window.DataIntake.setPayload(presetB);
+            });
+            document.getElementById("preset-c").addEventListener("click", () => {
+                const seedData = getSeedData();
+                const presetC = seedData.filter(item => item.customer_segment === "大众");
+                window.DataIntake.setPayload(presetC);
+            });
+            // 获取种子数据
+            function getSeedData() {
+                return window.DATA_SCHEMA.sample;
+            }
+            // 渲染结果
+            function renderResult(data) {
+                document.getElementById("example-result").style.display = "none";
+                document.getElementById("result-panel").style.display = "block";
+                document.getElementById("result-content").innerHTML = `
+                    <h3>用户画像概览</h3>
+                    <ul>
+                        <li>总用户数：${data.total_users}</li>
+                        <li>平均客单价：${data.average_order_value}</li>
+                        <li>复购率：${data.repurchase_rate}</li>
+                        <li>主要购买时段：${data.peak_purchase_time}</li>
+                    </ul>
+                    <h3>复购用户分析</h3>
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>用户类型</th>
+                                <th>数量</th>
+                                <th>占比</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>首次购买用户</td>
+                                <td>${data.repurchase_analysis.first_time_buyers}</td>
+                                <td>${data.repurchase_analysis.repurchase_percentage}</td>
+                            </tr>
+                            <tr>
+                                <td>复购用户</td>
+                                <td>${data.repurchase_analysis.repurchase_customers}</td>
+                                <td>${data.repurchase_analysis.repurchase_percentage}</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                    <h3>用户来源分析</h3>
+                    <canvas id="result-chart" class="chart-container"></canvas>
+                `;
+                const ctx = document.getElementById("result-chart").getContext("2d");
+                const chartData = {
+                    labels: data.user_source_analysis.data.labels,
+                    datasets: [{
+                        label: "用户来源",
+                        data: data.user_source_analysis.data.datasets[0].data,
+                        backgroundColor: data.user_source_analysis.data.datasets[0].backgroundColor
+                    }]
+                };
+                new Chart(ctx, {
+                    type: "bar",
+                    data: chartData,
+                    options: {
+                        scales: {
+                            y: {
+                                beginAtZero: true
+                            }
+                        }
+                    }
+                });
+            }
+        </script>
+    </main>
+    <div class="footer">
+        © 2023 电商用户画像与复购分析工具
+    </div>
+</body>
+</html>

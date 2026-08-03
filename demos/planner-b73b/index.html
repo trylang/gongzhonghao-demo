@@ -1,0 +1,350 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI 电商数据分析工具</title>
+    <style>
+        :root {
+            --main-color: #4A90E2;
+            --background-color: #f5f5f5;
+            --text-color: #333333;
+            --border-radius: 8px;
+            --box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        }
+        body {
+            margin: 0;
+            font-family: Arial, sans-serif;
+            background-color: var(--background-color);
+            color: var(--text-color);
+            padding: 20px;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background-color: #ffffff;
+            padding: 30px;
+            border-radius: var(--border-radius);
+            box-shadow: var(--box-shadow);
+        }
+        h1 {
+            text-align: center;
+            color: var(--main-color);
+        }
+        .data-intake {
+            margin-bottom: 20px;
+        }
+        .controls {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+        .button {
+            padding: 10px 20px;
+            background-color: var(--main-color);
+            color: #ffffff;
+            border: none;
+            border-radius: var(--border-radius);
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+        .button:hover {
+            background-color: #357ABD;
+        }
+        .button-secondary {
+            background-color: #cccccc;
+            color: #333333;
+        }
+        .button-secondary:hover {
+            background-color: #b3b3b3;
+        }
+        .result {
+            margin-top: 20px;
+            padding: 20px;
+            border: 1px solid #dddddd;
+            border-radius: var(--border-radius);
+        }
+        .result h2 {
+            margin-top: 0;
+            color: var(--main-color);
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 10px;
+        }
+        table th, table td {
+            padding: 10px;
+            border: 1px solid #dddddd;
+            text-align: left;
+        }
+        table th {
+            background-color: #f0f0f0;
+        }
+        @media (max-width: 600px) {
+            .controls {
+                flex-direction: column;
+            }
+            .button {
+                width: 100%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div id="data-intake"></div>
+    <div class="container">
+        <h1>AI 电商数据分析工具</h1>
+        <div class="controls">
+            <button class="button" id="generate">生成分析报告</button>
+            <button class="button button-secondary" id="clear">清空 / 重填</button>
+            <button class="button button-secondary" id="copy">复制结果</button>
+            <button class="button button-secondary" id="export">导出 JSON</button>
+            <button class="button button-secondary" id="random">随机示例</button>
+            <button class="button button-secondary" id="presetA">场景A</button>
+            <button class="button button-secondary" id="presetB">场景B</button>
+            <button class="button button-secondary" id="presetC">场景C</button>
+        </div>
+        <div class="result" id="result">
+            <h2>示例结果</h2>
+            <p>这是基于预设场景 A 的示例结果：</p>
+            <table>
+                <thead>
+                    <tr>
+                        <th>指标</th>
+                        <th>数值</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>每日发货量</td>
+                        <td>150 件</td>
+                    </tr>
+                    <tr>
+                        <td>复购率</td>
+                        <td>35%</td>
+                    </tr>
+                    <tr>
+                        <td>平均客单价</td>
+                        <td>¥ 120</td>
+                    </tr>
+                </tbody>
+            </table>
+            <p>结论：您的电商业务目前处于稳定增长状态，但复购率仍有提升空间。建议关注客户体验优化和精准营销策略。</p>
+        </div>
+    </div>
+
+    <script>
+        const SEED_A = {
+            data: [
+                { order_no: "SO1001", product: "产品A", quantity: 10, price: 120 },
+                { order_no: "SO1002", product: "产品B", quantity: 5, price: 200 },
+                { order_no: "SO1003", product: "产品C", quantity: 8, price: 150 },
+                // ...更多示例数据
+            ],
+            result: {
+                daily_shipments: 150,
+                repurchase_rate: "35%",
+                average_order_value: "¥ 120",
+                conclusion: "您的电商业务目前处于稳定增长状态，但复购率仍有提升空间。建议关注客户体验优化和精准营销策略。"
+            }
+        };
+
+        const SEED_B = {
+            data: [
+                { order_no: "SO2001", product: "产品D", quantity: 20, price: 80 },
+                { order_no: "SO2002", product: "产品E", quantity: 15, price: 90 },
+                { order_no: "SO2003", product: "产品F", quantity: 12, price: 100 },
+                // ...更多示例数据
+            ],
+            result: {
+                daily_shipments: 200,
+                repurchase_rate: "40%",
+                average_order_value: "¥ 85",
+                conclusion: "您的电商业务发货量较高，但平均客单价较低。建议通过促销活动或产品组合提升客单价。"
+            }
+        };
+
+        const SEED_C = {
+            data: [
+                { order_no: "SO3001", product: "产品G", quantity: 6, price: 300 },
+                { order_no: "SO3002", product: "产品H", quantity: 3, price: 400 },
+                { order_no: "SO3003", product: "产品I", quantity: 5, price: 350 },
+                // ...更多示例数据
+            ],
+            result: {
+                daily_shipments: 100,
+                repurchase_rate: "30%",
+                average_order_value: "¥ 325",
+                conclusion: "您的电商业务客单价较高，但发货量和复购率较低。建议加强客户关系管理和产品推广。"
+            }
+        };
+
+        const SEEDS = [SEED_A, SEED_B, SEED_C];
+        let currentSeed = SEED_A;
+
+        document.getElementById("generate").addEventListener("click", generateReport);
+        document.getElementById("clear").addEventListener("click", clearData);
+        document.getElementById("copy").addEventListener("click", copyResult);
+        document.getElementById("export").addEventListener("click", exportJson);
+        document.getElementById("random").addEventListener("click", loadRandomSeed);
+        document.getElementById("presetA").addEventListener("click", () => loadSeed(SEED_A));
+        document.getElementById("presetB").addEventListener("click", () => loadSeed(SEED_B));
+        document.getElementById("presetC").addEventListener("click", () => loadSeed(SEED_C));
+
+        function loadSeed(seed) {
+            currentSeed = seed;
+            document.getElementById("result").innerHTML = `
+                <h2>示例结果</h2>
+                <p>这是基于预设场景 ${seed === SEED_A ? "A" : seed === SEED_B ? "B" : "C"} 的示例结果：</p>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>指标</th>
+                            <th>数值</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>每日发货量</td>
+                            <td>${seed.result.daily_shipments} 件</td>
+                        </tr>
+                        <tr>
+                            <td>复购率</td>
+                            <td>${seed.result.repurchase_rate}</td>
+                        </tr>
+                        <tr>
+                            <td>平均客单价</td>
+                            <td>${seed.result.average_order_value}</td>
+                        </tr>
+                    </tbody>
+                </table>
+                <p>${seed.result.conclusion}</p>
+            `;
+        }
+
+        function loadRandomSeed() {
+            const seed = SEEDS[Math.floor(Math.random() * SEEDS.length)];
+            loadSeed(seed);
+        }
+
+        function generateReport() {
+            let inputs = {};
+            if (window.DataIntake && window.DataIntake.isReady()) {
+                inputs.data = window.DataIntake.getPayload();
+            } else {
+                inputs = currentSeed.data;
+            }
+            fetch("/api/generate", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ inputs: inputs })
+            })
+            .then(response => response.json())
+            .then(data => {
+                renderResult(data);
+            })
+            .catch(error => {
+                console.error("Error:", error);
+                alert("生成失败，请重试。");
+            });
+        }
+
+        function renderResult(data) {
+            let html = `
+                <h2>分析报告</h2>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>指标</th>
+                            <th>数值</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+            `;
+            for (const key in data) {
+                html += `
+                    <tr>
+                        <td>${key}</td>
+                        <td>${data[key]}</td>
+                    </tr>
+                `;
+            }
+            html += `
+                    </tbody>
+                </table>
+                <p>${data.conclusion}</p>
+            `;
+            document.getElementById("result").innerHTML = html;
+        }
+
+        function clearData() {
+            document.getElementById("result").innerHTML = `
+                <h2>示例结果</h2>
+                <p>这是基于预设场景 ${currentSeed === SEED_A ? "A" : currentSeed === SEED_B ? "B" : "C"} 的示例结果：</p>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>指标</th>
+                            <th>数值</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>每日发货量</td>
+                            <td>${currentSeed.result.daily_shipments} 件</td>
+                        </tr>
+                        <tr>
+                            <td>复购率</td>
+                            <td>${currentSeed.result.repurchase_rate}</td>
+                        </tr>
+                        <tr>
+                            <td>平均客单价</td>
+                            <td>${currentSeed.result.average_order_value}</td>
+                        </tr>
+                    </tbody>
+                </table>
+                <p>${currentSeed.result.conclusion}</p>
+            `;
+        }
+
+        function copyResult() {
+            const resultElement = document.getElementById("result");
+            let text = "";
+            for (const child of resultElement.children) {
+                text += child.outerHTML;
+            }
+            navigator.clipboard.writeText(text).then(() => {
+                alert("结果已复制到剪贴板。");
+            }).catch(() => {
+                alert("复制失败，请手动复制。");
+            });
+        }
+
+        function exportJson() {
+            const resultElement = document.getElementById("result");
+            let data = {};
+            for (const child of resultElement.children) {
+                if (child.tagName === "TABLE") {
+                    const rows = child.querySelectorAll("tr");
+                    for (const row of rows) {
+                        const cols = row.querySelectorAll("td");
+                        if (cols.length === 2) {
+                            data[cols[0].innerText] = cols[1].innerText;
+                        }
+                    }
+                }
+            }
+            const json = JSON.stringify(data, null, 2);
+            const blob = new Blob([json], { type: "application/json" });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement("a");
+            a.href = url;
+            a.download = "result.json";
+            a.click();
+            URL.revokeObjectURL(url);
+        }
+    </script>
+</body>
+</html>
