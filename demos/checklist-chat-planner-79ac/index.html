@@ -1,0 +1,239 @@
+<!doctype html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI 视频生成工作流生成器</title>
+    <style>
+        :root {
+            --main-color: #006d77;
+            --background-color: #f8f9fa;
+            --text-color: #343a40;
+            --border-color: #ced4da;
+            --button-color: #006d77;
+            --button-hover-color: #004e5f;
+            --input-border-color: #ced4da;
+            --shadow-color: rgba(0, 0, 0, 0.1);
+            --radius: 8px;
+        }
+
+        body {
+            margin: 0;
+            font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+            background-color: var(--background-color);
+            color: var(--text-color);
+            padding: 20px;
+            min-height: 100vh;
+            box-sizing: border-box;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background-color: #fff;
+            padding: 30px;
+            border-radius: var(--radius);
+            box-shadow: 0 4px 6px var(--shadow-color);
+        }
+
+        h1 {
+            text-align: center;
+            margin-bottom: 30px;
+            color: var(--main-color);
+        }
+
+        .step {
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: bold;
+        }
+
+        input[type="text"],
+        textarea {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid var(--input-border-color);
+            border-radius: var(--radius);
+            box-sizing: border-box;
+            font-size: 16px;
+        }
+
+        textarea {
+            resize: vertical;
+            height: 100px;
+        }
+
+        .options {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .options button {
+            flex: 1;
+            padding: 10px;
+            border: none;
+            background-color: var(--button-color);
+            color: #fff;
+            border-radius: var(--radius);
+            cursor: pointer;
+            font-size: 16px;
+        }
+
+        .options button:hover {
+            background-color: var(--button-hover-color);
+        }
+
+        .loading {
+            text-align: center;
+            margin-top: 20px;
+            font-size: 18px;
+            color: var(--main-color);
+        }
+
+        .error {
+            text-align: center;
+            margin-top: 20px;
+            font-size: 18px;
+            color: #d9534f;
+        }
+
+        .result {
+            margin-top: 30px;
+        }
+
+        .result h2 {
+            margin-bottom: 15px;
+            color: var(--main-color);
+        }
+
+        .video-list {
+            list-style: none;
+            padding: 0;
+        }
+
+        .video-list li {
+            background-color: var(--background-color);
+            padding: 15px;
+            margin-bottom: 10px;
+            border-radius: var(--radius);
+            box-shadow: 0 2px 4px var(--shadow-color);
+        }
+
+        .video-list li h3 {
+            margin-top: 0;
+            color: var(--text-color);
+        }
+
+        .video-list li p {
+            margin: 8px 0 0 0;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <h1>AI 视频生成工作流生成器</h1>
+        <div class="step">
+            <label for="product-name">产品名称</label>
+            <input type="text" id="product-name" placeholder="例如：代州黄酒">
+        </div>
+        <div class="step">
+            <label for="script-type">脚本类型</label>
+            <div class="options">
+                <button data-type="process">工艺流程</button>
+                <button data-type="scenario">使用场景</button>
+                <button data-type="drink-method">饮用方式</button>
+            </div>
+        </div>
+        <div class="step">
+            <label for="additional-details">附加细节（可选）</label>
+            <textarea id="additional-details" placeholder="例如：搭配什么菜、适合什么场合等"></textarea>
+        </div>
+        <button id="generate-button">生成视频脚本</button>
+        <div class="loading" id="loading" style="display: none;">生成中，请稍候...</div>
+        <div class="error" id="error" style="display: none;"></div>
+        <div class="result" id="result" style="display: none;">
+            <h2>生成结果</h2>
+            <ul class="video-list" id="video-list"></ul>
+        </div>
+    </div>
+
+    <script>
+        document.getElementById('generate-button').addEventListener('click', () => {
+            const productName = document.getElementById('product-name').value.trim();
+            const scriptType = document.querySelector('.options button.active')?.getAttribute('data-type');
+            const additionalDetails = document.getElementById('additional-details').value.trim();
+
+            if (!productName || !scriptType) {
+                alert('请填写完整信息');
+                return;
+            }
+
+            document.getElementById('loading').style.display = 'block';
+            document.getElementById('error').style.display = 'none';
+            document.getElementById('result').style.display = 'none';
+
+            const inputs = {
+                productName,
+                scriptType,
+                additionalDetails
+            };
+
+            fetch('/api/generate', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ inputs })
+            })
+                .then(response => response.json())
+                .then(data => {
+                    document.getElementById('loading').style.display = 'none';
+                    if (data.result) {
+                        renderResult(JSON.parse(data.result));
+                    } else {
+                        document.getElementById('error').textContent = '生成失败，请稍后重试';
+                        document.getElementById('error').style.display = 'block';
+                    }
+                })
+                .catch(error => {
+                    document.getElementById('loading').style.display = 'none';
+                    document.getElementById('error').textContent = '网络错误，请稍后重试';
+                    document.getElementById('error').style.display = 'block';
+                });
+        });
+
+        function renderResult(data) {
+            const videoList = document.getElementById('video-list');
+            videoList.innerHTML = '';
+
+            data.videos.forEach(video => {
+                const li = document.createElement('li');
+                const h3 = document.createElement('h3');
+                h3.textContent = video.title;
+                const p = document.createElement('p');
+                p.textContent = video.description;
+                li.appendChild(h3);
+                li.appendChild(p);
+                videoList.appendChild(li);
+            });
+
+            document.getElementById('result').style.display = 'block';
+        }
+
+        document.querySelectorAll('.options button').forEach(button => {
+            button.addEventListener('click', () => {
+                document.querySelector('.options button.active')?.classList.remove('active');
+                button.classList.add('active');
+            });
+        });
+    </script>
+</body>
+
+</html>
