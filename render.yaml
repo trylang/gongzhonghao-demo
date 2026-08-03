@@ -30,6 +30,7 @@ services:
     # 注意：PORT 由 Render 自动注入，server.js 用 process.env.PORT 读取，勿在此固定
 
 
+
   - type: web
     name: agent-boundary-board
     runtime: node
@@ -43,6 +44,7 @@ services:
       - key: MINIMAX_API_KEY
         sync: true
         value: sk-cp-6TsmFqQh8no8k0od-0zXJoUxkpdJo2NeDUDHjbZeyDNhdWV3bN8EiJ1GMwPZS6Wlx-Q1imUMG0hKS9wbvRdqlxdGBxMNJher2J32Q48m8p0ALfB_LBfQ6BU
+
 
 
   - type: web
@@ -60,6 +62,7 @@ services:
         value: sk-cp-6TsmFqQh8no8k0od-0zXJoUxkpdJo2NeDUDHjbZeyDNhdWV3bN8EiJ1GMwPZS6Wlx-Q1imUMG0hKS9wbvRdqlxdGBxMNJher2J32Q48m8p0ALfB_LBfQ6BU
 
 
+
   - type: web
     name: product-storyteller
     runtime: node
@@ -73,6 +76,7 @@ services:
       - key: MINIMAX_API_KEY
         sync: true
         value: sk-cp-6TsmFqQh8no8k0od-0zXJoUxkpdJo2NeDUDHjbZeyDNhdWV3bN8EiJ1GMwPZS6Wlx-Q1imUMG0hKS9wbvRdqlxdGBxMNJher2J32Q48m8p0ALfB_LBfQ6BU
+
 
 
   - type: web
@@ -90,6 +94,7 @@ services:
         value: sk-cp-6TsmFqQh8no8k0od-0zXJoUxkpdJo2NeDUDHjbZeyDNhdWV3bN8EiJ1GMwPZS6Wlx-Q1imUMG0hKS9wbvRdqlxdGBxMNJher2J32Q48m8p0ALfB_LBfQ6BU
 
 
+
   - type: web
     name: huangjiu-content-generator
     runtime: node
@@ -103,6 +108,7 @@ services:
       - key: MINIMAX_API_KEY
         sync: true
         value: sk-cp-6TsmFqQh8no8k0od-0zXJoUxkpdJo2NeDUDHjbZeyDNhdWV3bN8EiJ1GMwPZS6Wlx-Q1imUMG0hKS9wbvRdqlxdGBxMNJher2J32Q48m8p0ALfB_LBfQ6BU
+
 
 
   - type: web
@@ -120,6 +126,7 @@ services:
         value: sk-cp-6TsmFqQh8no8k0od-0zXJoUxkpdJo2NeDUDHjbZeyDNhdWV3bN8EiJ1GMwPZS6Wlx-Q1imUMG0hKS9wbvRdqlxdGBxMNJher2J32Q48m8p0ALfB_LBfQ6BU
 
 
+
   - type: web
     name: huangjiu-after-sales
     runtime: node
@@ -133,3 +140,4 @@ services:
       - key: MINIMAX_API_KEY
         sync: true
         value: sk-cp-6TsmFqQh8no8k0od-0zXJoUxkpdJo2NeDUDHjbZeyDNhdWV3bN8EiJ1GMwPZS6Wlx-Q1imUMG0hKS9wbvRdqlxdGBxMNJher2J32Q48m8p0ALfB_LBfQ6BU
+

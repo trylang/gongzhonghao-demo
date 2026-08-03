@@ -1,0 +1,198 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI视频生成工具 - 面向中小酒企、餐饮店</title>
+    <style>
+        :root {
+            --color-primary: #4A90E2;
+            --color-background: #F5F7FA;
+            --color-text: #333333;
+            --color-subtext: #666666;
+            --color-border: #E0E0E0;
+            --color-error: #FF4D4F;
+            --color-success: #52C41A;
+            --radius: 8px;
+            --shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            --font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+        }
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: var(--font-family);
+            background-color: var(--color-background);
+            color: var(--color-text);
+        }
+        .container {
+            max-width: 800px;
+            margin: 20px auto;
+            padding: 20px;
+            background-color: #ffffff;
+            border-radius: var(--radius);
+            box-shadow: var(--shadow);
+        }
+        h1 {
+            text-align: center;
+            color: var(--color-primary);
+        }
+        .section {
+            margin-bottom: 20px;
+        }
+        .form-group {
+            margin-bottom: 15px;
+        }
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+        input[type="text"], textarea {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid var(--color-border);
+            border-radius: var(--radius);
+            box-sizing: border-box;
+        }
+        textarea {
+            resize: vertical;
+            height: 100px;
+        }
+        .button-group {
+            text-align: center;
+        }
+        button {
+            padding: 12px 24px;
+            background-color: var(--color-primary);
+            color: #ffffff;
+            border: none;
+            border-radius: var(--radius);
+            cursor: pointer;
+            font-size: 16px;
+        }
+        button:disabled {
+            background-color: #cccccc;
+            cursor: not-allowed;
+        }
+        .loading {
+            text-align: center;
+            margin-top: 20px;
+            font-size: 14px;
+            color: var(--color-subtext);
+        }
+        .error {
+            color: var(--color-error);
+            text-align: center;
+            margin-top: 20px;
+        }
+        .result {
+            margin-top: 20px;
+        }
+        .video-preview {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+        .video-preview iframe {
+            border: none;
+            border-radius: var(--radius);
+            width: 100%;
+            height: 200px;
+        }
+        @media (max-width: 600px) {
+            .video-preview iframe {
+                height: 150px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>AI视频生成工具</h1>
+        <div class="section">
+            <div class="form-group">
+                <label for="productName">产品名称</label>
+                <input type="text" id="productName" placeholder="例如：代州黄酒">
+            </div>
+            <div class="form-group">
+                <label for="productDescription">产品描述</label>
+                <textarea id="productDescription" placeholder="例如：传承百年工艺，纯手工酿造，口感醇厚，回味悠长。"></textarea>
+            </div>
+            <div class="form-group">
+                <label for="scene">场景选择</label>
+                <select id="scene">
+                    <option value="brewing">酿酒工艺</option>
+                    <option value="dining">餐桌搭配</option>
+                    <option value="drinking">饮用方式</option>
+                </select>
+            </div>
+            <div class="button-group">
+                <button id="generateButton">生成视频</button>
+            </div>
+            <div class="loading" id="loading" style="display: none;">生成中，请稍候...</div>
+            <div class="error" id="error" style="display: none;">生成失败，请稍后重试。</div>
+            <div class="result" id="result" style="display: none;">
+                <h2>生成的视频预览</h2>
+                <div class="video-preview" id="videoPreview">
+                    <!-- 视频将插入这里 -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.getElementById('generateButton').addEventListener('click', () => {
+            const productName = document.getElementById('productName').value.trim();
+            const productDescription = document.getElementById('productDescription').value.trim();
+            const scene = document.getElementById('scene').value;
+            const loading = document.getElementById('loading');
+            const error = document.getElementById('error');
+            const result = document.getElementById('result');
+            const videoPreview = document.getElementById('videoPreview');
+
+            if (!productName || !productDescription) {
+                alert('请填写产品名称和描述');
+                return;
+            }
+
+            loading.style.display = 'block';
+            error.style.display = 'none';
+            result.style.display = 'none';
+            videoPreview.innerHTML = '';
+
+            const inputs = {
+                productName,
+                productDescription,
+                scene
+            };
+
+            fetch('/api/generate', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ inputs })
+            })
+            .then(response => response.json())
+            .then(data => {
+                loading.style.display = 'none';
+                if (data.result) {
+                    const videos = JSON.parse(data.result);
+                    videos.forEach(video => {
+                        const iframe = document.createElement('iframe');
+                        iframe.src = video.url;
+                        videoPreview.appendChild(iframe);
+                    });
+                    result.style.display = 'block';
+                } else {
+                    error.style.display = 'block';
+                }
+            })
+            .catch(() => {
+                loading.style.display = 'none';
+                error.style.display = 'block';
+            });
+        });
+    </script>
+</body>
+</html>
