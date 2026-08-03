@@ -1,0 +1,507 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <title>电商用户画像与复购率分析工具</title>
+    <style>
+        :root {
+            --primary-color: #4A90E2;
+            --background-color: #f5f5f5;
+            --text-color: #333333;
+            --button-color: #ffffff;
+            --button-bg: var(--primary-color);
+            --card-bg: #ffffff;
+            --border-color: #dddddd;
+            --shadow: 0 2px 8px rgba(0,0,0,0.1);
+            --radius: 8px;
+        }
+        body {
+            margin: 0;
+            font-family: Arial, sans-serif;
+            background-color: var(--background-color);
+            color: var(--text-color);
+            padding: 20px;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background-color: var(--card-bg);
+            padding: 30px;
+            border-radius: var(--radius);
+            box-shadow: var(--shadow);
+        }
+        h1 {
+            text-align: center;
+            margin-bottom: 30px;
+            color: var(--primary-color);
+        }
+        .data-intake {
+            margin-bottom: 30px;
+        }
+        .data-intake .buttons {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+        .data-intake .buttons button {
+            flex: 1;
+            padding: 10px;
+            border: none;
+            border-radius: var(--radius);
+            background-color: var(--button-bg);
+            color: var(--button-color);
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+        .data-intake .buttons button:hover {
+            background-color: #357ABD;
+        }
+        .inputs {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+        .inputs .input-group {
+            flex: 1 1 45%;
+            display: flex;
+            flex-direction: column;
+        }
+        .inputs label {
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+        .inputs input, .inputs select, .inputs textarea {
+            padding: 8px;
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius);
+            font-size: 1em;
+        }
+        .buttons-group {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+        .buttons-group button {
+            flex: 1;
+            padding: 12px;
+            border: none;
+            border-radius: var(--radius);
+            background-color: var(--button-bg);
+            color: var(--button-color);
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+        .buttons-group button:hover {
+            background-color: #357ABD;
+        }
+        .result {
+            margin-top: 40px;
+        }
+        .result .card {
+            background-color: var(--card-bg);
+            padding: 20px;
+            border-radius: var(--radius);
+            box-shadow: var(--shadow);
+        }
+        .result h2 {
+            margin-top: 0;
+            color: var(--primary-color);
+        }
+        .result table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 10px;
+        }
+        .result table th, .result table td {
+            padding: 10px;
+            border: 1px solid var(--border-color);
+            text-align: left;
+        }
+        .result table th {
+            background-color: var(--background-color);
+        }
+        .chart-container {
+            margin-top: 20px;
+            width: 100%;
+            height: 300px;
+        }
+        @media (max-width: 768px) {
+            .inputs .input-group {
+                flex: 1 1 100%;
+            }
+            .buttons-group button {
+                flex: 1 1 100%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div id="data-intake"></div>
+    <div class="container">
+        <h1>电商用户画像与复购率分析工具</h1>
+        <div class="data-intake">
+            <div class="buttons">
+                <button id="use-sample">使用示例数据</button>
+                <button id="download-template">下载 CSV 模板</button>
+                <button id="upload-csv">上传我的 CSV 或 XLSX</button>
+            </div>
+            <div id="data-upload" style="display: none;">
+                <input type="file" id="file-input" accept=".csv, .xlsx">
+            </div>
+        </div>
+        <div class="inputs">
+            <div class="input-group">
+                <label for="start-date">开始日期</label>
+                <input type="date" id="start-date" value="2023-01-01">
+            </div>
+            <div class="input-group">
+                <label for="end-date">结束日期</label>
+                <input type="date" id="end-date" value="2023-12-31">
+            </div>
+            <div class="input-group">
+                <label for="region">地区</label>
+                <select id="region">
+                    <option value="全国">全国</option>
+                    <option value="华北">华北</option>
+                    <option value="华东">华东</option>
+                    <option value="华南">华南</option>
+                    <option value="华中">华中</option>
+                    <option value="西北">西北</option>
+                    <option value="西南">西南</option>
+                </select>
+            </div>
+            <div class="input-group">
+                <label for="channel">渠道</label>
+                <select id="channel">
+                    <option value="微信">微信</option>
+                    <option value="抖音">抖音</option>
+                    <option value="快递100">快递100</option>
+                </select>
+            </div>
+            <div class="input-group">
+                <label for="customer-segment">客户细分</label>
+                <textarea id="customer-segment" placeholder="例如：年龄、性别、地域、购买频率等"></textarea>
+            </div>
+            <div class="input-group">
+                <label for="revenue-goal">营收目标</label>
+                <input type="number" id="revenue-goal" placeholder="例如：1000000">
+            </div>
+        </div>
+        <div class="buttons-group">
+            <button id="generate">生成分析</button>
+            <button id="clear">清空/重填</button>
+            <button id="copy-result">复制结果</button>
+            <button id="export-json">导出 JSON</button>
+            <button id="random-sample">随机示例</button>
+        </div>
+        <div class="result" id="result" style="display: none;">
+            <div class="card">
+                <h2>示例结果</h2>
+                <p>（此处为示例数据生成的示例结果面板）</p>
+                <div id="example-result" style="display: none;">
+                    <h3>用户画像分析</h3>
+                    <table>
+                        <tr>
+                            <th>指标</th>
+                            <th>数值</th>
+                        </tr>
+                        <tr>
+                            <td>平均年龄</td>
+                            <td>35岁</td>
+                        </tr>
+                        <tr>
+                            <td>性别比例</td>
+                            <td>男性60%，女性40%</td>
+                        </tr>
+                        <tr>
+                            <td>主要地域</td>
+                            <td>华东、华南</td>
+                        </tr>
+                        <tr>
+                            <td>购买频率</td>
+                            <td>每月1-2次</td>
+                        </tr>
+                    </table>
+                    <h3>复购率分析</h3>
+                    <p>总体复购率为30%，其中老客户复购率为50%，新客户复购率为10%。</p>
+                    <h3>营收分析</h3>
+                    <p>总营收为500,000元，客单价为200元。</p>
+                    <canvas id="example-chart" class="chart-container"></canvas>
+                </div>
+            </div>
+        </div>
+        <script>
+            // 数据入口组件
+            window.DATA_SCHEMA = {
+                name: "订单明细",
+                columns: [
+                    { key: "order_no", label: "订单号", type: "text", example: "SO...", required: true },
+                    { key: "customer_id", label: "客户ID", type: "text", example: "CUST...", required: true },
+                    { key: "purchase_date", label: "购买日期", type: "date", example: "2023-01-15", required: true },
+                    { key: "product", label: "产品", type: "text", example: "白酒", required: true },
+                    { key: "quantity", label: "数量", type: "number", example: "2", required: true },
+                    { key: "price", label: "单价", type: "number", example: "100", required: true },
+                    { key: "region", label: "地区", type: "text", example: "华东", required: true },
+                    { key: "channel", label: "渠道", type: "text", example: "微信", required: true },
+                    { key: "customer_segment", label: "客户细分", type: "text", example: "高价值客户", required: false }
+                ],
+                sample: [
+                    { order_no: "SO123456", customer_id: "CUST789", purchase_date: "2023-01-15", product: "白酒", quantity: 2, price: 100, region: "华东", channel: "微信", customer_segment: "高价值客户" },
+                    { order_no: "SO123457", customer_id: "CUST790", purchase_date: "2023-01-20", product: "啤酒", quantity: 5, price: 50, region: "华南", channel: "抖音", customer_segment: "中价值客户" },
+                    // 更多示例数据...
+                ],
+                maxRows: 300
+            };
+
+            // 示例结果数据
+            const EXAMPLE_RESULT = {
+                user_profile: {
+                    average_age: 35,
+                    gender_ratio: "男性60%，女性40%",
+                    main_regions: "华东、华南",
+                    purchase_frequency: "每月1-2次"
+                },
+                repurchase_rate: {
+                    overall: "30%",
+                    existing_customers: "50%",
+                    new_customers: "10%"
+                },
+                revenue_analysis: {
+                    total_revenue: "500,000元",
+                    average_order_value: "200元"
+                },
+                chart_data: {
+                    labels: ["一月", "二月", "三月", "四月", "五月", "六月", "七月", "八月", "九月", "十月", "十一月", "十二月"],
+                    datasets: [
+                        {
+                            label: "总营收",
+                            data: [50000, 60000, 55000, 70000, 65000, 80000, 75000, 85000, 80000, 90000, 85000, 100000],
+                            backgroundColor: "rgba(74, 144, 226, 0.6)"
+                        },
+                        {
+                            label: "复购率",
+                            data: [25, 30, 28, 35, 32, 40, 38, 45, 42, 50, 48, 55],
+                            backgroundColor: "rgba(67, 205, 128, 0.6)"
+                        }
+                    ]
+                }
+            };
+
+            // 生成按钮事件
+            document.getElementById("generate").addEventListener("click", async () => {
+                const dataIntake = window.DataIntake;
+                let inputs = {
+                    start_date: document.getElementById("start-date").value,
+                    end_date: document.getElementById("end-date").value,
+                    region: document.getElementById("region").value,
+                    channel: document.getElementById("channel").value,
+                    customer_segment: document.getElementById("customer-segment").value,
+                    revenue_goal: document.getElementById("revenue-goal").value
+                };
+                if (dataIntake && dataIntake.isReady()) {
+                    inputs.data = dataIntake.getPayload();
+                }
+                const response = await fetch("/api/generate", {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json"
+                    },
+                    body: JSON.stringify({ inputs: inputs })
+                });
+                const result = await response.json();
+                renderResult(result);
+            });
+
+            // 清空按钮事件
+            document.getElementById("clear").addEventListener("click", () => {
+                document.getElementById("start-date").value = "2023-01-01";
+                document.getElementById("end-date").value = "2023-12-31";
+                document.getElementById("region").value = "全国";
+                document.getElementById("channel").value = "微信";
+                document.getElementById("customer-segment").value = "";
+                document.getElementById("revenue-goal").value = "";
+                document.getElementById("result").style.display = "none";
+            });
+
+            // 复制结果按钮事件
+            document.getElementById("copy-result").addEventListener("click", () => {
+                const resultDiv = document.getElementById("result");
+                const resultText = resultDiv.innerText;
+                navigator.clipboard.writeText(resultText);
+                alert("结果已复制到剪贴板");
+            });
+
+            // 导出 JSON 按钮事件
+            document.getElementById("export-json").addEventListener("click", () => {
+                const resultDiv = document.getElementById("result");
+                const resultText = resultDiv.innerText;
+                const json = {
+                    result: resultText
+                };
+                const blob = new Blob([JSON.stringify(json, null, 2)], { type: "application/json" });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement("a");
+                a.href = url;
+                a.download = "result.json";
+                a.click();
+                URL.revokeObjectURL(url);
+            });
+
+            // 随机示例按钮事件
+            document.getElementById("random-sample").addEventListener("click", () => {
+                const sampleData = window.DATA_SCHEMA.sample;
+                const randomIndex = Math.floor(Math.random() * sampleData.length);
+                const randomSample = sampleData[randomIndex];
+                document.getElementById("start-date").value = randomSample.purchase_date;
+                document.getElementById("end-date").value = randomSample.purchase_date;
+                document.getElementById("region").value = randomSample.region;
+                document.getElementById("channel").value = randomSample.channel;
+                document.getElementById("customer-segment").value = randomSample.customer_segment || "";
+                document.getElementById("revenue-goal").value = "";
+            });
+
+            // 示例结果面板
+            function renderResult(result) {
+                const resultDiv = document.getElementById("result");
+                const exampleResultDiv = document.getElementById("example-result");
+                if (result.success) {
+                    // 解析结果数据
+                    const userProfile = result.data.user_profile;
+                    const repurchaseRate = result.data.repurchase_rate;
+                    const revenueAnalysis = result.data.revenue_analysis;
+                    const chartData = result.data.chart_data;
+
+                    // 渲染用户画像分析
+                    let userProfileTable = "<table><tr><th>指标</th><th>数值</th></tr>";
+                    for (const key in userProfile) {
+                        userProfileTable += `<tr><td>${key}</td><td>${userProfile[key]}</td></tr>`;
+                    }
+                    userProfileTable += "</table>";
+
+                    // 渲染复购率分析
+                    let repurchaseRateTable = `<p>总体复购率为${repurchaseRate.overall}，其中老客户复购率为${repurchaseRate.existing_customers}，新客户复购率为${repurchaseRate.new_customers}。</p>`;
+
+                    // 渲染营收分析
+                    let revenueAnalysisText = `总营收为${revenueAnalysis.total_revenue}，客单价为${revenueAnalysis.average_order_value}。`;
+
+                    // 渲染图表
+                    const canvas = document.getElementById("example-chart");
+                    const ctx = canvas.getContext("2d");
+                    const chart = new Chart(ctx, {
+                        type: "bar",
+                        data: {
+                            labels: chartData.labels,
+                            datasets: chartData.datasets
+                        },
+                        options: {
+                            responsive: true,
+                            scales: {
+                                y: {
+                                    beginAtZero: true
+                                }
+                            }
+                        }
+                    });
+
+                    // 渲染结果
+                    resultDiv.innerHTML = `
+                        <div class="card">
+                            <h2>分析结果</h2>
+                            ${userProfileTable}
+                            ${repurchaseRateTable}
+                            ${revenueAnalysisText}
+                            <canvas id="result-chart" class="chart-container"></canvas>
+                        </div>
+                    `;
+
+                    // 渲染图表
+                    const resultChartCanvas = document.getElementById("result-chart");
+                    const resultChartCtx = resultChartCanvas.getContext("2d");
+                    const resultChart = new Chart(resultChartCtx, {
+                        type: "bar",
+                        data: {
+                            labels: chartData.labels,
+                            datasets: chartData.datasets
+                        },
+                        options: {
+                            responsive: true,
+                            scales: {
+                                y: {
+                                    beginAtZero: true
+                                }
+                            }
+                        }
+                    });
+
+                    // 显示结果面板
+                    resultDiv.style.display = "block";
+                } else {
+                    resultDiv.innerHTML = `<div class="card"><h2>分析结果</h2><p>${result.message}</p></div>`;
+                    resultDiv.style.display = "block";
+                }
+            }
+
+            // 使用示例数据按钮事件
+            document.getElementById("use-sample").addEventListener("click", () => {
+                const sampleData = window.DATA_SCHEMA.sample;
+                window.DataIntake.load(sampleData);
+                alert("已加载示例数据");
+            });
+
+            // 下载 CSV 模板按钮事件
+            document.getElementById("download-template").addEventListener("click", () => {
+                const csv = "订单号,客户ID,购买日期,产品,数量,单价,地区,渠道,客户细分\nSO123456,CUST789,2023-01-15,白酒,2,100,华东,微信,高价值客户\n";
+                const blob = new Blob([csv], { type: "text/csv" });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement("a");
+                a.href = url;
+                a.download = "template.csv";
+                a.click();
+                URL.revokeObjectURL(url);
+            });
+
+            // 上传 CSV 或 XLSX 按钮事件
+            document.getElementById("upload-csv").addEventListener("click", () => {
+                document.getElementById("file-input").click();
+            });
+
+            document.getElementById("file-input").addEventListener("change", (event) => {
+                const file = event.target.files[0];
+                const reader = new FileReader();
+                reader.onload = (e) => {
+                    const fileContent = e.target.result;
+                    const rows = fileContent.split("\n");
+                    const data = [];
+                    const headers = rows[0].split(",");
+                    for (let i = 1; i < rows.length; i++) {
+                        const values = rows[i].split(",");
+                        const row = {};
+                        for (let j = 0; j < headers.length; j++) {
+                            row[headers[j].trim()] = values[j].trim();
+                        }
+                        data.push(row);
+                    }
+                    window.DataIntake.load(data);
+                    alert("上传成功");
+                };
+                reader.readAsText(file);
+            });
+
+            // 数据入口组件初始化
+            window.DataIntake = {
+                data: [],
+                load: function(data) {
+                    this.data = data;
+                },
+                isReady: function() {
+                    return this.data.length > 0;
+                },
+                getPayload: function() {
+                    return this.data;
+                }
+            };
+        </script>
+    </div>
+</body>
+</html>

@@ -1,0 +1,416 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>电商用户画像与复购分析工具</title>
+    <style>
+        :root {
+            --main-color: #4A90E2;
+            --bg-color: #f5f5f5;
+            --text-color: #333333;
+            --border-radius: 8px;
+            --box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        }
+        body {
+            font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        h1 {
+            margin-bottom: 20px;
+            text-align: center;
+        }
+        .container {
+            background-color: white;
+            padding: 30px;
+            border-radius: var(--border-radius);
+            box-shadow: var(--box-shadow);
+            width: 100%;
+            max-width: 900px;
+            box-sizing: border-box;
+        }
+        .section {
+            margin-bottom: 30px;
+        }
+        .section-title {
+            font-size: 1.2em;
+            margin-bottom: 10px;
+            border-bottom: 2px solid var(--main-color);
+            display: inline-block;
+            padding-bottom: 5px;
+        }
+        .data-intake {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+        .data-intake button {
+            background-color: var(--main-color);
+            color: white;
+            border: none;
+            padding: 10px 15px;
+            border-radius: var(--border-radius);
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+        .data-intake button:hover {
+            background-color: #357ABD;
+        }
+        .input-group {
+            display: flex;
+            flex-direction: column;
+            margin-bottom: 15px;
+        }
+        .input-group label {
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+        .input-group input, .input-group select, .input-group textarea {
+            padding: 8px;
+            border: 1px solid #cccccc;
+            border-radius: var(--border-radius);
+            font-size: 1em;
+        }
+        .button-group {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+        .button-group button {
+            background-color: var(--main-color);
+            color: white;
+            border: none;
+            padding: 12px 20px;
+            border-radius: var(--border-radius);
+            cursor: pointer;
+            transition: background-color 0.3s;
+            flex: 1;
+            max-width: 200px;
+        }
+        .button-group button:hover {
+            background-color: #357ABD;
+        }
+        .results {
+            background-color: #fafafa;
+            padding: 20px;
+            border-radius: var(--border-radius);
+            box-shadow: var(--box-shadow);
+        }
+        .results pre {
+            white-space: pre-wrap;
+            background-color: #eaeaea;
+            padding: 15px;
+            border-radius: var(--border-radius);
+        }
+        .chart-container {
+            width: 100%;
+            height: 400px;
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div id="data-intake"></div>
+    <div class="container">
+        <h1>电商用户画像与复购分析工具</h1>
+        <div class="section">
+            <div class="section-title">输入参数</div>
+            <div class="input-group">
+                <label for="start-date">开始日期</label>
+                <input type="date" id="start-date" value="2023-01-01">
+            </div>
+            <div class="input-group">
+                <label for="end-date">结束日期</label>
+                <input type="date" id="end-date" value="2023-12-31">
+            </div>
+            <div class="input-group">
+                <label for="customer-segment">客户细分</label>
+                <select id="customer-segment">
+                    <option value="all">全部客户</option>
+                    <option value="new">新客户</option>
+                    <option value="returning">复购客户</option>
+                </select>
+            </div>
+            <div class="input-group">
+                <label for="region">地区</label>
+                <select id="region">
+                    <option value="all">全部地区</option>
+                    <option value="north">北方地区</option>
+                    <option value="south">南方地区</option>
+                    <option value="east">东部地区</option>
+                    <option value="west">西部地区</option>
+                </select>
+            </div>
+        </div>
+        <div class="section">
+            <div class="section-title">场景预设</div>
+            <div class="button-group">
+                <button id="preset-a">场景A：快速消费品</button>
+                <button id="preset-b">场景B：服装零售</button>
+                <button id="preset-c">场景C：电子产品</button>
+            </div>
+        </div>
+        <div class="section">
+            <div class="section-title">操作按钮</div>
+            <div class="button-group">
+                <button id="generate">生成分析</button>
+                <button id="clear">清空/重填</button>
+                <button id="copy">复制结果</button>
+                <button id="export">导出 JSON</button>
+                <button id="random">随机示例</button>
+            </div>
+        </div>
+        <div class="section">
+            <div class="section-title">分析结果</div>
+            <div id="results" class="results">
+                <p>请点击“生成分析”按钮以查看结果。</p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // SEED 数据
+        const SEED = {
+            "inputs": {
+                "start_date": "2023-01-01",
+                "end_date": "2023-12-31",
+                "customer_segment": "all",
+                "region": "all"
+            },
+            "data": [
+                {
+                    "order_no": "SO1001",
+                    "customer_id": "CUST1001",
+                    "purchase_date": "2023-03-15",
+                    "product_category": "快速消费品",
+                    "quantity": 5,
+                    "price": 20,
+                    "region": "北方地区"
+                },
+                {
+                    "order_no": "SO1002",
+                    "customer_id": "CUST1002",
+                    "purchase_date": "2023-04-22",
+                    "product_category": "服装零售",
+                    "quantity": 2,
+                    "price": 150,
+                    "region": "南方地区"
+                },
+                {
+                    "order_no": "SO1003",
+                    "customer_id": "CUST1003",
+                    "purchase_date": "2023-05-10",
+                    "product_category": "电子产品",
+                    "quantity": 1,
+                    "price": 300,
+                    "region": "东部地区"
+                },
+                // ... 10-15 条类似数据
+                // 示例数据省略以控制长度
+            ]
+        };
+
+        // 示例结果（硬编码）
+        const EXAMPLE_RESULT = {
+            "summary": {
+                "total_orders": 1500,
+                "total_revenue": 150000,
+                "average_order_value": 100,
+                "reorder_rate": 0.4
+            },
+            "insights": [
+                "复购客户占总客户的 40%，贡献了 60% 的总收入。",
+                "平均客单价为 100 元，其中北方地区最高，为 120 元。",
+                "电子产品类别贡献了最多的收入，占总收入的 35%。",
+                "5 月份的订单量最高，销售额环比增长 25%。"
+            ],
+            "chart_data": {
+                "categories": ["快速消费品", "服装零售", "电子产品"],
+                "series": [500, 300, 700]
+            }
+        };
+
+        // 填充示例数据
+        function fillSeed() {
+            document.getElementById("start-date").value = SEED.inputs.start_date;
+            document.getElementById("end-date").value = SEED.inputs.end_date;
+            document.getElementById("customer-segment").value = SEED.inputs.customer_segment;
+            document.getElementById("region").value = SEED.inputs.region;
+        }
+
+        // 切换预设场景
+        function switchPreset(preset) {
+            if (preset === "preset-a") {
+                SEED.inputs.customer_segment = "all";
+                SEED.inputs.region = "all";
+            } else if (preset === "preset-b") {
+                SEED.inputs.customer_segment = "returning";
+                SEED.inputs.region = "south";
+            } else if (preset === "preset-c") {
+                SEED.inputs.customer_segment = "new";
+                SEED.inputs.region = "east";
+            }
+            fillSeed();
+        }
+
+        // 处理场景预设按钮点击
+        document.getElementById("preset-a").addEventListener("click", () => {
+            switchPreset("preset-a");
+        });
+        document.getElementById("preset-b").addEventListener("click", () => {
+            switchPreset("preset-b");
+        });
+        document.getElementById("preset-c").addEventListener("click", () => {
+            switchPreset("preset-c");
+        });
+
+        // 生成分析
+        document.getElementById("generate").addEventListener("click", () => {
+            const inputs = {
+                "start_date": document.getElementById("start-date").value,
+                "end_date": document.getElementById("end-date").value,
+                "customer_segment": document.getElementById("customer-segment").value,
+                "region": document.getElementById("region").value
+            };
+            const dataIntake = window.DataIntake;
+            if (dataIntake && dataIntake.isReady()) {
+                inputs.data = dataIntake.getPayload();
+            } else {
+                inputs.data = SEED.data;
+            }
+            fetch("/api/generate", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify({ "inputs": inputs })
+            })
+            .then(response => response.json())
+            .then(data => {
+                renderResults(data);
+            })
+            .catch(error => {
+                console.error("Error:", error);
+                alert("生成失败，请重试。");
+            });
+        });
+
+        // 清空/重填
+        document.getElementById("clear").addEventListener("click", () => {
+            fillSeed();
+        });
+
+        // 复制结果
+        document.getElementById("copy").addEventListener("click", () => {
+            const results = document.getElementById("results").innerText;
+            navigator.clipboard.writeText(results);
+            alert("结果已复制到剪贴板。");
+        });
+
+        // 导出 JSON
+        document.getElementById("export").addEventListener("click", () => {
+            const results = document.getElementById("results").innerText;
+            const blob = new Blob([results], { type: "application/json" });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement("a");
+            a.href = url;
+            a.download = "analysis_result.json";
+            a.click();
+            URL.revokeObjectURL(url);
+        });
+
+        // 随机示例
+        document.getElementById("random").addEventListener("click", () => {
+            // 简单随机选择预设场景
+            const presets = ["preset-a", "preset-b", "preset-c"];
+            const randomPreset = presets[Math.floor(Math.random() * presets.length)];
+            switchPreset(randomPreset);
+        });
+
+        // 渲染结果
+        function renderResults(data) {
+            const resultsDiv = document.getElementById("results");
+            resultsDiv.innerHTML = "";
+
+            // 示例结果面板
+            const summary = data.summary;
+            const insights = data.insights;
+            const chartData = data.chart_data;
+
+            // 创建卡片
+            const card = document.createElement("div");
+            card.className = "results-card";
+            card.innerHTML = `
+                <h2>分析摘要</h2>
+                <p>总订单数: ${summary.total_orders}</p>
+                <p>总收入: ${summary.total_revenue}</p>
+                <p>平均客单价: ${summary.average_order_value}</p>
+                <p>复购率: ${summary.reorder_rate}</p>
+            `;
+            resultsDiv.appendChild(card);
+
+            // 创建表格
+            const table = document.createElement("table");
+            table.border="1" cellpadding="5" cellspacing="0">
+                <thead>
+                    <tr>
+                        <th>洞察</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    ${insights.map(insight => `<tr><td>${insight}</td></tr>`).join("")}
+                </tbody>
+            </table>
+            resultsDiv.appendChild(table);
+
+            // 创建图表
+            const chartContainer = document.createElement("div");
+            chartContainer.className = "chart-container";
+            chartContainer.id = "chart";
+            resultsDiv.appendChild(chartContainer);
+
+            // 渲染图表
+            renderChart(chartData);
+        }
+
+        // 渲染图表
+        function renderChart(data) {
+            // 使用 Chart.js 渲染简单的柱状图
+            const ctx = document.getElementById("chart").getContext("2d");
+            new Chart(ctx, {
+                type: "bar",
+                data: {
+                    labels: data.categories,
+                    datasets: [{
+                        label: "销售额",
+                        data: data.series,
+                        backgroundColor: "rgba(74, 144, 226, 0.7)",
+                        borderColor: "rgba(74, 144, 226, 1)",
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    scales: {
+                        y: {
+                            beginAtZero: true
+                        }
+                    }
+                }
+            });
+        }
+
+        // 填充示例数据
+        fillSeed();
+    </script>
+    <script src="/data-intake.js"></script>
+</body>
+</html>

@@ -1,0 +1,390 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Seedance2.5 视频生成工具 - 面向中小企业的AI解决方案</title>
+    <style>
+        :root {
+            --main-color: #3F51B5;
+            --background-color: #f5f5f5;
+            --text-color: #333333;
+            --border-color: #e0e0e0;
+            --button-color: #4CAF50;
+            --button-text-color: #ffffff;
+            --card-background: #ffffff;
+            --shadow-color: rgba(0, 0, 0, 0.1);
+            --input-background: #ffffff;
+            --input-border: #cccccc;
+            --radius: 8px;
+        }
+        body {
+            font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+            background-color: var(--background-color);
+            color: var(--text-color);
+            margin: 0;
+            padding: 0;
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+        }
+        header {
+            background-color: var(--main-color);
+            color: #ffffff;
+            padding: 20px;
+            text-align: center;
+            box-shadow: 0 2px 4px var(--shadow-color);
+        }
+        header h1 {
+            margin: 0;
+            font-size: 1.8em;
+        }
+        main {
+            flex: 1;
+            padding: 20px;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        .section {
+            margin-bottom: 40px;
+        }
+        .section h2 {
+            border-bottom: 2px solid var(--main-color);
+            padding-bottom: 10px;
+            margin-bottom: 20px;
+        }
+        .seed-data-section {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+        .seed-data-section button {
+            padding: 10px 15px;
+            background-color: var(--main-color);
+            color: var(--button-text-color);
+            border: none;
+            border-radius: var(--radius);
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+        .seed-data-section button:hover {
+            background-color: #455a64;
+        }
+        .input-area {
+            background-color: var(--card-background);
+            padding: 20px;
+            border-radius: var(--radius);
+            box-shadow: 0 2px 8px var(--shadow-color);
+        }
+        .input-area label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: bold;
+        }
+        .input-area input, .input-area textarea {
+            width: 100%;
+            padding: 10px;
+            margin-bottom: 15px;
+            border: 1px solid var(--input-border);
+            border-radius: var(--radius);
+            box-sizing: border-box;
+            transition: border-color 0.3s;
+        }
+        .input-area input:focus, .input-area textarea:focus {
+            border-color: var(--main-color);
+            outline: none;
+        }
+        .action-buttons {
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
+        }
+        .action-buttons button {
+            flex: 1;
+            padding: 12px;
+            background-color: var(--button-color);
+            color: var(--button-text-color);
+            border: none;
+            border-radius: var(--radius);
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+        .action-buttons button:hover {
+            background-color: #45a049;
+        }
+        .result-area {
+            margin-top: 30px;
+            background-color: var(--card-background);
+            padding: 20px;
+            border-radius: var(--radius);
+            box-shadow: 0 2px 8px var(--shadow-color);
+        }
+        .result-area h3 {
+            margin-top: 0;
+        }
+        .result-area pre {
+            background-color: #e0e0e0;
+            padding: 15px;
+            border-radius: var(--radius);
+            overflow-x: auto;
+        }
+        .example-result {
+            margin-top: 20px;
+            background-color: #f9f9f9;
+            padding: 15px;
+            border-left: 4px solid var(--main-color);
+        }
+        footer {
+            background-color: var(--main-color);
+            color: #ffffff;
+            text-align: center;
+            padding: 15px;
+            box-shadow: 0 -2px 4px var(--shadow-color);
+        }
+        @media (max-width: 768px) {
+            .action-buttons {
+                flex-direction: column;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div id="data-intake"></div>
+    <div id="app">
+        <header>
+            <h1>Seedance2.5 视频生成工具</h1>
+        </header>
+        <main>
+            <div class="section seed-data-section">
+                <h2>选择场景预设</h2>
+                <button id="preset-a">场景A：黄酒产品视频</button>
+                <button id="preset-b">场景B：餐饮探店视频</button>
+                <button id="preset-c">场景C：投流素材变体</button>
+                <button id="clear-all">清空 / 重填</button>
+            </div>
+            <div class="section input-area">
+                <label for="product-name">产品名称</label>
+                <input type="text" id="product-name" placeholder="例如：代州黄酒">
+
+                <label for="product-description">产品描述</label>
+                <textarea id="product-description" rows="4" placeholder="例如：传统工艺酿造，醇厚香浓"></textarea>
+
+                <label for="product-image">产品图片 URL</label>
+                <input type="text" id="product-image" placeholder="上传图片后自动填充">
+
+                <label for="video-style">视频风格</label>
+                <input type="text" id="video-style" placeholder="例如：简约现代">
+
+                <label for="video-duration">视频时长（秒）</label>
+                <input type="number" id="video-duration" placeholder="例如：30" min="1" max="60">
+
+                <label for="additional-notes">附加说明</label>
+                <textarea id="additional-notes" rows="3" placeholder="例如：需要突出产品包装"></textarea>
+            </div>
+            <div class="section action-buttons">
+                <button id="generate-button">生成视频素材</button>
+                <button id="download-button">下载工作流配置</button>
+                <button id="upload-button">上传我的数据</button>
+                <button id="preview-button">预览示例结果</button>
+            </div>
+            <div class="section result-area" id="result-area">
+                <h3>生成结果</h3>
+                <div id="result-content">
+                    <p>点击「生成视频素材」后，结果将显示在这里。</p>
+                </div>
+            </div>
+        </main>
+        <footer>
+            <p>© 2023 Seedance2.5 视频生成工具</p>
+        </footer>
+    </div>
+    <script>
+        // SEED DATA
+        const SEED = {
+            "product-name": "代州黄酒",
+            "product-description": "传统工艺酿造，醇厚香浓",
+            "product-image": "https://via.placeholder.com/150",
+            "video-style": "简约现代",
+            "video-duration": 30,
+            "additional-notes": "需要突出产品包装"
+        };
+
+        // DATA SCHEMA
+        window.DATA_SCHEMA = {
+            name: "产品视频生成",
+            columns: [
+                {key:"product-name", label:"产品名称", type:"text", example:"代州黄酒", required:true},
+                {key:"product-description", label:"产品描述", type:"text", example:"传统工艺酿造，醇厚香浓", required:true},
+                {key:"product-image", label:"产品图片 URL", type:"text", example:"https://via.placeholder.com/150", required:true},
+                {key:"video-style", label:"视频风格", type:"text", example:"简约现代", required:true},
+                {key:"video-duration", label:"视频时长 (秒)", type:"number", example:"30", required:true},
+                {key:"additional-notes", label:"附加说明", type:"text", example:"需要突出产品包装", required:false}
+            ],
+            sample: [
+                {
+                    "product-name": "代州黄酒",
+                    "product-description": "传统工艺酿造，醇厚香浓",
+                    "product-image": "https://via.placeholder.com/150",
+                    "video-style": "简约现代",
+                    "video-duration": 30,
+                    "additional-notes": "需要突出产品包装"
+                },
+                {
+                    "product-name": "山西陈醋",
+                    "product-description": "酸爽开胃，百年传承",
+                    "product-image": "https://via.placeholder.com/150",
+                    "video-style": "传统古朴",
+                    "video-duration": 45,
+                    "additional-notes": "展示酿造过程"
+                },
+                {
+                    "product-name": "老北京烤鸭",
+                    "product-description": "皮脆肉嫩，香气四溢",
+                    "product-image": "https://via.placeholder.com/150",
+                    "video-style": "现代时尚",
+                    "video-duration": 60,
+                    "additional-notes": "重点展示烤制工艺"
+                }
+            ],
+            maxRows: 300
+        };
+
+        // DATA INTAKE COMPONENT
+        (function() {
+            const dataIntakeDiv = document.getElementById('data-intake');
+            const uploadButton = document.getElementById('upload-button');
+            const presetButtons = document.querySelectorAll('.seed-data-section button');
+            const clearButton = document.getElementById('clear-all');
+            const generateButton = document.getElementById('generate-button');
+            const resultContent = document.getElementById('result-content');
+            const resultArea = document.getElementById('result-area');
+            const downloadButton = document.getElementById('download-button');
+            const previewButton = document.getElementById('preview-button');
+
+            let inputs = {};
+
+            function loadSeed(preset) {
+                inputs = { ...SEED };
+                document.getElementById('product-name').value = inputs['product-name'];
+                document.getElementById('product-description').value = inputs['product-description'];
+                document.getElementById('product-image').value = inputs['product-image'];
+                document.getElementById('video-style').value = inputs['video-style'];
+                document.getElementById('video-duration').value = inputs['video-duration'];
+                document.getElementById('additional-notes').value = inputs['additional-notes'];
+            }
+
+            function clearInputs() {
+                inputs = {};
+                document.getElementById('product-name').value = '';
+                document.getElementById('product-description').value = '';
+                document.getElementById('product-image').value = '';
+                document.getElementById('video-style').value = '';
+                document.getElementById('video-duration').value = '';
+                document.getElementById('additional-notes').value = '';
+            }
+
+            presetButtons.forEach(button => {
+                button.addEventListener('click', () => {
+                    switch(button.id) {
+                        case 'preset-a':
+                            loadSeed(SEED);
+                            break;
+                        case 'preset-b':
+                            loadSeed({
+                                "product-name": "老北京烤鸭",
+                                "product-description": "皮脆肉嫩，香气四溢",
+                                "product-image": "https://via.placeholder.com/150",
+                                "video-style": "传统美食",
+                                "video-duration": 45,
+                                "additional-notes": "展示烤制过程"
+                            });
+                            break;
+                        case 'preset-c':
+                            loadSeed({
+                                "product-name": "山西陈醋",
+                                "product-description": "酸爽开胃，百年传承",
+                                "product-image": "https://via.placeholder.com/150",
+                                "video-style": "经典传承",
+                                "video-duration": 30,
+                                "additional-notes": "重点展示酿造工艺"
+                            });
+                            break;
+                        default:
+                            break;
+                    }
+                });
+            });
+
+            clearButton.addEventListener('click', () => {
+                clearInputs();
+            });
+
+            function getInputs() {
+                inputs = {
+                    "product-name": document.getElementById('product-name').value,
+                    "product-description": document.getElementById('product-description').value,
+                    "product-image": document.getElementById('product-image').value,
+                    "video-style": document.getElementById('video-style').value,
+                    "video-duration": parseInt(document.getElementById('video-duration').value),
+                    "additional-notes": document.getElementById('additional-notes').value
+                };
+                return inputs;
+            }
+
+            generateButton.addEventListener('click', () => {
+                if(window.DataIntake && window.DataIntake.isReady()) {
+                    inputs.data = window.DataIntake.getPayload();
+                }
+                fetch('/api/generate', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ "inputs": getInputs() })
+                })
+                .then(response => response.json())
+                .then(data => {
+                    resultContent.innerHTML = `<pre>${JSON.stringify(data, null, 2)}</pre>`;
+                })
+                .catch(error => {
+                    resultContent.innerHTML = `<p>发生错误: ${error}</p>`;
+                });
+            });
+
+            downloadButton.addEventListener('click', () => {
+                const jsonData = JSON.stringify(getInputs(), null, 2);
+                const blob = new Blob([jsonData], { type: "application/json" });
+                const url  = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = 'video-generation-config.json';
+                a.click();
+                URL.revokeObjectURL(url);
+            });
+
+            previewButton.addEventListener('click', () => {
+                if(window.DataIntake && window.DataIntake.isReady()) {
+                    inputs.data = window.DataIntake.getPayload();
+                }
+                fetch('/api/generate', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ "inputs": getInputs() })
+                })
+                .then(response => response.json())
+                .then(data => {
+                    resultContent.innerHTML = `<div class="example-result"><h4>示例结果</h4><pre>${JSON.stringify(data, null, 2)}</pre></div>`;
+                })
+                .catch(error => {
+                    resultContent.innerHTML = `<p>发生错误: ${error}</p>`;
+                });
+            });
+
+            dataIntakeDiv.innerHTML = `<div id="data-intake-component"></div>`;
+            // Platform will inject the DataIntake component here
+        })();
+    </script>
+</body>
+</html>

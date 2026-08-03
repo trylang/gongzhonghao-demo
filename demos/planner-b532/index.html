@@ -1,0 +1,423 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>传统行业AI效率分析工具</title>
+    <style>
+        :root {
+            --main-color: #2c3e50;
+            --background-color: #f5f5f5;
+            --text-color: #34495e;
+            --accent-color: #e74c3c;
+            --border-color: #bdc3c7;
+            --shadow-color: rgba(0, 0, 0, 0.1);
+            --button-radius: 8px;
+            --card-radius: 12px;
+            --transition-speed: 0.3s;
+        }
+
+        body {
+            margin: 0;
+            font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+            background-color: var(--background-color);
+            color: var(--text-color);
+            line-height: 1.6;
+            padding: 20px;
+        }
+
+        h1 {
+            text-align: center;
+            color: var(--main-color);
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #ffffff;
+            border-radius: var(--card-radius);
+            box-shadow: 0 4px 6px var(--shadow-color);
+        }
+
+        .header {
+            margin-bottom: 40px;
+        }
+
+        .section {
+            margin-bottom: 30px;
+        }
+
+        .section h2 {
+            border-bottom: 2px solid var(--border-color);
+            padding-bottom: 10px;
+            margin-bottom: 20px;
+            color: var(--main-color);
+        }
+
+        .controls {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .controls button, .controls .button {
+            flex: 1 1 150px;
+            padding: 12px 20px;
+            background-color: var(--main-color);
+            color: #ffffff;
+            border: none;
+            border-radius: var(--button-radius);
+            cursor: pointer;
+            transition: background-color var(--transition-speed);
+            font-size: 16px;
+        }
+
+        .controls button:hover, .controls .button:hover {
+            background-color: var(--accent-color);
+        }
+
+        .controls .preset-buttons {
+            display: flex;
+            gap: 10px;
+            flex: 1 1 100%;
+        }
+
+        .controls .preset-buttons button {
+            flex: 1;
+        }
+
+        .data-intake {
+            margin-bottom: 20px;
+        }
+
+        .results {
+            margin-top: 30px;
+        }
+
+        .results .card {
+            background-color: var(--background-color);
+            padding: 20px;
+            border-radius: var(--card-radius);
+            box-shadow: 0 2px 4px var(--shadow-color);
+        }
+
+        .results .card h3 {
+            margin-top: 0;
+            color: var(--main-color);
+        }
+
+        .example-results {
+            margin-bottom: 20px;
+        }
+
+        .example-results .card {
+            background-color: #ecf0f1;
+        }
+
+        .generated-results .card {
+            background-color: #ffffff;
+        }
+
+        .generated-results .card pre {
+            white-space: pre-wrap;
+            background-color: #f1f2f6;
+            padding: 15px;
+            border-radius: 8px;
+        }
+
+        footer {
+            text-align: center;
+            margin-top: 40px;
+            color: var(--border-color);
+            font-size: 14px;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .controls {
+                flex-direction: column;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div id="data-intake"></div>
+    <div class="container">
+        <div class="header">
+            <h1>传统行业AI效率分析工具</h1>
+            <p>通过AI分析您的订单与复购数据，生成轻量级商业洞察</p>
+        </div>
+
+        <div class="section">
+            <h2>数据来源</h2>
+            <div class="controls">
+                <button id="use-sample">使用示例数据</button>
+                <button id="download-template">下载CSV模板</button>
+                <button id="upload-csv">上传我的CSV/XLSX</button>
+            </div>
+            <div id="data-intake-container"></div>
+        </div>
+
+        <div class="section">
+            <h2>输入参数</h2>
+            <div class="controls">
+                <div class="preset-buttons">
+                    <button data-scenario="A">场景A：电商订单分析</button>
+                    <button data-scenario="B">场景B：客户复购预测</button>
+                    <button data-scenario="C">场景C：销售趋势洞察</button>
+                </div>
+            </div>
+            <div id="input-fields">
+                <!-- 示例输入字段将动态填充 -->
+            </div>
+        </div>
+
+        <div class="section">
+            <h2>生成结果</h2>
+            <div class="controls">
+                <button id="generate-button">生成分析报告</button>
+                <button id="clear-button">清空/重填</button>
+            </div>
+            <div class="results">
+                <div class="example-results">
+                    <div class="card">
+                        <h3>示例结果</h3>
+                        <pre id="example-results">
+{
+    "summary": "这是一个基于示例数据的示例结果。",
+    "insights": [
+        "洞察1：您的复购率在过去一个月上升了5%。",
+        "洞察2：您的平均客单价为¥200。"
+    ],
+    "recommendations": [
+        "建议1：考虑针对高复购客户推出专属优惠。",
+        "建议2：分析低客单价订单的原因并优化产品组合。"
+    ]
+}
+                        </pre>
+                    </div>
+                </div>
+                <div class="generated-results">
+                    <div class="card">
+                        <h3>生成的分析报告</h3>
+                        <pre id="generated-results">等待生成...</pre>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <footer>
+        &copy; 2023 AI效率分析工具 | 保留所有权利
+    </footer>
+
+    <script>
+        // SEED 数据
+        const SEED = {
+            "scenario": "A",
+            "inputs": {
+                "period": "过去一个月",
+                "metrics": ["复购率", "客单价", "订单总量"]
+            },
+            "data": [
+                { "order_no": "SO1001", "customer_id": "C1001", "order_date": "2023-09-01", "amount": 250, "reordered": true },
+                { "order_no": "SO1002", "customer_id": "C1002", "order_date": "2023-09-02", "amount": 180, "reordered": false },
+                { "order_no": "SO1003", "customer_id": "C1003", "order_date": "2023-09-03", "amount": 320, "reordered": true },
+                { "order_no": "SO1004", "customer_id": "C1004", "order_date": "2023-09-04", "amount": 450, "reordered": true },
+                { "order_no": "SO1005", "customer_id": "C1005", "order_date": "2023-09-05", "amount": 220, "reordered": false }
+            ]
+        };
+
+        // 示例结果（硬编码）
+        const EXAMPLE_RESULTS = {
+            "summary": "这是一个基于示例数据的示例结果。",
+            "insights": [
+                "洞察1：您的复购率在过去一个月上升了5%。",
+                "洞察2：您的平均客单价为¥200。"
+            ],
+            "recommendations": [
+                "建议1：考虑针对高复购客户推出专属优惠。",
+                "建议2：分析低客单价订单的原因并优化产品组合。"
+            ]
+        };
+
+        // DATA_SCHEMA 定义
+        window.DATA_SCHEMA = {
+            "name": "订单明细",
+            "columns": [
+                { "key": "order_no", "label": "订单号", "type": "text", "example": "SO1001", "required": true },
+                { "key": "customer_id", "label": "客户ID", "type": "text", "example": "C1001", "required": true },
+                { "key": "order_date", "label": "订单日期", "type": "date", "example": "2023-09-01", "required": true },
+                { "key": "amount", "label": "订单金额", "type": "number", "example": "250", "required": true },
+                { "key": "reordered", "label": "是否复购", "type": "boolean", "example": "true", "required": true }
+            ],
+            "sample": [
+                { "order_no": "SO1001", "customer_id": "C1001", "order_date": "2023-09-01", "amount": 250, "reordered": true },
+                { "order_no": "SO1002", "customer_id": "C1002", "order_date": "2023-09-02", "amount": 180, "reordered": false },
+                { "order_no": "SO1003", "customer_id": "C1003", "order_date": "2023-09-03", "amount": 320, "reordered": true },
+                { "order_no": "SO1004", "customer_id": "C1004", "order_date": "2023-09-04", "amount": 450, "reordered": true },
+                { "order_no": "SO1005", "customer_id": "C1005", "order_date": "2023-09-05", "amount": 220, "reordered": false }
+            ],
+            "maxRows": 300
+        };
+
+        // 切换场景预设
+        const scenarios = {
+            "A": {
+                "scenario": "A",
+                "inputs": {
+                    "period": "过去一个月",
+                    "metrics": ["复购率", "客单价", "订单总量"]
+                },
+                "data": [
+                    { "order_no": "SO1001", "customer_id": "C1001", "order_date": "2023-09-01", "amount": 250, "reordered": true },
+                    { "order_no": "SO1002", "customer_id": "C1002", "order_date": "2023-09-02", "amount": 180, "reordered": false },
+                    { "order_no": "SO1003", "customer_id": "C1003", "order_date": "2023-09-03", "amount": 320, "reordered": true },
+                    { "order_no": "SO1004", "customer_id": "C1004", "order_date": "2023-09-04", "amount": 450, "reordered": true },
+                    { "order_no": "SO1005", "customer_id": "C1005", "order_date": "2023-09-05", "amount": 220, "reordered": false }
+                ]
+            },
+            "B": {
+                "scenario": "B",
+                "inputs": {
+                    "period": "过去三个月",
+                    "metrics": ["客户留存率", "复购频率", "客户生命周期价值"]
+                },
+                "data": [
+                    { "order_no": "SO2001", "customer_id": "C2001", "order_date": "2023-07-15", "amount": 180, "reordered": false },
+                    { "order_no": "SO2002", "customer_id": "C2001", "order_date": "2023-08-20", "amount": 200, "reordered": true },
+                    { "order_no": "SO2003", "customer_id": "C2002", "order_date": "2023-07-10", "amount": 150, "reordered": false },
+                    { "order_no": "SO2004", "customer_id": "C2002", "order_date": "2023-09-05", "amount": 220, "reordered": true },
+                    { "order_no": "SO2005", "customer_id": "C2003", "order_date": "2023-07-22", "amount": 300, "reordered": false }
+                ]
+            },
+            "C": {
+                "scenario": "C",
+                "inputs": {
+                    "period": "过去半年",
+                    "metrics": ["总销售额", "平均订单金额", "销售趋势"]
+                },
+                "data": [
+                    { "order_no": "SO3001", "customer_id": "C3001", "order_date": "2023-04-10", "amount": 500, "reordered": true },
+                    { "order_no": "SO3002", "customer_id": "C3002", "order_date": "2023-05-15", "amount": 350, "reordered": false },
+                    { "order_no": "SO3003", "customer_id": "C3003", "order_date": "2023-06-22", "amount": 420, "reordered": true },
+                    { "order_no": "SO3004", "customer_id": "C3004", "order_date": "2023-07-30", "amount": 280, "reordered": false },
+                    { "order_no": "SO3005", "customer_id": "C3005", "order_date": "2023-08-12", "amount": 310, "reordered": true }
+                ]
+            }
+        };
+
+        // 初始化
+        let currentScenario = SEED;
+
+        // 切换场景预设
+        document.querySelectorAll('.preset-buttons button').forEach(button => {
+            button.addEventListener('click', () => {
+                const scenarioKey = button.getAttribute('data-scenario');
+                currentScenario = scenarios[scenarioKey];
+                loadScenario();
+            });
+        });
+
+        // 加载场景
+        function loadScenario() {
+            // 填充输入字段
+            const inputFields = document.getElementById('input-fields');
+            inputFields.innerHTML = '';
+
+            for (const key in currentScenario.inputs) {
+                const label = key === 'metrics' ? '指标' : key;
+                const value = currentScenario.inputs[key];
+                const div = document.createElement('div');
+                div.className = 'controls';
+                if (key === 'metrics') {
+                    div.innerHTML = `<label>${label}:</label>`;
+                    value.forEach(metric => {
+                        div.innerHTML += `<button class="button">${metric}</button>`;
+                    });
+                } else {
+                    div.innerHTML = `<label>${label}:</label><input type="text" value="${value}" />`;
+                }
+                inputFields.appendChild(div);
+            }
+
+            // 填充示例结果
+            document.getElementById('example-results').textContent = JSON.stringify(EXAMPLE_RESULTS, null, 2);
+        }
+
+        // 生成分析报告
+        document.getElementById('generate-button').addEventListener('click', () => {
+            let inputs = {
+                "scenario": currentScenario.scenario,
+                "inputs": currentScenario.inputs
+            };
+
+            if (window.DataIntake && window.DataIntake.isReady()) {
+                inputs.data = window.DataIntake.getPayload();
+            } else {
+                inputs.data = currentScenario.data;
+            }
+
+            fetch('/api/generate', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ "inputs": inputs })
+            })
+            .then(response => response.json())
+            .then(data => {
+                document.getElementById('generated-results').textContent = JSON.stringify(data, null, 2);
+            })
+            .catch(error => {
+                document.getElementById('generated-results').textContent = '生成失败，请稍后重试。';
+                console.error('Error:', error);
+            });
+        });
+
+        // 使用示例数据
+        document.getElementById('use-sample').addEventListener('click', () => {
+            currentScenario = SEED;
+            loadScenario();
+        });
+
+        // 下载模板
+        document.getElementById('download-template').addEventListener('click', () => {
+            const csv = "order_no,customer_id,order_date,amount,reordered\nSO1001,C1001,2023-09-01,250,true\nSO1002,C1002,2023-09-02,180,false\nSO1003,C1003,2023-09-03,320,true\nSO1004,C1004,2023-09-04,450,true\nSO1005,C1005,2023-09-05,220,false";
+            const blob = new Blob([csv], { type: 'text/csv' });
+            const url = URL.createObjectURL(blob);
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = 'template.csv';
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        });
+
+        // 上传CSV/XLSX
+        document.getElementById('upload-csv').addEventListener('click', () => {
+            const input = document.createElement('input');
+            input.type = 'file';
+            input.accept = '.csv, .xlsx';
+            input.onchange = () => {
+                const file = input.files[0];
+                // 这里可以添加上传逻辑
+                alert('上传功能尚未实现。');
+            };
+            input.click();
+        });
+
+        // 清空/重填
+        document.getElementById('clear-button').addEventListener('click', () => {
+            currentScenario = SEED;
+            loadScenario();
+            document.getElementById('generated-results').textContent = '等待生成...';
+        });
+
+        // 加载初始场景
+        loadScenario();
+    </script>
+</body>
+</html>
