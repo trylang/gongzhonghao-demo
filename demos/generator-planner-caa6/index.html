@@ -1,0 +1,386 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <title>代州黄酒短视频脚本批量生成器</title>
+    <style>
+        :root {
+            --main-color: #d68f42;
+            --background-color: #f9f5f0;
+            --text-color: #3a3a3a;
+            --border-color: #e0dcd4;
+            --button-color: #f9f0e8;
+            --button-hover-color: #f3e3cf;
+            --shadow-color: rgba(0, 0, 0, 0.1);
+            --border-radius: 8px;
+            --font-family: 'Arial, sans-serif';
+        }
+
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: var(--font-family);
+            background-color: var(--background-color);
+            color: var(--text-color);
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+        }
+
+        header {
+            background-color: var(--main-color);
+            color: white;
+            padding: 20px;
+            text-align: center;
+        }
+
+        main {
+            flex: 1;
+            padding: 20px;
+            max-width: 1200px;
+            margin: 0 auto;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .section {
+            background-color: white;
+            padding: 20px;
+            border-radius: var(--border-radius);
+            box-shadow: 0 4px 6px var(--shadow-color);
+        }
+
+        .section h2 {
+            margin-top: 0;
+        }
+
+        .controls {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        .controls button {
+            flex: 1 1 150px;
+            padding: 10px;
+            border: none;
+            border-radius: var(--border-radius);
+            background-color: var(--button-color);
+            cursor: pointer;
+            font-size: 16px;
+            transition: background-color 0.3s;
+        }
+
+        .controls button:hover {
+            background-color: var(--button-hover-color);
+        }
+
+        .data-intake {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .data-intake .buttons {
+            display: flex;
+            gap: 10px;
+        }
+
+        .data-intake .buttons button {
+            flex: 1;
+            padding: 10px;
+            border: none;
+            border-radius: var(--border-radius);
+            background-color: var(--button-color);
+            cursor: pointer;
+            font-size: 16px;
+            transition: background-color 0.3s;
+        }
+
+        .data-intake .buttons button:hover {
+            background-color: var(--button-hover-color);
+        }
+
+        .results {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .results .example-result {
+            background-color: #fff9f0;
+            padding: 20px;
+            border-radius: var(--border-radius);
+            box-shadow: 0 4px 6px var(--shadow-color);
+        }
+
+        .results .example-result h3 {
+            margin-top: 0;
+            color: var(--main-color);
+        }
+
+        .results .example-result p {
+            margin: 0;
+        }
+
+        .results .generated-result {
+            background-color: #f0f8ff;
+            padding: 20px;
+            border-radius: var(--border-radius);
+            box-shadow: 0 4px 6px var(--shadow-color);
+        }
+
+        .results .generated-result h3 {
+            margin-top: 0;
+            color: #1e90ff;
+        }
+
+        .results .generated-result pre {
+            white-space: pre-wrap;
+            word-wrap: break-word;
+        }
+
+        footer {
+            background-color: var(--main-color);
+            color: white;
+            text-align: center;
+            padding: 10px;
+        }
+
+        @media (max-width: 600px) {
+            .controls {
+                flex-direction: column;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div id="data-intake"></div>
+    <header>
+        <h1>代州黄酒短视频脚本批量生成器</h1>
+    </header>
+    <main>
+        <div class="section">
+            <h2>输入卖点</h2>
+            <textarea id="input卖点" rows="4" placeholder="请输入一个产品卖点，例如：纯手工酿造，历史悠久，口感醇厚"></textarea>
+        </div>
+        <div class="controls">
+            <button id="generateButton">生成脚本</button>
+            <button id="clearButton">清空/重填</button>
+            <button id="copyResultButton">复制结果</button>
+            <button id="exportJSONButton">导出 JSON</button>
+            <button id="randomExampleButton">随机示例</button>
+            <button id="scenarioAButton">场景A</button>
+            <button id="scenarioBButton">场景B</button>
+            <button id="scenarioCButton">场景C</button>
+        </div>
+        <div class="section">
+            <h2>示例结果</h2>
+            <div id="exampleResult" class="example-result">
+                <h3>示例脚本</h3>
+                <p>（点击“生成”按钮查看示例结果）</p>
+            </div>
+        </div>
+        <div class="section">
+            <h2>生成结果</h2>
+            <div id="generatedResult" class="generated-result">
+                <h3>生成脚本</h3>
+                <pre id="resultPre">（点击“生成”按钮后显示结果）</pre>
+            </div>
+        </div>
+    </main>
+    <footer>
+        <p>© 2023 代州黄酒短视频脚本批量生成器</p>
+    </footer>
+    <script>
+        // 声明数据结构
+        window.DATA_SCHEMA = {
+            name: "产品卖点",
+            columns: [
+                { key: "卖点", label: "产品卖点", type: "text", example: "纯手工酿造，历史悠久，口感醇厚", required: true }
+            ],
+            sample: [
+                { "卖点": "纯手工酿造，历史悠久，口感醇厚" },
+                { "卖点": "传统工艺，天然发酵，健康养生" },
+                { "卖点": "独特风味，回味悠长，适合送礼" }
+            ],
+            maxRows: 300
+        };
+
+        // 示例数据
+        const SEED = [
+            { "卖点": "纯手工酿造，历史悠久，口感醇厚" },
+            { "卖点": "传统工艺，天然发酵，健康养生" },
+            { "卖点": "独特风味，回味悠长，适合送礼" },
+            { "卖点": "精选原料，品质保证，匠心酿造" },
+            { "卖点": "酒体丰满，香气浓郁，入口顺滑" },
+            { "卖点": "代州黄酒，百年传承，经典味道" },
+            { "卖点": "酒香四溢，色泽金黄，品质上乘" },
+            { "卖点": "低度健康，适合日常饮用" },
+            { "卖点": "浓郁的文化底蕴，独特的地域特色" },
+            { "卖点": "代州黄酒，品味经典，享受生活" },
+            { "卖点": "酒体醇厚，香气扑鼻，回味无穷" },
+            { "卖点": "代州黄酒，传承经典，创新发展" },
+            { "卖点": "精选优质糯米，传统酿造工艺" },
+            { "卖点": "代州黄酒，品质生活，从一杯开始" },
+            { "卖点": "酒香浓郁，口感丰富，适合各种场合" }
+        ];
+
+        let currentData = SEED;
+
+        // 示例结果硬编码
+        const exampleResult = {
+            "30秒脚本": "大家好，今天我要给大家推荐一款代州黄酒。这款酒采用纯手工酿造，历史悠久，口感醇厚。每一滴酒都凝聚了代州人民的智慧和辛勤劳动，是您品味经典，享受生活的最佳选择。",
+            "60秒脚本": "大家好，今天我要给大家推荐一款代州黄酒。这款酒不仅采用纯手工酿造，还拥有悠久的历史和醇厚的口感。代州黄酒采用传统工艺，天然发酵，健康养生。无论是独自小酌，还是与亲友共饮，代州黄酒都是您的最佳选择。它的独特风味和回味悠长，定会让您爱不释手。代州黄酒，传承经典，创新发展，是您品味经典，享受生活的最佳选择。",
+            "分镜": [
+                { "镜头": "1", "描述": "全景展示代州黄酒酒瓶和酒杯" },
+                { "镜头": "2", "描述": "特写展示酒液倒入杯中" },
+                { "镜头": "3", "描述": "中景展示人物品尝酒液，露出满意的表情" },
+                { "镜头": "4", "描述": "特写展示酒瓶上的标签" },
+                { "镜头": "5", "描述": "全景展示人物与朋友共饮代州黄酒" }
+            ]
+        };
+
+        // 填充示例数据到输入框
+        document.getElementById("input卖点").value = SEED[0].卖点;
+
+        // 生成按钮事件
+        document.getElementById("generateButton").addEventListener("click", () => {
+            const input卖点 = document.getElementById("input卖点").value;
+            const inputs = { "卖点": input卖点 };
+            const dataIntake = window.DataIntake;
+            if (dataIntake && dataIntake.isReady()) {
+                inputs.data = dataIntake.getPayload();
+            }
+
+            fetch("/api/generate", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify({ "inputs": inputs })
+            })
+            .then(response => response.json())
+            .then(data => {
+                // 解析并渲染结果
+                const result = data;
+                document.getElementById("resultPre").textContent = JSON.stringify(result, null, 2);
+                document.getElementById("generatedResult").style.display = "block";
+            })
+            .catch(error => {
+                console.error("Error:", error);
+            });
+        });
+
+        // 清空/重填按钮事件
+        document.getElementById("clearButton").addEventListener("click", () => {
+            document.getElementById("input卖点").value = "";
+            document.getElementById("resultPre").textContent = "（点击“生成”按钮后显示结果）";
+            document.getElementById("generatedResult").style.display = "none";
+        });
+
+        // 复制结果按钮事件
+        document.getElementById("copyResultButton").addEventListener("click", () => {
+            const result = document.getElementById("resultPre").textContent;
+            navigator.clipboard.writeText(result)
+                .then(() => {
+                    alert("结果已复制到剪贴板");
+                })
+                .catch(error => {
+                    console.error("Error:", error);
+                });
+        });
+
+        // 导出 JSON 按钮事件
+        document.getElementById("exportJSONButton").addEventListener("click", () => {
+            const result = document.getElementById("resultPre").textContent;
+            const blob = new Blob([result], { type: "application/json" });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement("a");
+            a.href = url;
+            a.download = "result.json";
+            a.click();
+            URL.revokeObjectURL(url);
+        });
+
+        // 随机示例按钮事件
+        document.getElementById("randomExampleButton").addEventListener("click", () => {
+            const randomIndex = Math.floor(Math.random() * SEED.length);
+            document.getElementById("input卖点").value = SEED[randomIndex].卖点;
+        });
+
+        // 场景预设按钮事件
+        document.getElementById("scenarioAButton").addEventListener("click", () => {
+            currentData = [
+                { "卖点": "纯手工酿造，历史悠久，口感醇厚" },
+                { "卖点": "传统工艺，天然发酵，健康养生" },
+                { "卖点": "独特风味，回味悠长，适合送礼" },
+                { "卖点": "精选原料，品质保证，匠心酿造" },
+                { "卖点": "酒体丰满，香气浓郁，入口顺滑" },
+                { "卖点": "代州黄酒，百年传承，经典味道" },
+                { "卖点": "酒香四溢，色泽金黄，品质上乘" },
+                { "卖点": "低度健康，适合日常饮用" }
+            ];
+            document.getElementById("input卖点").value = currentData[0].卖点;
+        });
+
+        document.getElementById("scenarioBButton").addEventListener("click", () => {
+            currentData = [
+                { "卖点": "低度健康，适合日常饮用" },
+                { "卖点": "浓郁的文化底蕴，独特的地域特色" },
+                { "卖点": "代州黄酒，品味经典，享受生活" },
+                { "卖点": "酒体醇厚，香气扑鼻，回味无穷" },
+                { "卖点": "代州黄酒，传承经典，创新发展" },
+                { "卖点": "精选优质糯米，传统酿造工艺" },
+                { "卖点": "代州黄酒，品质生活，从一杯开始" },
+                { "卖点": "酒香浓郁，口感丰富，适合各种场合" }
+            ];
+            document.getElementById("input卖点").value = currentData[0].卖点;
+        });
+
+        document.getElementById("scenarioCButton").addEventListener("click", () => {
+            currentData = [
+                { "卖点": "代州黄酒，传承经典，创新发展" },
+                { "卖点": "精选优质糯米，传统酿造工艺" },
+                { "卖点": "代州黄酒，品质生活，从一杯开始" },
+                { "卖点": "酒香浓郁，口感丰富，适合各种场合" },
+                { "卖点": "代州黄酒，百年传承，经典味道" },
+                { "卖点": "酒香四溢，色泽金黄，品质上乘" },
+                { "卖点": "低度健康，适合日常饮用" },
+                { "卖点": "浓郁的文化底蕴，独特的地域特色" }
+            ];
+            document.getElementById("input卖点").value = currentData[0].卖点;
+        });
+
+        // 示例结果面板展示
+        document.getElementById("generateButton").addEventListener("click", () => {
+            const exampleResultDiv = document.getElementById("exampleResult");
+            exampleResultDiv.innerHTML = `
+                <h3>示例脚本</h3>
+                <p>30秒脚本: ${exampleResult["30秒脚本"]}</p>
+                <p>60秒脚本: ${exampleResult["60秒脚本"]}</p>
+                <p>分镜:</p>
+                <ul>
+                    ${exampleResult["分镜"].map(item => `<li>${item["镜头"]}. ${item["描述"]}</li>`).join("")}
+                </ul>
+            `;
+        });
+
+        // 页面加载时展示示例结果
+        window.onload = () => {
+            const exampleResultDiv = document.getElementById("exampleResult");
+            exampleResultDiv.innerHTML = `
+                <h3>示例脚本</h3>
+                <p>30秒脚本: ${exampleResult["30秒脚本"]}</p>
+                <p>60秒脚本: ${exampleResult["60秒脚本"]}</p>
+                <p>分镜:</p>
+                <ul>
+                    ${exampleResult["分镜"].map(item => `<li>${item["镜头"]}. ${item["描述"]}</li>`).join("")}
+                </ul>
+            `;
+        };
+    </script>
+</body>
+</html>

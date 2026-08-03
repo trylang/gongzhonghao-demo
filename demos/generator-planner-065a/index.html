@@ -1,0 +1,369 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <title>代州黄酒短视频脚本批量生成器</title>
+    <style>
+        :root {
+            --main-color: #d2691e;
+            --background-color: #fff8f0;
+            --text-color: #333;
+            --button-color: #fff8f0;
+            --button-hover: #faebd7;
+            --border-color: #d2691e;
+            --shadow-color: rgba(0, 0, 0, 0.1);
+            --radius: 8px;
+        }
+        body {
+            font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+            background-color: var(--background-color);
+            color: var(--text-color);
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+        }
+        header {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        header h1 {
+            font-size: 2em;
+            margin: 0;
+            color: var(--main-color);
+        }
+        .container {
+            flex: 1;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #fff;
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius);
+            box-shadow: 0 4px 6px var(--shadow-color);
+        }
+        .section {
+            margin-bottom: 20px;
+        }
+        .section h2 {
+            border-bottom: 2px solid var(--main-color);
+            padding-bottom: 10px;
+            margin-bottom: 15px;
+            color: var(--main-color);
+        }
+        .input-group {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
+            margin-bottom: 15px;
+        }
+        .input-group label {
+            display: block;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+        .input-group input, .input-group textarea {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius);
+            box-sizing: border-box;
+        }
+        .input-group textarea {
+            resize: vertical;
+            height: 100px;
+        }
+        .buttons {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+        .buttons button {
+            flex: 1;
+            padding: 10px;
+            border: none;
+            border-radius: var(--radius);
+            background-color: var(--main-color);
+            color: #fff;
+            cursor: pointer;
+            font-size: 1em;
+            transition: background-color 0.3s;
+        }
+        .buttons button:hover {
+            background-color: var(--button-hover);
+            color: var(--text-color);
+        }
+        .buttons .secondary {
+            background-color: var(--button-color);
+            color: var(--text-color);
+        }
+        .buttons .secondary:hover {
+            background-color: var(--button-hover);
+        }
+        .result {
+            border-top: 2px solid var(--main-color);
+            padding-top: 15px;
+        }
+        .result h3 {
+            margin-top: 0;
+            color: var(--main-color);
+        }
+        .result pre {
+            background-color: #f9f9f9;
+            padding: 15px;
+            border: 1px solid #ddd;
+            border-radius: var(--radius);
+            overflow-x: auto;
+        }
+        .example-result {
+            border: 1px solid var(--border-color);
+            padding: 15px;
+            border-radius: var(--radius);
+            background-color: #fdfdfd;
+        }
+        .example-result h4 {
+            margin-top: 0;
+            color: var(--main-color);
+        }
+        .example-result .content {
+            margin-top: 10px;
+        }
+        .hidden {
+            display: none;
+        }
+        @media (max-width: 768px) {
+            .input-group {
+                flex-direction: column;
+            }
+            .buttons button {
+                flex: auto;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div id="data-intake"></div>
+    <div class="container">
+        <header>
+            <h1>代州黄酒短视频脚本批量生成器</h1>
+        </header>
+        <div class="section">
+            <h2>输入卖点信息</h2>
+            <div class="input-group">
+                <div>
+                    <label for="product-name">产品名称</label>
+                    <input type="text" id="product-name" placeholder="例如：代州黄酒">
+                </div>
+                <div>
+                    <label for="product-feature">产品卖点</label>
+                    <textarea id="product-feature" placeholder="例如：传统酿造工艺，百年历史"></textarea>
+                </div>
+            </div>
+            <div class="buttons">
+                <button id="generate-script">生成脚本</button>
+                <button id="clear-inputs" class="secondary">清空/重填</button>
+                <button id="copy-result" class="secondary">复制结果</button>
+                <button id="export-json" class="secondary">导出 JSON</button>
+                <button id="random-example" class="secondary">随机示例</button>
+            </div>
+        </div>
+        <div class="section">
+            <h2>预设场景</h2>
+            <div class="buttons">
+                <button class="preset-button" data-preset="A">场景A: 传统酿造</button>
+                <button class="preset-button" data-preset="B">场景B: 百年传承</button>
+                <button class="preset-button" data-preset="C">场景C: 健康养生</button>
+            </div>
+        </div>
+        <div class="section result hidden" id="result-section">
+            <h3>生成结果</h3>
+            <div id="result-content">
+                <div class="example-result">
+                    <h4>示例结果 (30秒脚本)</h4>
+                    <div class="content">
+                        <p>大家好，今天我要给大家推荐一款传承百年的好酒——代州黄酒。它采用传统酿造工艺，保留了最纯正的酒香和口感。每一口都是历史的沉淀，品味代州黄酒，感受百年传承的魅力。</p>
+                    </div>
+                </div>
+                <div class="example-result">
+                    <h4>示例结果 (60秒脚本)</h4>
+                    <div class="content">
+                        <p>大家好，今天我要给大家推荐一款真正值得珍藏的好酒——代州黄酒。代州黄酒拥有悠久的酿造历史，传承了百年的传统工艺。它不仅口感醇厚，还富含多种对人体有益的营养成分，是您健康生活的不二选择。无论是家庭聚会还是商务宴请，代州黄酒都能为您增添一份独特的魅力。快来试试吧，让代州黄酒成为您生活中的一部分。</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="section">
+            <h2>示例数据</h2>
+            <pre id="seed-data" class="hidden">
+const SEED = {
+    "productName": "代州黄酒",
+    "productFeature": "传统酿造工艺，百年历史"
+};
+            </pre>
+        </div>
+    </div>
+    <script>
+        const SEED = {
+            "productName": "代州黄酒",
+            "productFeature": "传统酿造工艺，百年历史"
+        };
+
+        const presets = {
+            "A": {
+                "productName": "代州黄酒",
+                "productFeature": "传统酿造工艺，百年传承"
+            },
+            "B": {
+                "productName": "代州黄酒",
+                "productFeature": "百年老字号，经典口味"
+            },
+            "C": {
+                "productName": "代州黄酒",
+                "productFeature": "健康养生，天然原料"
+            }
+        };
+
+        const DATA_SCHEMA = {
+            name: "产品信息",
+            columns: [
+                { key: "productName", label: "产品名称", type: "text", example: "代州黄酒", required: true },
+                { key: "productFeature", label: "产品卖点", type: "text", example: "传统酿造工艺，百年历史", required: true }
+            ],
+            sample: [
+                { "productName": "代州黄酒", "productFeature": "传统酿造工艺，百年传承" },
+                { "productName": "代州黄酒", "productFeature": "百年老字号，经典口味" },
+                { "productName": "代州黄酒", "productFeature": "健康养生，天然原料" }
+            ],
+            maxRows: 300
+        };
+
+        window.DATA_SCHEMA = DATA_SCHEMA;
+
+        document.addEventListener("DOMContentLoaded", () => {
+            const dataIntakeDiv = document.getElementById("data-intake");
+            // 假设平台注入的脚本会在这里挂载组件
+            // 这里我们模拟一个简单的数据入口组件
+            const dataIntakeScript = document.createElement("script");
+            dataIntakeScript.src = "/data-intake.js";
+            dataIntakeDiv.appendChild(dataIntakeScript);
+
+            const generateButton = document.getElementById("generate-script");
+            const clearButton = document.getElementById("clear-inputs");
+            const copyButton = document.getElementById("copy-result");
+            const exportButton = document.getElementById("export-json");
+            const randomButton = document.getElementById("random-example");
+            const presetButtons = document.querySelectorAll(".preset-button");
+            const resultSection = document.getElementById("result-section");
+            const resultContent = document.getElementById("result-content");
+            const seedData = document.getElementById("seed-data");
+
+            // 预填示例数据
+            document.getElementById("product-name").value = SEED.productName;
+            document.getElementById("product-feature").value = SEED.productFeature;
+
+            // 场景预设按钮事件
+            presetButtons.forEach(button => {
+                button.addEventListener("click", () => {
+                    const preset = presets[button.getAttribute("data-preset")];
+                    document.getElementById("product-name").value = preset.productName;
+                    document.getElementById("product-feature").value = preset.productFeature;
+                });
+            });
+
+            // 清空/重填按钮事件
+            clearButton.addEventListener("click", () => {
+                document.getElementById("product-name").value = "";
+                document.getElementById("product-feature").value = "";
+            });
+
+            // 复制结果按钮事件
+            copyButton.addEventListener("click", () => {
+                const resultText = resultContent.innerText;
+                navigator.clipboard.writeText(resultText).then(() => {
+                    alert("结果已复制到剪贴板");
+                }).catch(() => {
+                    alert("复制失败");
+                });
+            });
+
+            // 导出 JSON 按钮事件
+            exportButton.addEventListener("click", () => {
+                const result = {
+                    "30秒脚本": resultContent.querySelectorAll(".content p")[0].innerText,
+                    "60秒脚本": resultContent.querySelectorAll(".content p")[1].innerText
+                };
+                const json = JSON.stringify(result, null, 2);
+                const blob = new Blob([json], { type: "application/json" });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement("a");
+                a.href = url;
+                a.download = "script.json";
+                a.click();
+                URL.revokeObjectURL(url);
+            });
+
+            // 随机示例按钮事件
+            randomButton.addEventListener("click", () => {
+                const keys = Object.keys(presets);
+                const randomKey = keys[Math.floor(Math.random() * keys.length)];
+                const preset = presets[randomKey];
+                document.getElementById("product-name").value = preset.productName;
+                document.getElementById("product-feature").value = preset.productFeature;
+            });
+
+            // 生成按钮事件
+            generateButton.addEventListener("click", () => {
+                const productName = document.getElementById("product-name").value;
+                const productFeature = document.getElementById("product-feature").value;
+
+                const inputs = {
+                    "productName": productName,
+                    "productFeature": productFeature
+                };
+
+                // 如果数据入口组件存在且准备好，则使用其数据
+                if (window.DataIntake && window.DataIntake.isReady()) {
+                    inputs.data = window.DataIntake.getPayload();
+                }
+
+                fetch("/api/generate", {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json"
+                    },
+                    body: JSON.stringify({ "inputs": inputs })
+                }).then(response => response.json()).then(data => {
+                    // 假设返回的数据结构为：
+                    // {
+                    //     "30秒脚本": "...",
+                    //     "60秒脚本": "..."
+                    // }
+                    if (data) {
+                        resultContent.innerHTML = `
+                            <div class="example-result">
+                                <h4>30秒脚本</h4>
+                                <div class="content">
+                                    <p>${data["30秒脚本"]}</p>
+                                </div>
+                            </div>
+                            <div class="example-result">
+                                <h4>60秒脚本</h4>
+                                <div class="content">
+                                    <p>${data["60秒脚本"]}</p>
+                                </div>
+                            </div>
+                        `;
+                        resultSection.classList.remove("hidden");
+                    } else {
+                        alert("生成失败");
+                    }
+                }).catch(() => {
+                    alert("服务器错误");
+                });
+            });
+        });
+    </script>
+</body>
+</html>
