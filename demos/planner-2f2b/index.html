@@ -1,0 +1,252 @@
+<!doctype html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI 经济预测分析工具</title>
+    <style>
+        :root {
+            --main-color: #2c3e50;
+            --background-color: #ffffff;
+            --text-color: #333333;
+            --accent-color: #27ae60;
+            --border-radius: 8px;
+            --box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            --font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+        }
+
+        body {
+            margin: 0;
+            font-family: var(--font-family);
+            background-color: var(--background-color);
+            color: var(--text-color);
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        header {
+            text-align: center;
+            padding: 20px 0;
+            border-bottom: 1px solid #e0e0e0;
+        }
+
+        header h1 {
+            margin: 0;
+            font-size: 1.8em;
+            color: var(--main-color);
+        }
+
+        .intro {
+            margin: 20px 0;
+        }
+
+        .intro p {
+            font-size: 1.1em;
+        }
+
+        .form-section {
+            margin: 30px 0;
+            padding: 20px;
+            border: 1px solid #e0e0e0;
+            border-radius: var(--border-radius);
+            background-color: #fafafa;
+        }
+
+        .form-section h2 {
+            margin-top: 0;
+            color: var(--main-color);
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+
+        .form-group input,
+        .form-group select {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid #cccccc;
+            border-radius: var(--border-radius);
+            box-sizing: border-box;
+        }
+
+        .submit-btn {
+            display: block;
+            width: 100%;
+            padding: 12px;
+            background-color: var(--accent-color);
+            color: #ffffff;
+            border: none;
+            border-radius: var(--border-radius);
+            font-size: 1.1em;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+
+        .submit-btn:hover {
+            background-color: #219150;
+        }
+
+        .loading {
+            text-align: center;
+            margin: 20px 0;
+            font-size: 1.2em;
+            color: var(--main-color);
+        }
+
+        .result-section {
+            margin: 30px 0;
+        }
+
+        .result-section h2 {
+            margin-top: 0;
+            color: var(--main-color);
+        }
+
+        .result-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 10px;
+        }
+
+        .result-table th,
+        .result-table td {
+            padding: 12px;
+            border: 1px solid #e0e0e0;
+            text-align: left;
+        }
+
+        .error {
+            color: #e74c3c;
+            margin-top: 20px;
+        }
+
+        @media (max-width: 600px) {
+            .form-section {
+                padding: 15px;
+            }
+
+            .submit-btn {
+                padding: 10px;
+                font-size: 1em;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <header>
+            <h1>AI 经济预测分析工具</h1>
+        </header>
+        <div class="intro">
+            <p>基于工业革命与 AI 时代的增长对比分析，为您的企业预测 AI 可能带来的效率提升。</p>
+        </div>
+        <div class="form-section">
+            <h2>开始分析</h2>
+            <div class="form-group">
+                <label for="industry">您的行业</label>
+                <input type="text" id="industry" placeholder="例如：酒业、电商、物流等">
+            </div>
+            <div class="form-group">
+                <label for="current-growth">当前年增长率 (%)</label>
+                <input type="number" id="current-growth" placeholder="例如：5">
+            </div>
+            <div class="form-group">
+                <label for="ai-impact">预估 AI 带来的效率提升 (%)</label>
+                <input type="number" id="ai-impact" placeholder="例如：20">
+            </div>
+            <button class="submit-btn" id="analyze-btn">生成分析结果</button>
+        </div>
+        <div id="result-section" class="result-section" style="display:none;">
+            <h2>分析结果</h2>
+            <div id="result-content"></div>
+        </div>
+        <div id="error-message" class="error" style="display:none;"></div>
+    </div>
+
+    <script>
+        document.getElementById('analyze-btn').addEventListener('click', () => {
+            const industry = document.getElementById('industry').value.trim();
+            const currentGrowth = parseFloat(document.getElementById('current-growth').value);
+            const aiImpact = parseFloat(document.getElementById('ai-impact').value);
+
+            if (!industry || isNaN(currentGrowth) || isNaN(aiImpact)) {
+                alert('请填写所有字段');
+                return;
+            }
+
+            const inputs = {
+                industry,
+                currentGrowth,
+                aiImpact
+            };
+
+            document.getElementById('result-section').style.display = 'none';
+            document.getElementById('error-message').style.display = 'none';
+            document.getElementById('result-content').innerHTML = '';
+            document.getElementById('analyze-btn').innerText = '分析中...';
+            document.getElementById('analyze-btn').disabled = true;
+
+            fetch('/api/generate', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ inputs })
+            })
+                .then(response => response.json())
+                .then(data => {
+                    document.getElementById('analyze-btn').innerText = '生成分析结果';
+                    document.getElementById('analyze-btn').disabled = false;
+                    if (data.result) {
+                        const result = JSON.parse(data.result);
+                        let html = `<p>根据您的行业和预估 AI 效率提升，您的企业未来年增长率预测为 <strong>${result.predictedGrowth}%</strong>。</p>`;
+                        html += `<table class="result-table">
+                                    <tr>
+                                        <th>指标</th>
+                                        <th>数值</th>
+                                    </tr>
+                                    <tr>
+                                        <td>当前年增长率</td>
+                                        <td>${inputs.currentGrowth}%</td>
+                                    </tr>
+                                    <tr>
+                                        <td>AI 效率提升预估</td>
+                                        <td>${inputs.aiImpact}%</td>
+                                    </tr>
+                                    <tr>
+                                        <td>预测年增长率</td>
+                                        <td>${result.predictedGrowth}%</td>
+                                    </tr>
+                                </table>`;
+                        document.getElementById('result-content').innerHTML = html;
+                        document.getElementById('result-section').style.display = 'block';
+                    } else {
+                        document.getElementById('error-message').innerText = '分析失败，请重试。';
+                        document.getElementById('error-message').style.display = 'block';
+                    }
+                })
+                .catch(() => {
+                    document.getElementById('analyze-btn').innerText = '生成分析结果';
+                    document.getElementById('analyze-btn').disabled = false;
+                    document.getElementById('error-message').innerText = '网络错误，请检查您的连接。';
+                    document.getElementById('error-message').style.display = 'block';
+                });
+        });
+    </script>
+</body>
+
+</html>
