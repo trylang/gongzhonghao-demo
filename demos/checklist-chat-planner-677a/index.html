@@ -1,0 +1,245 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI视频工具生成模板包</title>
+    <style>
+        :root {
+            --primary-color: #4A90E2;
+            --background-color: #F5F5F5;
+            --text-color: #333333;
+            --border-color: #D9D9D9;
+            --card-color: #FFFFFF;
+            --shadow-color: rgba(0, 0, 0, 0.1);
+            --radius: 8px;
+        }
+
+        body {
+            margin: 0;
+            font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+            background-color: var(--background-color);
+            color: var(--text-color);
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        h1 {
+            text-align: center;
+            color: var(--primary-color);
+        }
+
+        .intro {
+            margin-bottom: 30px;
+            line-height: 1.6;
+        }
+
+        .step {
+            background-color: var(--card-color);
+            padding: 20px;
+            margin-bottom: 20px;
+            border-radius: var(--radius);
+            box-shadow: 0 2px 8px var(--shadow-color);
+        }
+
+        .step h2 {
+            margin-top: 0;
+            color: var(--primary-color);
+        }
+
+        .step p {
+            margin: 10px 0;
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+
+        input[type="text"], textarea, select {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius);
+            box-sizing: border-box;
+        }
+
+        textarea {
+            resize: vertical;
+            height: 100px;
+        }
+
+        button {
+            background-color: var(--primary-color);
+            color: #FFFFFF;
+            padding: 12px 20px;
+            border: none;
+            border-radius: var(--radius);
+            cursor: pointer;
+            font-size: 16px;
+        }
+
+        button:hover {
+            background-color: #357ABD;
+        }
+
+        .loading, .error {
+            display: none;
+            margin-top: 20px;
+            padding: 15px;
+            border-radius: var(--radius);
+            font-weight: bold;
+        }
+
+        .loading {
+            background-color: #E0F7FA;
+            color: #006064;
+        }
+
+        .error {
+            background-color: #FFEBEE;
+            color: #C62828;
+        }
+
+        .results {
+            margin-top: 30px;
+        }
+
+        .result-item {
+            background-color: var(--card-color);
+            padding: 15px;
+            margin-bottom: 15px;
+            border-radius: var(--radius);
+            box-shadow: 0 2px 8px var(--shadow-color);
+        }
+
+        .result-item h3 {
+            margin-top: 0;
+            color: var(--primary-color);
+        }
+
+        .result-item p {
+            margin: 10px 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>AI视频工具生成模板包</h1>
+        <div class="intro">
+            <p>使用AI技术为中小酒企、餐饮店、品牌方生成高质量视频内容。通过上传产品图片或填写基本信息，快速生成不同风格的视频素材，节省拍摄成本，提高内容生产效率。</p>
+        </div>
+
+        <div class="step">
+            <h2>1. 选择视频类型</h2>
+            <div class="form-group">
+                <label for="videoType">视频类型</label>
+                <select id="videoType" required>
+                    <option value="" disabled selected>请选择视频类型</option>
+                    <option value="产品视频">产品视频</option>
+                    <option value="同城探店">同城探店</option>
+                    <option value="菜品展示">菜品展示</option>
+                    <option value="品牌投流">品牌投流</option>
+                </select>
+            </div>
+        </div>
+
+        <div class="step">
+            <h2>2. 上传产品图片</h2>
+            <div class="form-group">
+                <label for="productImage">产品图片</label>
+                <input type="file" id="productImage" accept="image/*" required>
+            </div>
+        </div>
+
+        <div class="step">
+            <h2>3. 填写基本信息</h2>
+            <div class="form-group">
+                <label for="productName">产品名称</label>
+                <input type="text" id="productName" placeholder="例如：代州黄酒" required>
+            </div>
+            <div class="form-group">
+                <label for="productDescription">产品描述</label>
+                <textarea id="productDescription" placeholder="例如：传统工艺酿造，百年传承" required></textarea>
+            </div>
+        </div>
+
+        <button id="generateButton">生成视频</button>
+
+        <div class="loading" id="loading">正在生成视频，请稍候...</div>
+        <div class="error" id="error">生成失败，请稍后重试。</div>
+
+        <div class="results" id="results"></div>
+    </div>
+
+    <script>
+        document.getElementById('generateButton').addEventListener('click', () => {
+            const videoType = document.getElementById('videoType').value;
+            const productImage = document.getElementById('productImage').files[0];
+            const productName = document.getElementById('productName').value;
+            const productDescription = document.getElementById('productDescription').value;
+
+            if (!videoType || !productImage || !productName || !productDescription) {
+                alert('请完整填写所有字段。');
+                return;
+            }
+
+            const formData = new FormData();
+            formData.append('inputs', JSON.stringify({
+                videoType,
+                productName,
+                productDescription
+            }));
+            formData.append('productImage', productImage);
+
+            document.getElementById('loading').style.display = 'block';
+            document.getElementById('error').style.display = 'none';
+            document.getElementById('results').innerHTML = '';
+
+            fetch('/api/generate', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                document.getElementById('loading').style.display = 'none';
+                renderResults(data.result);
+            })
+            .catch(() => {
+                document.getElementById('loading').style.display = 'none';
+                document.getElementById('error').style.display = 'block';
+            });
+        });
+
+        function renderResults(result) {
+            const resultsDiv = document.getElementById('results');
+            if (typeof result === 'string') {
+                const paragraph = document.createElement('p');
+                paragraph.textContent = result;
+                resultsDiv.appendChild(paragraph);
+            } else if (typeof result === 'object') {
+                Object.keys(result).forEach(key => {
+                    const item = document.createElement('div');
+                    item.className = 'result-item';
+                    const title = document.createElement('h3');
+                    title.textContent = key;
+                    const content = document.createElement('p');
+                    content.textContent = result[key];
+                    item.appendChild(title);
+                    item.appendChild(content);
+                    resultsDiv.appendChild(item);
+                });
+            }
+        }
+    </script>
+</body>
+</html>
