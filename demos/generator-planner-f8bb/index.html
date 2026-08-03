@@ -1,0 +1,496 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>代州黄酒短视频脚本批量生成器</title>
+    <style>
+        :root {
+            --main-color: #d68c45;
+            --background-color: #f5f5f5;
+            --text-color: #333;
+            --button-color: #d68c45;
+            --button-text-color: #fff;
+            --border-radius: 8px;
+            --box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        body {
+            font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+            background-color: var(--background-color);
+            color: var(--text-color);
+            margin: 0;
+            padding: 0;
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+        }
+        header {
+            background-color: var(--main-color);
+            color: #fff;
+            padding: 20px;
+            text-align: center;
+        }
+        main {
+            flex: 1;
+            padding: 20px;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        .section {
+            margin-bottom: 40px;
+        }
+        h1, h2, h3 {
+            color: var(--main-color);
+        }
+        .button-group {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+        .button-group button {
+            background-color: var(--button-color);
+            color: var(--button-text-color);
+            border: none;
+            padding: 10px 20px;
+            border-radius: var(--border-radius);
+            cursor: pointer;
+            font-size: 16px;
+            transition: background-color 0.3s;
+        }
+        .button-group button:hover {
+            background-color: #c27a2e;
+        }
+        .input-group {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+        .input-group label {
+            font-weight: bold;
+        }
+        .input-group input, .input-group textarea {
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: var(--border-radius);
+            font-size: 16px;
+        }
+        .result-panel {
+            background-color: #fff;
+            padding: 20px;
+            border-radius: var(--border-radius);
+            box-shadow: var(--box-shadow);
+        }
+        .result-panel h2 {
+            margin-top: 0;
+        }
+        .example-result {
+            margin-bottom: 20px;
+        }
+        .example-result h3 {
+            color: var(--main-color);
+        }
+        .example-result pre {
+            background-color: #f9f9f9;
+            padding: 10px;
+            border-radius: var(--border-radius);
+            overflow-x: auto;
+        }
+        .generated-result {
+            margin-top: 20px;
+        }
+        footer {
+            background-color: var(--main-color);
+            color: #fff;
+            text-align: center;
+            padding: 10px;
+        }
+        @media (max-width: 768px) {
+            .button-group {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div id="data-intake"></div>
+    <script>
+        window.DATA_SCHEMA = {
+            name: "代州黄酒短视频脚本",
+            columns: [
+                { key: "product", label: "产品名称", type: "text", example: "代州黄酒", required: true },
+                { key: "卖点", label: "产品卖点", type: "text", example: "传统酿造工艺", required: true },
+                { key: "目标受众", label: "目标受众", type: "text", example: "中年男性", required: true },
+                { key: "时长", label: "视频时长", type: "text", example: "30秒", required: true },
+                { key: "语气", label: "语气", type: "text", example: "亲切", required: true }
+            ],
+            sample: [
+                { product: "代州黄酒", 卖点: "传统酿造工艺", 目标受众: "中年男性", 时长: "30秒", 语气: "亲切" },
+                { product: "代州黄酒", 卖点: "历史悠久", 目标受众: "老年消费者", 时长: "60秒", 语气: "庄重" },
+                { product: "代州黄酒", 卖点: "健康养生", 目标受众: "女性消费者", 时长: "45秒", 语气: "温馨" },
+                { product: "代州黄酒", 卖点: "高性价比", 目标受众: "年轻消费者", 时长: "30秒", 语气: "活泼" },
+                { product: "代州黄酒", 卖点: "文化传承", 目标受众: "文化爱好者", 时长: "60秒", 语气: "沉稳" },
+                { product: "代州黄酒", 卖点: "独特风味", 目标受众: "美食爱好者", 时长: "45秒", 语气: "热情" },
+                { product: "代州黄酒", 卖点: "天然原料", 目标受众: "健康生活追求者", 时长: "30秒", 语气: "自然" },
+                { product: "代州黄酒", 卖点: "限量发售", 目标受众: "收藏家", 时长: "60秒", 语气: "稀有" }
+            ],
+            maxRows: 300
+        };
+    </script>
+    <div class="section">
+        <header>
+            <h1>代州黄酒短视频脚本批量生成器</h1>
+        </header>
+        <div class="button-group">
+            <button id="generate-button">生成脚本</button>
+            <button id="clear-button">清空/重填</button>
+            <button id="copy-button">复制结果</button>
+            <button id="download-button">导出JSON</button>
+            <button id="random-button">随机示例</button>
+            <button id="scenario-a-button">场景A</button>
+            <button id="scenario-b-button">场景B</button>
+            <button id="scenario-c-button">场景C</button>
+        </div>
+        <div class="input-group">
+            <label for="product-input">产品名称</label>
+            <input type="text" id="product-input" placeholder="请输入产品名称">
+        </div>
+        <div class="input-group">
+            <label for="卖点-input">产品卖点</label>
+            <input type="text" id="卖点-input" placeholder="请输入产品卖点">
+        </div>
+        <div class="input-group">
+            <label for="目标受众-input">目标受众</label>
+            <input type="text" id="目标受众-input" placeholder="请输入目标受众">
+        </div>
+        <div class="input-group">
+            <label for="时长-input">视频时长</label>
+            <input type="text" id="时长-input" placeholder="请输入视频时长">
+        </div>
+        <div class="input-group">
+            <label for="语气-input">语气</label>
+            <input type="text" id="语气-input" placeholder="请输入语气">
+        </div>
+        <div class="result-panel" id="result-panel" style="display: none;">
+            <h2>示例结果</h2>
+            <div class="example-result">
+                <h3>30秒脚本</h3>
+                <pre id="30s-script-example">【示例】30秒脚本示例内容...</pre>
+            </div>
+            <div class="example-result">
+                <h3>60秒脚本</h3>
+                <pre id="60s-script-example">【示例】60秒脚本示例内容...</pre>
+            </div>
+            <div class="example-result">
+                <h3>分镜</h3>
+                <pre id="storyboard-example">【示例】分镜示例内容...</pre>
+            </div>
+        </div>
+        <div class="result-panel generated-result" id="generated-result" style="display: none;">
+            <h2>生成结果</h2>
+            <div class="generated-script" id="generated-30s-script">
+                <h3>30秒脚本</h3>
+                <pre>等待生成...</pre>
+            </div>
+            <div class="generated-script" id="generated-60s-script">
+                <h3>60秒脚本</h3>
+                <pre>等待生成...</pre>
+            </div>
+            <div class="generated-script" id="generated-storyboard">
+                <h3>分镜</h3>
+                <pre>等待生成...</pre>
+            </div>
+        </div>
+    </div>
+    <footer>
+        <p>© 2024 代州黄酒短视频脚本批量生成器</p>
+    </footer>
+    <script>
+        const SEED = [
+            {
+                product: "代州黄酒",
+                卖点: "传统酿造工艺",
+                目标受众: "中年男性",
+                时长: "30秒",
+                语气: "亲切"
+            },
+            {
+                product: "代州黄酒",
+                卖点: "历史悠久",
+                目标受众: "老年消费者",
+                时长: "60秒",
+                语气: "庄重"
+            },
+            {
+                product: "代州黄酒",
+                卖点: "健康养生",
+                目标受众: "女性消费者",
+                时长: "45秒",
+                语气: "温馨"
+            },
+            {
+                product: "代州黄酒",
+                卖点: "高性价比",
+                目标受众: "年轻消费者",
+                时长: "30秒",
+                语气: "活泼"
+            },
+            {
+                product: "代州黄酒",
+                卖点: "文化传承",
+                目标受众: "文化爱好者",
+                时长: "60秒",
+                语气: "沉稳"
+            },
+            {
+                product: "代州黄酒",
+                卖点: "独特风味",
+                目标受众: "美食爱好者",
+                时长: "45秒",
+                语气: "热情"
+            },
+            {
+                product: "代州黄酒",
+                卖点: "天然原料",
+                目标受众: "健康生活追求者",
+                时长: "30秒",
+                语气: "自然"
+            },
+            {
+                product: "代州黄酒",
+                卖点: "限量发售",
+                目标受众: "收藏家",
+                时长: "60秒",
+                语气: "稀有"
+            }
+        ];
+        const generateButton = document.getElementById("generate-button");
+        const clearButton = document.getElementById("clear-button");
+        const copyButton = document.getElementById("copy-button");
+        const downloadButton = document.getElementById("download-button");
+        const randomButton = document.getElementById("random-button");
+        const scenarioAButton = document.getElementById("scenario-a-button");
+        const scenarioBButton = document.getElementById("scenario-b-button");
+        const scenarioCButton = document.getElementById("scenario-c-button");
+        const resultPanel = document.getElementById("result-panel");
+        const generatedResultPanel = document.getElementById("generated-result");
+        const 30sScriptExample = document.getElementById("30s-script-example");
+        const 60sScriptExample = document.getElementById("60s-script-example");
+        const storyboardExample = document.getElementById("storyboard-example");
+        const generated30sScript = document.getElementById("generated-30s-script");
+        const generated60sScript = document.getElementById("generated-60s-script");
+        const generatedStoryboard = document.getElementById("generated-storyboard");
+        const inputs = {
+            product: document.getElementById("product-input"),
+            卖点: document.getElementById("卖点-input"),
+            目标受众: document.getElementById("目标受众-input"),
+            时长: document.getElementById("时长-input"),
+            语气: document.getElementById("语气-input")
+        };
+        const DATA_SCHEMA = window.DATA_SCHEMA;
+        window.DataIntake = {
+            isReady: function() {
+                return false; // Placeholder for data intake component
+            },
+            getPayload: function() {
+                return []; // Placeholder for data intake component
+            }
+        };
+        function loadSeed() {
+            inputs.product.value = SEED[0].product;
+            inputs.卖点.value = SEED[0].卖点;
+            inputs.目标受众.value = SEED[0].目标受众;
+            inputs.时长.value = SEED[0].时长;
+            inputs.语气.value = SEED[0].语气;
+            30sScriptExample.textContent = "【示例】30秒脚本示例内容...";
+            60sScriptExample.textContent = "【示例】60秒脚本示例内容...";
+            storyboardExample.textContent = "【示例】分镜示例内容...";
+            generated30sScript.querySelector("pre").textContent = "等待生成...";
+            generated60sScript.querySelector("pre").textContent = "等待生成...";
+            generatedStoryboard.querySelector("pre").textContent = "等待生成...";
+            resultPanel.style.display = "none";
+            generatedResultPanel.style.display = "none";
+        }
+        function switchScenarioA() {
+            inputs.product.value = SEED[0].product;
+            inputs.卖点.value = SEED[0].卖点;
+            inputs.目标受众.value = SEED[0].目标受众;
+            inputs.时长.value = SEED[0].时长;
+            inputs.语气.value = SEED[0].语气;
+        }
+        function switchScenarioB() {
+            inputs.product.value = SEED[1].product;
+            inputs.卖点.value = SEED[1].卖点;
+            inputs.目标受众.value = SEED[1].目标受众;
+            inputs.时长.value = SEED[1].时长;
+            inputs.语气.value = SEED[1].语气;
+        }
+        function switchScenarioC() {
+            inputs.product.value = SEED[2].product;
+            inputs.卖点.value = SEED[2].卖点;
+            inputs.目标受众.value = SEED[2].目标受众;
+            inputs.时长.value = SEED[2].时长;
+            inputs.语气.value = SEED[2].语气;
+        }
+        function clearInputs() {
+            inputs.product.value = "";
+            inputs.卖点.value = "";
+            inputs.目标受众.value = "";
+            inputs.时长.value = "";
+            inputs.语气.value = "";
+            resultPanel.style.display = "none";
+            generatedResultPanel.style.display = "none";
+        }
+        function copyResult() {
+            const 30sScript = generated30sScript.querySelector("pre").textContent;
+            const 60sScript = generated60sScript.querySelector("pre").textContent;
+            const storyboard = generatedStoryboard.querySelector("pre").textContent;
+            const result = `30秒脚本:\n${30sScript}\n\n60秒脚本:\n${60sScript}\n\n分镜:\n${storyboard}`;
+            navigator.clipboard.writeText(result).then(() => {
+                alert("结果已复制到剪贴板");
+            }).catch(() => {
+                alert("复制失败");
+            });
+        }
+        function downloadJSON() {
+            const 30sScript = generated30sScript.querySelector("pre").textContent;
+            const 60sScript = generated60sScript.querySelector("pre").textContent;
+            const storyboard = generatedStoryboard.querySelector("pre").textContent;
+            const data = {
+                "30s脚本": 30sScript,
+                "60s脚本": 60sScript,
+                "分镜": storyboard
+            };
+            const json = JSON.stringify(data, null, 2);
+            const blob = new Blob([json], { type: "application/json" });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement("a");
+            a.href = url;
+            a.download = "代州黄酒短视频脚本.json";
+            a.click();
+            URL.revokeObjectURL(url);
+        }
+        function fetchGenerate() {
+            const data = {
+                inputs: {
+                    product: inputs.product.value,
+                    卖点: inputs.卖点.value,
+                    目标受众: inputs.目标受众.value,
+                    时长: inputs.时长.value,
+                    语气: inputs.语气.value
+                }
+            };
+            fetch("/api/generate", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify(data)
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.30s脚本) {
+                    generated30sScript.query://<gh_stars>0
+# OpenAI 把模型价格砍掉 80%，这件事真正改写的不是 AI 能力，是所有 AI 生意的账本
+
+最近 OpenAI 干了一件挺狠的事：把 GPT-5.6 系列里的 Luna 模型价格直接砍掉 80%。
+
+很多人第一反应是"又降价了"，然后划走了。
+
+但如果你正在做 AI 相关的项目，认真看完这条新闻的细节，你会发现一件真正重要的事：这不是一次普通的调价，而是把"便宜模型"这条线整个重画了。
+
+Luna 现在输入 0.2 美元/百万 token，输出 1.2 美元/百万 token。换算一下，1 美元大概能买 80 多万字的输出。
+
+作为对比，Anthropic 最便宜的 Claude Haiku 4.5 是 1 美元输入、5 美元输出。Luna 现在大约是它价格的五分之一。连之前以便宜著称的 Gemini 3.1 Flash-Lite，这次也被压过去了。
+
+这种级别的降幅，不是营销动作，是底层成本结构被改写。
+
+OpenAI 自己公开承认，他们用 GPT-5.6 Sol 这个变体，配合 Codex 工具，让 AI 自主重写了 Triton 和 Gluon 这两个 GPU 编程语言上的生产推理内核。翻译成大白话就是：他们让 AI 去优化 AI 自己的运行效率，结果端到端的推理成本直接降了 20%。
+
+这件事的可怕之处在于：模型公司开始用 AI 优化自己的推理引擎。这意味着降价不再是一次性的促销，而会变成一种持续发生的机制。
+
+## 一、模型能力在趋同，价格也在趋同，真正的护城河在消失
+
+过去两年，大模型之间的能力差距在快速缩小。
+
+去年大家还在争论 GPT-4 和 Claude 3 谁更强，今年同级别的模型已经能跑出差不多的基准分数。价格这件事也是一样，2024 年一个百万 token 几美元，2026 年已经到了零点几美元。
+
+当模型本身不再是最重要的壁垒，创业者真正的护城河会向三个方向移动。
+
+第一个是数据。你手里有别人没有的数据，比如某个垂直行业的历史成交记录、某个细分人群的用户行为日志。这些东西模型公司拿不到，你也买不到。
+
+第二个是工作流。你比任何人都懂一个具体场景的完整流程。比如你清楚一个酒企从原料采购到终端门店的每一个环节，清楚每一个环节的痛点。这种理解不是 AI 能给你的，是你在行业里泡出来的。
+
+第三个是分发。你能触达用户。AI 写出一段漂亮的文案不难，难的是让这段文案真的出现在对的人面前。
+
+这是普通人真正能竞争的地方。模型能力是 OpenAI、Anthropic、Google 烧了几百亿美元的事，模型价格是它们之间的事。普通技术人真正该竞争的，是上面这三件事。
+
+## 二、Luna 级价格，让一批之前"算不过来账"的项目重新站得住脚
+
+我给你算一笔账，你就明白这个变化有多大。
+
+在 GPT-4o 时代，假如你要做一个批量分析 1 万条用户评论的 Agent，每条评论 200 字，再加上 prompt 和输出，大概消耗 500 token。1 万条就是 500 万 token，按 4o 时代的价格，单次任务成本可能就要几十美元。一个月跑几次，几百美元就没了。
+
+这个生意算不过来账。
+
+现在 Luna 价格下来，同样任务成本可能降到几块钱。
+
+这个变化，让很多之前"看起来很美"的 AI 项目第一次具备了真实的商业可行性。比如批量分析电商评论、挖掘用户真实痛点；批量生成社媒内容，按平台风格自动改写；批量总结客服工单，提取高频问题；批量做竞品调研，抓数据后自动生成分析报告。
+
+## 三、技术人最容易犯的错，是按旧价格做新方案
+
+我见过太多 AI 项目死在还没上线的时候。
+
+原因往往不是技术不行，而是算账用了 2024 年的 token 价格。一旦真的跑起来，月成本比预算高一个数量级，项目就直接崩了。
+
+Luna 出来后，所有正在设计或已经在跑的 AI 项目都应该回答四个问题。
+
+第一，单次任务成本。一次完整的 AI 调用，到底花多少钱。
+
+第二，月运营成本。按预估的业务量，每个月 API 账单是多少。
+
+第三，单用户成本。服务一个用户，需要消耗多少 token。
+
+第四，回本周期。按客单价或转化率，多久能赚回获客和运营成本。
+
+如果按 Luna 价格都算不过来，那这个项目本身可能就不成立。如果按 Luna 价格突然算得过来了，那之前因为成本被否掉的方案，值得重新拉出来评估。
+
+## 四、中国创业者面对的现实：价格差距没了，机会反而更大
+
+这件事对国内 AI 创业者有一个很现实的冲击。
+
+国内模型这几年打价格战，DeepSeek、Kimi、智谱、Qwen 都在卷低价。但 Luna 这次降价 80% 之后，海外 API 的价格优势反而上来了。如果你的团队能稳定用上 OpenAI 的 API，按 Luna 价格做原型和生产边际成本，已经低到几乎可以忽略。
+
+这意味着两件事。
+
+第一，靠"便宜模型做转售"的项目越来越难做。如果你过去是"我用更便宜的 API 帮客户跑任务"这种生意模式，这个壁垒在快速消失。模型价格还会继续降，你没有定价权。
+
+第二，真正值得做的是"用便宜模型做厚价值"。把模型成本压到接近零，把价值放在对场景的理解、对数据的积累、对用户的触达上。
+
+## 五、把"AI 优化 AI 推理"这件事当作长期趋势
+
+OpenAI 用 Sol 优化自己的内核这件事，意义比降价本身更深远。
+
+它意味着模型公司已经把"用 AI 优化推理"做成了常态。Token 价格还会继续降，未来 12 到 18 个月再降 50% 到 80%，是完全可能发生的事。
+
+任何长期 AI 项目，都应该假设 token 价格继续大幅下降。这意味着三件事。
+
+第一，不要在方案里写死当前的 API 价格。所有成本预估都应该按"未来价格可能再降一半"来规划，否则你的项目可能因为过度优化成本结构而错失机会。
+
+第二，把模型当成可替换的基础设施。不要让业务逻辑深度绑定某一家模型公司，今天用 Openai，明天可能换 Anthropic，后天可能用开源模型。保持迁移能力，比锁定一家更重要。
+
+第三，把精力放在模型之外的事上。数据怎么积累、工作流怎么打磨、用户怎么触达。这些事模型降价帮不了你，只能你自己做。
+
+## 最后说一个判断
+
+这次 Luna 降价，最值得关注的不是模型能力又强了多少，而是价格又便宜了多少。
+
+能力提升是渐进的，价格跳水是断点式的。
+
+断点式变化会重写商业逻辑。当一个东西从"用不起"变成"随便用"，围绕它的产品形态、用户规模、竞争格局都会被重新定义。
+
+如果你是 AI 创业者，现在最该做的不是研究新模型，而是打开你的成本表，按 Luna 价格重算一遍。如果旧方案在新价格下突然变得可行，立刻启动 MVP。如果新方案仍然算不过来，那就要认真怀疑这个方向本身。
+
+不要用 2024 年的价格，规划 2026 年以后的生意。
