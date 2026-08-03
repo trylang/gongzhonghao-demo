@@ -1,0 +1,168 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI 红利预期分析工具</title>
+    <style>
+        :root {
+            --main-color: #4A90E2;
+            --bg-color: #f5f5f5;
+            --text-color: #333333;
+            --border-radius: 8px;
+            --shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        }
+        body {
+            font-family: "Helvetica Neue", Arial, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            margin: 0;
+            padding: 20px;
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background-color: #ffffff;
+            padding: 30px;
+            border-radius: var(--border-radius);
+            box-shadow: var(--shadow);
+        }
+        h1 {
+            text-align: center;
+            color: var(--main-color);
+        }
+        .step {
+            margin-bottom: 20px;
+        }
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: bold;
+        }
+        input[type="number"], select, textarea {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #cccccc;
+            border-radius: var(--border-radius);
+            box-sizing: border-box;
+        }
+        button {
+            background-color: var(--main-color);
+            color: #ffffff;
+            padding: 15px;
+            border: none;
+            border-radius: var(--border-radius);
+            width: 100%;
+            font-size: 16px;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #357abf;
+        }
+        .loading, .error {
+            text-align: center;
+            padding: 20px;
+            border-radius: var(--border-radius);
+            margin-top: 20px;
+        }
+        .loading {
+            background-color: #e0f7fa;
+            color: #00796b;
+        }
+        .error {
+            background-color: #ffebee;
+            color: #c62828;
+        }
+        .result {
+            margin-top: 30px;
+        }
+        .card {
+            background-color: #e3f2fd;
+            padding: 20px;
+            border-radius: var(--border-radius);
+            margin-bottom: 15px;
+        }
+        .card h3 {
+            margin-top: 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>AI 红利预期分析工具</h1>
+        <div class="step">
+            <label for="market-size">预估市场规模（万元）:</label>
+            <input type="number" id="market-size" placeholder="例如：5000">
+        </div>
+        <div class="step">
+            <label for="efficiency-improvement">预估效率提升百分比（%）:</label>
+            <input type="number" id="efficiency-improvement" placeholder="例如：20">
+        </div>
+        <div class="step">
+            <label for="customer-type">客户类型:</label>
+            <select id="customer-type">
+                <option value="宏大叙事型">宏大叙事型</option>
+                <option value="成本导向型">成本导向型</option>
+                <option value="其他">其他</option>
+            </select>
+        </div>
+        <div class="step">
+            <label for="additional-notes">附加说明（可选）:</label>
+            <textarea id="additional-notes" rows="4" placeholder="例如：项目背景、特殊需求等"></textarea>
+        </div>
+        <button id="generate-button">生成分析报告</button>
+
+        <div id="output" class="result"></div>
+    </div>
+
+    <script>
+        document.getElementById('generate-button').addEventListener('click', () => {
+            const marketSize = document.getElementById('market-size').value;
+            const efficiencyImprovement = document.getElementById('efficiency-improvement').value;
+            const customerType = document.getElementById('customer-type').value;
+            const additionalNotes = document.getElementById('additional-notes').value;
+
+            const inputs = {
+                market_size: marketSize,
+                efficiency_improvement: efficiencyImprovement,
+                customer_type: customerType,
+                additional_notes: additionalNotes
+            };
+
+            document.getElementById('output').innerHTML = '<div class="loading">正在生成分析报告...</div>';
+            fetch('/api/generate', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ inputs: inputs })
+            })
+            .then(response => response.json())
+            .then(data => {
+                const resultDiv = document.getElementById('output');
+                resultDiv.innerHTML = '';
+
+                if (data.result) {
+                    const result = JSON.parse(data.result);
+                    const card = document.createElement('div');
+                    card.className = 'card';
+                    card.innerHTML = `
+                        <h3>分析结果:</h3>
+                        <p><strong>预估市场规模（万元）:</strong> ${result.market_size}</p>
+                        <p><strong>预估效率提升百分比（%）:</strong> ${result.efficiency_improvement}</p>
+                        <p><strong>客户类型:</strong> ${result.customer_type}</p>
+                        <p><strong>附加说明:</strong> ${result.additional_notes}</p>
+                        <p><strong>建议:</strong> ${result.suggestion}</p>
+                    `;
+                    resultDiv.appendChild(card);
+                } else {
+                    resultDiv.innerHTML = '<div class="error">生成失败，请重试。</div>';
+                }
+            })
+            .catch(() => {
+                document.getElementById('output').innerHTML = '<div class="error">服务器错误，请稍后再试。</div>';
+            });
+        });
+    </script>
+</body>
+</html>
