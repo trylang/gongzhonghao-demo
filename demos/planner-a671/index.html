@@ -1,0 +1,405 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <title>AI 电商用户画像与复购分析工具</title>
+    <style>
+        :root {
+            --main-color: #4a90e2;
+            --bg-color: #f5f5f5;
+            --text-color: #333;
+            --border-radius: 8px;
+            --shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+        body {
+            margin: 0;
+            font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+        }
+        header {
+            background-color: var(--main-color);
+            color: white;
+            padding: 20px;
+            text-align: center;
+        }
+        main {
+            flex: 1;
+            padding: 20px;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        .section {
+            margin-bottom: 40px;
+        }
+        .button-group {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+        .button-group button {
+            flex: 1;
+            min-width: 120px;
+            padding: 10px;
+            border: none;
+            background-color: var(--main-color);
+            color: white;
+            border-radius: var(--border-radius);
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+        .button-group button:hover {
+            background-color: #357abf;
+        }
+        .input-group {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+        .input-group label {
+            font-weight: bold;
+        }
+        .input-group input, .input-group select, .input-group textarea {
+            padding: 8px;
+            border: 1px solid #ccc;
+            border-radius: var(--border-radius);
+        }
+        .result-panel {
+            border: 1px solid #ddd;
+            border-radius: var(--border-radius);
+            padding: 20px;
+            background-color: white;
+            box-shadow: var(--shadow);
+        }
+        .result-panel h2 {
+            margin-top: 0;
+        }
+        .chart-container {
+            width: 100%;
+            height: 400px;
+            margin-top: 20px;
+        }
+        footer {
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            text-align: center;
+            padding: 10px;
+            border-top: 1px solid #ddd;
+        }
+        @media (max-width: 768px) {
+            .button-group {
+                flex-direction: column;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div id="data-intake"></div>
+    <header>
+        <h1>AI 电商用户画像与复购分析工具</h1>
+    </header>
+    <main>
+        <div class="section">
+            <div class="button-group">
+                <button id="generate-button">生成分析报告</button>
+                <button id="clear-button">清空 / 重填</button>
+                <button id="copy-button">复制结果</button>
+                <button id="export-button">导出 JSON</button>
+                <button id="random-button">随机示例</button>
+                <button id="preset-a-button">场景 A</button>
+                <button id="preset-b-button">场景 B</button>
+                <button id="preset-c-button">场景 C</button>
+            </div>
+            <div class="input-group">
+                <label for="start-date">开始日期</label>
+                <input type="date" id="start-date" placeholder="选择开始日期">
+            </div>
+            <div class="input-group">
+                <label for="end-date">结束日期</label>
+                <input type="date" id="end-date" placeholder="选择结束日期">
+            </div>
+            <div class="input-group">
+                <label for="platform-select">平台选择</label>
+                <select id="platform-select">
+                    <option value="wechat">微信订单</option>
+                    <option value="douyin">抖音小店</option>
+                    <option value="kuaidi100">快递 100</option>
+                </select>
+            </div>
+            <div class="input-group">
+                <label for="data-upload">上传数据</label>
+                <input type="file" id="data-upload" accept=".csv, .xlsx">
+            </div>
+        </div>
+        <div class="section">
+            <div class="result-panel" id="result-panel">
+                <h2>示例结果面板</h2>
+                <p>（点击「生成分析报告」查看真实结果）</p>
+                <div id="example-result">
+                    <h3>用户画像概览</h3>
+                    <p>（示例数据：用户年龄集中在 25-34 岁，60% 为女性，主要购买品类为时尚服饰与美妆产品）</p>
+                    <h3>复购率分析</h3>
+                    <p>（示例数据：平均复购率为 35%，其中美妆产品复购率最高，达到 45%）</p>
+                    <h3>客单价趋势</h3>
+                    <p>（示例数据：客单价在过去 3 个月中稳步上升，从 150 元增长到 180 元）</h3>
+                    <div class="chart-container">
+                        <canvas id="example-chart"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+    <footer>
+        <p>© 2023 AI 电商分析工具. 版权所有.</p>
+    </footer>
+    <script>
+        // 声明数据结构
+        window.DATA_SCHEMA = {
+            name: "电商订单数据",
+            columns: [
+                { key: "order_no", label: "订单号", type: "text", example: "SO123456", required: true },
+                { key: "user_id", label: "用户 ID", type: "text", example: "U123456", required: true },
+                { key: "purchase_date", label: "购买日期", type: "date", example: "2023-10-01", required: true },
+                { key: "platform", label: "平台", type: "text", example: "微信", required: true },
+                { key: "product_category", label: "产品类别", type: "text", example: "时尚服饰", required: true },
+                { key: "quantity", label: "数量", type: "number", example: "2", required: true },
+                { key: "price", label: "单价", type: "number", example: "150", required: true },
+                { key: "total_price", label: "总价", type: "number", example: "300", required: true },
+                { key: "user_age", label: "用户年龄", type: "number", example: "28", required: true },
+                { key: "user_gender", label: "用户性别", type: "text", example: "女性", required: true }
+            ],
+            sample: [
+                { order_no: "SO123456", user_id: "U123456", purchase_date: "2023-10-01", platform: "微信", product_category: "时尚服饰", quantity: 2, price: 150, total_price: 300, user_age: 28, user_gender: "女性" },
+                { order_no: "SO123457", user_id: "U123457", purchase_date: "2023-10-02", platform: "抖音小店", product_category: "美妆产品", quantity: 1, price: 200, total_price: 200, user_age: 30, user_gender: "女性" },
+                { order_no: "SO123458", user_id: "U123458", purchase_date: "2023-10-03", platform: "快递 100", product_category: "电子产品", quantity: 1, price: 500, total_price: 500, user_age: 35, user_gender: "男性" },
+                // ...更多示例数据行
+            ],
+            maxRows: 300
+        };
+
+        // 示例图表数据
+        const exampleChartData = {
+            labels: ['时尚服饰', '美妆产品', '电子产品', '家居用品', '食品饮料'],
+            datasets: [{
+                label: '销售额 (元)',
+                data: [5000, 3000, 2000, 1500, 1000],
+                backgroundColor: ['#4a90e2', '#50e3c2', '#b8e986', '#f8e71c', '#f5a623'],
+                borderColor: 'rgba(0,0,0,0)',
+                borderWidth: 1
+            }]
+        };
+
+        // 初始化示例图表
+        const ctx = document.getElementById('example-chart').getContext('2d');
+        const exampleChart = new Chart(ctx, {
+            type: 'bar',
+            data: exampleChartData,
+            options: {
+                responsive: true,
+                plugins: {
+                    legend: {
+                        display: false
+                    }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true
+                    }
+                }
+            }
+        });
+
+        // 预设按钮事件
+        document.getElementById('preset-a-button').addEventListener('click', () => {
+            // 切换到场景 A
+            // 填充示例数据到数据入口组件
+            // 这里假设数据入口组件提供 API 来设置数据
+            if (window.DataIntake && window.DataIntake.setData) {
+                window.DataIntake.setData(window.DATA_SCHEMA.sample.slice(0, 10));
+            }
+        });
+
+        document.getElementById('preset-b-button').addEventListener('click', () => {
+            // 切换到场景 B
+            if (window.DataIntake && window.DataIntake.setData) {
+                window.DataIntake.setData(window.DATA_SCHEMA.sample.slice(10, 20));
+            }
+        });
+
+        document.getElementById('preset-c-button').addEventListener('click', () => {
+            // 切换到场景 C
+            if (window.DataIntake && window.DataIntake.setData) {
+                window.DataIntake.setData(window.DATA_SCHEMA.sample.slice(20, 30));
+            }
+        });
+
+        // 生成按钮事件
+        document.getElementById('generate-button').addEventListener('click', () => {
+            let inputs = {};
+            // 获取用户输入的数据
+            const startDate = document.getElementById('start-date').value;
+            const endDate = document.getElementById('end-date').value;
+            const platform = document.getElementById('platform-select').value;
+            inputs = { startDate, endDate, platform };
+
+            // 如果数据入口组件准备好，获取数据
+            if (window.DataIntake && window.DataIntake.isReady()) {
+                inputs.data = window.DataIntake.getPayload();
+            }
+
+            // 调用 API 生成结果
+            fetch('/api/generate', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ inputs: inputs })
+            })
+            .then(response => response.json())
+            .then(data => {
+                // 渲染结果
+                renderResult(data);
+            })
+            .catch(error => {
+                console.error('Error:', error);
+            });
+        });
+
+        // 清空按钮事件
+        document.getElementById('clear-button').addEventListener('click', () => {
+            // 清空用户输入的数据
+            document.getElementById('start-date').value = '';
+            document.getElementById('end-date').value = '';
+            document.getElementById('platform-select').value = 'wechat';
+            if (window.DataIntake && window.DataIntake.clearData) {
+                window.DataIntake.clearData();
+            }
+            // 清空结果面板
+            document.getElementById('result-panel').innerHTML = `
+                <h2>示例结果面板</h2>
+                <p>（点击「生成分析报告」查看真实结果）</p>
+                <div id="example-result">
+                    <h3>用户画像概览</h3>
+                    <p>（示例数据：用户年龄集中在 25-34 岁，60% 为女性，主要购买品类为时尚服饰与美妆产品）</p>
+                    <h3>复购率分析</h3>
+                    <p>（示例数据：平均复购率为 35%，其中美妆产品复购率最高，达到 45%）</p>
+                    <h3>客单价趋势</h3>
+                    <p>（示例数据：客单价在过去 3 个月中稳步上升，从 150 元增长到 180 元）</p>
+                    <div class="chart-container">
+                        <canvas id="example-chart"></canvas>
+                    </div>
+                </div>
+            `;
+            // 重新初始化示例图表
+            const ctx = document.getElementById('example-chart').getContext('2d');
+            const exampleChart = new Chart(ctx, {
+                type: 'bar',
+                data: exampleChartData,
+                options: {
+                    responsive: true,
+                    plugins: {
+                        legend: {
+                            display: false
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true
+                        }
+                    }
+                }
+            });
+        });
+
+        // 复制按钮事件
+        document.getElementById('copy-button').addEventListener('click', () => {
+            // 复制结果到剪贴板
+            if (navigator.clipboard && navigator.clipboard.writeText) {
+                const result = document.getElementById('result-panel').innerText;
+                navigator.clipboard.writeText(result).then(() => {
+                    alert('结果已复制到剪贴板');
+                }).catch(error => {
+                    console.error('Error:', error);
+                });
+            } else {
+                alert('剪贴板功能不可用');
+            }
+        });
+
+        // 导出按钮事件
+        document.getElementById('export-button').addEventListener('click', () => {
+            // 导出结果为 JSON 文件
+            const result = document.getElementById('result-panel').innerText;
+            const blob = new Blob([result], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'result.json';
+            a.click();
+            URL.revokeObjectURL(url);
+        });
+
+        // 随机按钮事件
+        document.getElementById('random-button').addEventListener('click', () => {
+            // 随机选择一组示例数据
+            const randomIndex = Math.floor(Math.random() * 3);
+            const data = window.DATA_SCHEMA.sample.slice(randomIndex * 10, (randomIndex + 1) * 10);
+            if (window.DataIntake && window.DataIntake.setData) {
+                window.DataIntake.setData(data);
+            }
+        });
+
+        // 渲染结果函数
+        function renderResult(data) {
+            // 假设 data 是 JSON 对象
+            // 这里需要根据实际返回的数据结构进行渲染
+            // 这里只是示例渲染
+            let html = `<h2>分析报告</h2>`;
+            html += `<p>用户画像概览：</p>`;
+            html += `<p>用户年龄集中在 ${data.userAgeRange}，${data.userGenderPercentage}% 为 ${data.userGender}，主要购买品类为 ${data.mainProductCategory}</p>`;
+            html += `<p>复购率分析：</p>`;
+            html += `<p>平均复购率为 ${data.averageRepurchaseRate}%，其中 ${data.highestRepurchaseProduct} 的复购率最高，达到 ${data.highestRepurchaseRate}%</p>`;
+            html += `<p>客单价趋势：</p>`;
+            html += `<p>客单价在过去 ${data.trendPeriod} 中稳步上升，从 ${data.startPrice} 元增长到 ${data.endPrice} 元</p>`;
+            html += `<div class="chart-container"><canvas id="result-chart"></canvas></div>`;
+            document.getElementById('result-panel').innerHTML = html;
+
+            // 渲染图表
+            const chartData = {
+                labels: data.chartLabels,
+                datasets: [{
+                    label: '销售额 (元)',
+                    data: data.chartData,
+                    backgroundColor: ['#4a90e2', '#50e3c2', '#b8e986', '#f8e71c', '#f5a623'],
+                    borderColor: 'rgba(0,0,0,0)',
+                    borderWidth: 1
+                }]
+            };
+            const ctx = document.getElementById('result-chart').getContext('2d');
+            const resultChart = new Chart(ctx, {
+                type: 'bar',
+                data: chartData,
+                options: {
+                    responsive: true,
+                    plugins: {
+                        legend: {
+                            display: false
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true
+                        }
+                    }
+                }
+            });
+        }
+    </script>
+    <script src="/data-intake.js"></script>
+</body>
+</html>

@@ -1,0 +1,363 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <title>电商复购与用户画像轻量看板生成器</title>
+    <style>
+        :root {
+            --main-color: #4A90E2;
+            --background-color: #f5f5f5;
+            --text-color: #333333;
+            --border-radius: 8px;
+            --box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+            --button-color: #4A90E2;
+            --button-hover-color: #357ABD;
+            --font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+        }
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: var(--font-family);
+            background-color: var(--background-color);
+            color: var(--text-color);
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+        }
+        header {
+            background-color: var(--main-color);
+            color: white;
+            padding: 20px;
+            text-align: center;
+            box-shadow: var(--box-shadow);
+        }
+        main {
+            flex: 1;
+            padding: 20px;
+            max-width: 1200px;
+            margin: 0 auto;
+            display: flex;
+            flex-direction: column;
+        }
+        .controls {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+        .controls button {
+            flex: 1 1 150px;
+            padding: 10px;
+            border: none;
+            background-color: var(--button-color);
+            color: white;
+            border-radius: var(--border-radius);
+            cursor: pointer;
+            font-size: 16px;
+            transition: background-color 0.3s;
+        }
+        .controls button:hover {
+            background-color: var(--button-hover-color);
+        }
+        .data-intake {
+            margin-bottom: 20px;
+        }
+        .result-panel {
+            background-color: white;
+            padding: 20px;
+            border-radius: var(--border-radius);
+            box-shadow: var(--box-shadow);
+        }
+        .result-panel h2 {
+            margin-top: 0;
+        }
+        .chart-container, .table-container {
+            margin-top: 20px;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 20px;
+        }
+        table, th, td {
+            border: 1px solid #ddd;
+        }
+        th, td {
+            padding: 10px;
+            text-align: left;
+        }
+        th {
+            background-color: #f0f0f0;
+        }
+        .hidden {
+            display: none;
+        }
+        footer {
+            background-color: #e0e0e0;
+            text-align: center;
+            padding: 10px;
+            font-size: 14px;
+        }
+        @media (max-width: 768px) {
+            .controls {
+                flex-direction: column;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div id="data-intake"></div>
+    <header>
+        <h1>电商复购与用户画像轻量看板生成器</h1>
+        <p>通过整合微信订单、抖音小店和快递100数据，生成每日发货、复购率和客单价看板</p>
+    </header>
+    <main>
+        <div class="controls">
+            <button id="generate-button">生成看板</button>
+            <button id="clear-button">清空/重填</button>
+            <button id="copy-button" class="hidden">复制结果</button>
+            <button id="export-button" class="hidden">导出 JSON</button>
+            <button id="random-button">随机示例</button>
+            <button id="scenario-a-button">场景A</button>
+            <button id="scenario-b-button">场景B</button>
+            <button id="scenario-c-button">场景C</button>
+        </div>
+        <div id="result-panel" class="result-panel hidden">
+            <h2>示例结果</h2>
+            <div id="example-result">
+                <p>请点击“生成看板”以查看您的数据结果。</p>
+            </div>
+        </div>
+        <div id="data-entry" class="data-intake">
+            <h2>数据输入</h2>
+            <p>请选择数据来源：</p>
+            <div id="data-intake-component"></div>
+        </div>
+        <div id="chart-container" class="chart-container hidden">
+            <h3>复购率与客单价趋势图</h3>
+            <canvas id="revenue-chart"></canvas>
+        </div>
+        <div id="table-container" class="table-container hidden">
+            <h3>每日发货数据表</h3>
+            <table id="data-table">
+                <thead>
+                    <tr>
+                        <th>日期</th>
+                        <th>订单数</th>
+                        <th>复购率</th>
+                        <th>客单价</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <!-- 示例数据 -->
+                </tbody>
+            </table>
+        </div>
+    </main>
+    <footer>
+        &copy; 2023 电商数据洞察工具
+    </footer>
+    <script>
+        // 系统指令
+        const SYSTEM_PROMPT = `你是一个为电商老板设计的AI助手。请根据用户上传或选择的数据，生成一个包含每日发货量、复购率和客单价等关键指标的轻量级看板。确保输出结果清晰、易读，并提供关键洞察和趋势分析。`;
+
+        // 示例数据
+        const SEED_DATA = {
+            scenarioA: [
+                { date: "2023-10-01", order_count: 150, repurchase_rate: "15%", customer_price: "¥150" },
+                { date: "2023-10-02", order_count: 160, repurchase_rate: "16%", customer_price: "¥155" },
+                { date: "2023-10-03", order_count: 155, repurchase_rate: "14%", customer_price: "¥152" },
+                { date: "2023-10-04", order_count: 158, repurchase_rate: "17%", customer_price: "¥158" },
+                { date: "2023-10-05", order_count: 162, repurchase_rate: "18%", customer_price: "¥160" },
+                { date: "2023-10-06", order_count: 168, repurchase_rate: "19%", customer_price: "¥165" },
+                { date: "2023-10-07", order_count: 170, repurchase_rate: "20%", customer_price: "¥168" },
+                { date: "2023-10-08", order_count: 175, repurchase_rate: "21%", customer_price: "¥170" },
+                { date: "2023-10-09", order_count: 178, repurchase_rate: "22%", customer_price: "¥172" },
+                { date: "2023-10-10", order_count: 180, repurchase_rate: "23%", customer_price: "¥175" }
+            ],
+            scenarioB: [
+                { date: "2023-10-01", order_count: 200, repurchase_rate: "25%", customer_price: "¥200" },
+                { date: "2023-10-02", order_count: 210, repurchase_rate: "26%", customer_price: "¥210" },
+                { date: "2023-10-03", order_count: 205, repurchase_rate: "24%", customer_price: "¥205" },
+                { date: "2023-10-04", order_count: 208, repurchase_rate: "27%", customer_price: "¥208" },
+                { date: "2023-10-05", order_count: 212, repurchase_rate: "28%", customer_price: "¥212" },
+                { date: "2023-10-06", order_count: 218, repurchase_rate: "29%", customer_price: "¥218" },
+                { date: "2023-10-07", order_count: 220, repurchase_rate: "30%", customer_price: "¥220" },
+                { date: "2023-10-08", order_count: 225, repurchase_rate: "31%", customer_price: "¥225" },
+                { date: "2023-10-09", order_count: 228, repurchase_rate: "32%", customer_price: "¥228" },
+                { date: "2023-10-10", order_count: 230, repurchase_rate: "33%", customer_price: "¥230" }
+            ],
+            scenarioC: [
+                { date: "2023-10-01", order_count: 120, repurchase_rate: "10%", customer_price: "¥120" },
+                { date: "2023-10-02", order_count: 125, repurchase_rate: "11%", customer_price: "¥125" },
+                { date: "2023-10-03", order_count: 122, repurchase_rate: "9%", customer_price: "¥122" },
+                { date: "2023-10-04", order_count: 128, repurchase_rate: "12%", customer_price: "¥128" },
+                { date: "2023-10-05", order_count: 130, repurchase_rate: "13%", customer_price: "¥130" },
+                { date: "2023-10-06", order_count: 135, repurchase_rate: "14%", customer_price: "¥135" },
+                { date: "2023-10-07", order_count: 138, repurchase_rate: "15%", customer_price: "¥138" },
+                { date: "2023-10-08", order_count: 140, repurchase_rate: "16%", customer_price: "¥140" },
+                { date: "2023-10-09", order_count: 142, repurchase_rate: "17%", customer_price: "¥142" },
+                { date: "2023-10-10", order_count: 145, repurchase_rate: "18%", customer_price: "¥145" }
+            ]
+        };
+
+        // 数据入口组件
+        window.DATA_SCHEMA = {
+            name: "电商订单数据",
+            columns: [
+                { key: "date", label: "日期", type: "date", example: "2023-10-01", required: true },
+                { key: "order_count", label: "订单数", type: "number", example: "150", required: true },
+                { key: "repurchase_rate", label: "复购率", type: "percentage", example: "15%", required: true },
+                { key: "customer_price", label: "客单价", type: "currency", example: "¥150", required: true }
+            ],
+            sample: SEED_DATA.scenarioA,
+            maxRows: 300
+        };
+
+        // 页面逻辑
+        document.addEventListener("DOMContentLoaded", () => {
+            const generateButton = document.getElementById("generate-button");
+            const clearButton = document.getElementById("clear-button");
+            const copyButton = document.getElementById("copy-button");
+            const exportButton = document.getElementById("export-button");
+            const randomButton = document.getElementById("random-button");
+            const scenarioAButton = document.getElementById("scenario-a-button");
+            const scenarioBButton = document.getElementById("scenario-b-button");
+            const scenarioCButton = document.getElementById("scenario-c-button");
+            const resultPanel = document.getElementById("result-panel");
+            const exampleResult = document.getElementById("example-result");
+            const dataTable = document.getElementById("data-table");
+            const chartContainer = document.getElementById("chart-container");
+            const revenueChart = document.getElementById("revenue-chart");
+
+            let currentData = null;
+
+            // 场景切换
+            scenarioAButton.addEventListener("click", () => {
+                currentData = SEED_DATA.scenarioA;
+                loadData(currentData);
+            });
+            scenarioBButton.addEventListener("click", () => {
+                currentData = SEED_DATA.scenarioB;
+                loadData(currentData);
+            });
+            scenarioCButton.addEventListener("click", () => {
+                currentData = SEED_DATA.scenarioC;
+                loadData(currentData);
+            });
+
+            // 清空/重填
+            clearButton.addEventListener("click", () => {
+                currentData = null;
+                loadData(null);
+            });
+
+            // 生成看板
+            generateButton.addEventListener("click", () => {
+                if (window.DataIntake && window.DataIntake.isReady()) {
+                    currentData = window.DataIntake.getPayload();
+                } else {
+                    currentData = SEED_DATA.scenarioA;
+                }
+                fetch("/api/generate", {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json"
+                    },
+                    body: JSON.stringify({ inputs: { data: currentData } })
+                })
+                .then(response => response.json())
+                .then(data => {
+                    renderResult(data);
+                })
+                .catch(error => {
+                    alert("生成失败，请稍后重试");
+                });
+            });
+
+            // 复制结果
+            copyButton.addEventListener("click", () => {
+                navigator.clipboard.writeText(JSON.stringify(currentData, null, 2))
+                    .then(() => {
+                        alert("结果已复制到剪贴板");
+                    })
+                    .catch(() => {
+                        alert("复制失败");
+                    });
+            });
+
+            // 导出 JSON
+            exportButton.addEventListener("click", () => {
+                const blob = new Blob([JSON.stringify(currentData, null, 2)], { type: "application/json" });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement("a");
+                a.href = url;
+                a.download = "data.json";
+                a.click();
+                URL.revokeObjectURL(url);
+            });
+
+            // 随机示例
+            randomButton.addEventListener("click", () => {
+                const scenarios = ["scenarioA", "scenarioB", "scenarioC"];
+                const randomScenario = scenarios[Math.floor(Math.random() * scenarios.length)];
+                currentData = SEED_DATA[randomScenario];
+                loadData(currentData);
+            });
+
+            // 加载数据
+            function loadData(data) {
+                if (data) {
+                    dataTable.innerHTML = `
+                        <thead>
+                            <tr>
+                                <th>日期</th>
+                                <th>订单数</th>
+                                <th>复购率</th>
+                                <th>客单价</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            ${data.map(item => `
+                                <tr>
+                                    <td>${item.date}</td>
+                                    <td>${item.order_count}</td>
+                                    <td>${item.repurchase_rate}</td>
+                                    <td>${item.customer_price}</td>
+                                </tr>
+                            `).join("")}
+                        </tbody>
+                    `;
+                    chartContainer.classList.remove("hidden");
+                    generateButton.classList.remove("hidden");
+                    copyButton.classList.remove("hidden");
+                    exportButton.classList.remove("hidden");
+                    exampleResult.innerHTML = "<p>请点击“生成看板”以查看您的数据结果。</p>";
+                    resultPanel.classList.add("hidden");
+                } else {
+                    dataTable.innerHTML = "<p>暂无数据</p>";
+                    chartContainer.classList.add("hidden");
+                    generateButton.classList.remove("hidden");
+                    copyButton.classList.add("hidden");
+                    exportButton.classList.add("hidden");
+                    exampleResult.innerHTML = "<p>请上传或选择您的数据以生成看板。</p>";
+                    resultPanel.classList.add("hidden");
+                }
+            }
+
+            // 渲染结果
+            function renderResult(data) {
+                exampleResult.innerHTML = `
+                    <p>${data.insight}</p>
+                    <p>${data.repurchase_insight}</p>
+                    <p>${data.customer_price_insight}</p>
+                `;
+                resultPanel.classList.remove("hidden");
+            }
+
+            // 初始化
+            loadData(null);
+        });
+    </script>
+</body>
+</html>

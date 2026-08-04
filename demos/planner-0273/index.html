@@ -1,0 +1,373 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI效率提升分析工具</title>
+    <style>
+        :root {
+            --main-color: #2c3e50;
+            --background-color: #f5f5f5;
+            --text-color: #333;
+            --button-color: #27ae60;
+            --button-hover: #2ecc71;
+            --card-bg: #fff;
+            --border-radius: 8px;
+            --box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+        body {
+            margin: 0;
+            font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+            background-color: var(--background-color);
+            color: var(--text-color);
+            padding: 20px;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background-color: #fff;
+            padding: 30px;
+            border-radius: var(--border-radius);
+            box-shadow: var(--box-shadow);
+        }
+        h1 {
+            text-align: center;
+            color: var(--main-color);
+        }
+        .data-intake {
+            margin-bottom: 20px;
+        }
+        .controls {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+        .button {
+            background-color: var(--button-color);
+            color: #fff;
+            border: none;
+            padding: 10px 15px;
+            border-radius: var(--border-radius);
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+        .button:hover {
+            background-color: var(--button-hover);
+        }
+        .button:disabled {
+            background-color: #95a5a6;
+            cursor: not-allowed;
+        }
+        .input-group {
+            margin-bottom: 15px;
+        }
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+        input, select, textarea {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid #ccc;
+            border-radius: var(--border-radius);
+        }
+        .example-result {
+            margin-bottom: 30px;
+        }
+        .example-result h2 {
+            text-align: center;
+            color: var(--main-color);
+        }
+        .example-result .card {
+            background-color: var(--card-bg);
+            padding: 20px;
+            border-radius: var(--border-radius);
+            box-shadow: var(--box-shadow);
+        }
+        .example-result .card table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 15px;
+        }
+        .example-result .card table th, .example-result .card table td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: left;
+        }
+        .example-result .card table th {
+            background-color: #f0f0f0;
+        }
+        .generated-result {
+            margin-bottom: 30px;
+        }
+        .generated-result h2 {
+            text-align: center;
+            color: var(--main-color);
+        }
+        .generated-result .card {
+            background-color: var(--card-bg);
+            padding: 20px;
+            border-radius: var(--border-radius);
+            box-shadow: var(--box-shadow);
+        }
+        .generated-result .card ul {
+            list-style-type: none;
+            padding: 0;
+        }
+        .generated-result .card ul li {
+            margin-bottom: 10px;
+        }
+        .generated-result .chart {
+            margin-top: 20px;
+            text-align: center;
+        }
+        footer {
+            text-align: center;
+            margin-top: 40px;
+            font-size: 0.9em;
+            color: #777;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>AI效率提升分析工具</h1>
+        <div id="data-intake" class="data-intake"></div>
+        <div class="controls">
+            <button class="button" id="generate-button">生成分析</button>
+            <button class="button" id="clear-button">清空/重填</button>
+            <button class="button" id="copy-button">复制结果</button>
+            <button class="button" id="export-button">导出 JSON</button>
+            <button class="button" id="random-button">随机示例</button>
+            <button class="button" id="scenario-a-button">场景A</button>
+            <button class="button" id="scenario-b-button">场景B</button>
+            <button class="button" id="scenario-c-button">场景C</button>
+        </div>
+        <div class="example-result" id="example-result">
+            <h2>示例结果</h2>
+            <div class="card">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>订单号</th>
+                            <th>客户名称</th>
+                            <th>购买日期</th>
+                            <th>商品</th>
+                            <th>数量</th>
+                            <th>单价</th>
+                            <th>总价</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>SO123456</td>
+                            <td>张三</td>
+                            <td>2023-09-15</td>
+                            <td>黄酒</td>
+                            <td>10</td>
+                            <td>50</td>
+                            <td>500</td>
+                        </tr>
+                        <tr>
+                            <td>SO123457</td>
+                            <td>李四</td>
+                            <td>2023-09-16</td>
+                            <td>白酒</td>
+                            <td>5</td>
+                            <td>100</td>
+                            <td>500</td>
+                        </tr>
+                        <!-- 更多示例数据 -->
+                    </tbody>
+                </table>
+                <p><strong>分析结论（示例）:</strong></p>
+                <ul>
+                    <li>总订单数: 100</li>
+                    <li>总销售额: 50,000元</li>
+                    <li>平均客单价: 500元</li>
+                    <li>复购率: 30%</li>
+                </ul>
+                <p>（注：以上数据为示例数据，点击“生成分析”后将覆盖为真实分析结果）</p>
+            </div>
+        </div>
+        <div class="generated-result" id="generated-result" style="display: none;">
+            <h2>分析结果</h2>
+            <div class="card">
+                <div id="result-content">
+                    <!-- AI生成的结果将插入到这里 -->
+                </div>
+                <div class="chart">
+                    <canvas id="result-chart" width="400" height="200"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+    <footer>
+        &copy; 2023 AI效率提升分析工具
+    </footer>
+    <script>
+        // 数据入口组件的示例数据
+        const SEED_DATA = [
+            {
+                order_no: 'SO123456',
+                customer_name: '张三',
+                purchase_date: '2023-09-15',
+                product: '黄酒',
+                quantity: 10,
+                unit_price: 50,
+                total_price: 500
+            },
+            {
+                order_no: 'SO123457',
+                customer_name: '李四',
+                purchase_date: '2023-09-16',
+                product: '白酒',
+                quantity: 5,
+                unit_price: 100,
+                total_price: 500
+            },
+            // 更多示例数据
+        ];
+
+        // 数据架构声明
+        window.DATA_SCHEMA = {
+            name: "订单明细",
+            columns: [
+                { key: "order_no", label: "订单号", type: "text", example: "SO...", required: true },
+                { key: "customer_name", label: "客户名称", type: "text", example: "张三", required: true },
+                { key: "purchase_date", label: "购买日期", type: "date", example: "2023-09-15", required: true },
+                { key: "product", label: "商品", type: "text", example: "黄酒", required: true },
+                { key: "quantity", label: "数量", type: "number", example: "10", required: true },
+                { key: "unit_price", label: "单价", type: "number", example: "50", required: true },
+                { key: "total_price", label: "总价", type: "number", example: "500", required: true }
+            ],
+            sample: SEED_DATA,
+            maxRows: 300
+        };
+
+        // 场景预设数据
+        const SCENARIO_A = [
+            // 示例数据
+        ];
+        const SCENARIO_B = [
+            // 示例数据
+        ];
+        const SCENARIO_C = [
+            // 示例数据
+        ];
+
+        // 生成按钮事件
+        document.getElementById('generate-button').addEventListener('click', () => {
+            // 获取数据入口组件的数据
+            let data = null;
+            if (window.DataIntake && window.DataIntake.isReady()) {
+                data = window.DataIntake.getPayload();
+            } else {
+                data = SEED_DATA;
+            }
+
+            // 发送 POST 请求到 /api/generate
+            fetch('/api/generate', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ inputs: { data: data } })
+            })
+            .then(response => response.json())
+            .then(result => {
+                // 处理 AI 生成的结果并渲染
+                // 假设 result 包含分析结论和图表数据
+                // 这里需要根据实际返回结果进行修改
+                document.getElementById('result-content').innerHTML = `
+                    <ul>
+                        <li>总订单数: ${result.total_orders}</li>
+                        <li>总销售额: ${result.total_sales}元</li>
+                        <li>平均客单价: ${result.average_order_value}元</li>
+                        <li>复购率: ${result.repeat_purchase_rate}%</li>
+                    </ul>
+                `;
+                // 渲染图表
+                const ctx = document.getElementById('result-chart').getContext('2d');
+                const chart = new Chart(ctx, {
+                    type: 'bar',
+                    data: {
+                        labels: ['总订单数', '总销售额', '平均客单价', '复购率'],
+                        datasets: [{
+                            label: '分析结果',
+                            data: [result.total_orders, result.total_sales, result.average_order_value, result.repeat_purchase_rate],
+                            backgroundColor: '#27ae60'
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        plugins: {
+                            legend: {
+                                display: false
+                            }
+                        }
+                    }
+                });
+                document.getElementById('generated-result').style.display = 'block';
+            })
+            .catch(error => {
+                console.error('Error:', error);
+            });
+        });
+
+        // 清空/重填按钮事件
+        document.getElementById('clear-button').addEventListener('click', () => {
+            // 清空数据入口组件的数据
+            if (window.DataIntake) {
+                window.DataIntake.clear();
+            }
+            document.getElementById('generated-result').style.display = 'none';
+        });
+
+        // 复制结果按钮事件
+        document.getElementById('copy-button').addEventListener('click', () => {
+            const result = document.getElementById('result-content').innerText;
+            navigator.clipboard.writeText(result)
+                .then(() => {
+                    alert('结果已复制到剪贴板');
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                });
+        });
+
+        // 导出 JSON 按钮事件
+        document.getElementById('export-button').addEventListener('click', () => {
+            const result = document.getElementById('result-content').innerText;
+            const blob = new Blob([result], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'result.json';
+            a.click();
+            URL.revokeObjectURL(url);
+        });
+
+        // 随机示例按钮事件
+        document.getElementById('random-button').addEventListener('click', () => {
+            // 随机选择一个场景预设的数据
+            const scenarios = [SCENARIO_A, SCENARIO_B, SCENARIO_C];
+            const randomScenario = scenarios[Math.floor(Math.random() * scenarios.length)];
+            window.DataIntake.setPayload(randomScenario);
+        });
+
+        // 场景预设按钮事件
+        document.getElementById('scenario-a-button').addEventListener('click', () => {
+            window.DataIntake.setPayload(SCENARIO_A);
+        });
+        document.getElementById('scenario-b-button').addEventListener('click', () => {
+            window.DataIntake.setPayload(SCENARIO_B);
+        });
+        document.getElementById('scenario-c-button').addEventListener('click', () => {
+            window.DataIntake.setPayload(SCENARIO_C);
+        });
+    </script>
+</body>
+</html>

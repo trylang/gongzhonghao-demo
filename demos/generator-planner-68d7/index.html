@@ -1,0 +1,396 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <title>代州黄酒短视频脚本批量生成器</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>
+        :root {
+            --main-color: #4A90E2;
+            --background-color: #fdfdfd;
+            --text-color: #333;
+            --border-color: #e0e0e0;
+            --button-color: #4A90E2;
+            --button-hover-color: #357ABD;
+            --button-text-color: #fff;
+            --input-border-color: #ccc;
+            --card-border-radius: 8px;
+            --shadow: 0 2px 8px rgba(0,0,0,0.1);
+            --font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+        }
+        body {
+            margin: 0;
+            font-family: var(--font-family);
+            background-color: var(--background-color);
+            color: var(--text-color);
+            padding: 20px;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background-color: #fff;
+            padding: 30px;
+            border-radius: var(--card-border-radius);
+            box-shadow: var(--shadow);
+        }
+        h1 {
+            text-align: center;
+            margin-bottom: 30px;
+            color: var(--main-color);
+        }
+        .data-intake {
+            margin-bottom: 20px;
+        }
+        .seed-data-section {
+            margin-bottom: 30px;
+        }
+        .seed-data-section h2 {
+            margin-bottom: 10px;
+            color: var(--main-color);
+        }
+        .seed-data-buttons {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+        .seed-data-buttons button {
+            padding: 10px 15px;
+            border: none;
+            background-color: var(--button-color);
+            color: var(--button-text-color);
+            border-radius: 4px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+        .seed-data-buttons button:hover {
+            background-color: var(--button-hover-color);
+        }
+        .seed-data-buttons button.active {
+            background-color: #2E7D32;
+        }
+        .inputs-section {
+            margin-bottom: 30px;
+        }
+        .inputs-section h2 {
+            margin-bottom: 10px;
+            color: var(--main-color);
+        }
+        .inputs-section textarea {
+            width: 100%;
+            height: 150px;
+            padding: 10px;
+            border: 1px solid var(--input-border-color);
+            border-radius: 4px;
+            resize: vertical;
+            font-family: var(--font-family);
+            font-size: 1em;
+        }
+        .buttons-section {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+        .buttons-section button {
+            flex: 1 1 150px;
+            padding: 12px 15px;
+            border: none;
+            background-color: var(--button-color);
+            color: var(--button-text-color);
+            border-radius: 4px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+        .buttons-section button:hover {
+            background-color: var(--button-hover-color);
+        }
+        .results-section {
+            margin-top: 30px;
+        }
+        .results-section h2 {
+            margin-bottom: 10px;
+            color: var(--main-color);
+        }
+        .results-panel {
+            border: 1px solid var(--border-color);
+            padding: 20px;
+            border-radius: var(--card-border-radius);
+            position: relative;
+        }
+        .results-panel.example::after {
+            content: "示例";
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background-color: #FFD54F;
+            padding: 5px 10px;
+            border-radius: 4px;
+            font-size: 0.9em;
+            font-weight: bold;
+        }
+        .results-panel pre {
+            white-space: pre-wrap;
+            background-color: #f9f9f9;
+            padding: 15px;
+            border-radius: 4px;
+        }
+        .results-panel table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 15px;
+        }
+        .results-panel table th, .results-panel table td {
+            border: 1px solid var(--border-color);
+            padding: 8px;
+            text-align: left;
+        }
+        .results-panel table th {
+            background-color: #f1f1f1;
+        }
+        .export-json-button, .copy-button {
+            margin-top: 10px;
+            padding: 8px 12px;
+            border: none;
+            background-color: var(--button-color);
+            color: var(--button-text-color);
+            border-radius: 4px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+        .export-json-button:hover, .copy-button:hover {
+            background-color: var(--button-hover-color);
+        }
+        @media (max-width: 768px) {
+            .buttons-section {
+                flex-direction: column;
+            }
+            .buttons-section button {
+                flex: 1 1 100%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div id="data-intake"></div>
+    <div class="container">
+        <h1>代州黄酒短视频脚本批量生成器</h1>
+        <div class="seed-data-section">
+            <h2>选择场景预设</h2>
+            <div class="seed-data-buttons">
+                <button id="presetA">场景A: 传统酿造工艺</button>
+                <button id="presetB">场景B: 文化传承与创新</button>
+                <button id="presetC">场景C: 产品特色与市场优势</button>
+            </div>
+        </div>
+        <div class="inputs-section">
+            <h2>输入产品卖点</h2>
+            <textarea id="input-text" placeholder="请输入您想推广的产品卖点，例如：独特的酿造工艺、悠久的历史文化等。"></textarea>
+        </div>
+        <div class="buttons-section">
+            <button id="generate-button">生成脚本</button>
+            <button id="clear-button">清空/重填</button>
+            <button id="copy-button">复制结果</button>
+            <button id="export-json-button">导出 JSON</button>
+            <button id="random-button">随机示例</button>
+        </div>
+        <div class="results-section">
+            <h2>生成结果</h2>
+            <div id="results-panel" class="results-panel">
+                <p>点击“生成”按钮后，这里将显示生成的短视频脚本。</p>
+            </div>
+        </div>
+    </div>
+    <script>
+        const SEED = {
+            "场景A": [
+                {
+                    "卖点": "独特的酿造工艺",
+                    "脚本30秒": "欢迎来到代州黄酒的世界！我们的酒采用独特的酿造工艺，经过多道精细工序，保留了最纯正的风味。每一口都是对传统工艺的致敬。",
+                    "脚本60秒": "欢迎来到代州黄酒的世界！我们的酒采用独特的酿造工艺，经过多道精细工序，保留了最纯正的风味。每一口都是对传统工艺的致敬。我们坚信，只有最优质的原料和最精湛的工艺，才能酿出最醇厚的黄酒。代州黄酒，传承经典，品味非凡。",
+                    "分镜": [
+                        "镜头1: 代州黄酒酿造场景",
+                        "镜头2: 原料展示",
+                        "镜头3: 酿酒师手工操作",
+                        "镜头4: 成品黄酒展示",
+                        "镜头5: 品尝场景"
+                    ]
+                },
+                // 更多示例数据...
+            ],
+            "场景B": [
+                {
+                    "卖点": "文化传承与创新",
+                    "脚本30秒": "代州黄酒，传承百年工艺，结合现代创新，打造出独一无二的黄酒品牌。每一瓶都是对文化的传承与创新的完美诠释。",
+                    "脚本60秒": "代州黄酒，传承百年工艺，结合现代创新，打造出独一无二的黄酒品牌。每一瓶都是对文化的传承与创新的完美诠释。我们不仅保留了传统酿造技艺，还融入了现代科技，确保每一瓶黄酒的品质卓越。代州黄酒，让传统与现代在杯中交融。",
+                    "分镜": [
+                        "镜头1: 历史文化展示",
+                        "镜头2: 现代生产线",
+                        "镜头3: 传统与现代对比",
+                        "镜头4: 成品黄酒展示",
+                        "镜头5: 品牌Logo展示"
+                    ]
+                },
+                // 更多示例数据...
+            ],
+            "场景C": [
+                {
+                    "卖点": "产品特色与市场优势",
+                    "脚本30秒": "代州黄酒，以其卓越的品质和独特的口感，在市场上独树一帜。无论是家庭聚会还是商务宴请，代州黄酒都是您的最佳选择。",
+                    "脚本60秒": "代州黄酒，以其卓越的品质和独特的口感，在市场上独树一帜。无论是家庭聚会还是商务宴请，代州黄酒都是您的最佳选择。我们的黄酒不仅口感醇厚，而且富含多种营养成分，对健康有益。代州黄酒，让每一次举杯都充满意义。",
+                    "分镜": [
+                        "镜头1: 产品展示",
+                        "镜头2: 家庭聚会场景",
+                        "镜头3: 商务宴请场景",
+                        "镜头4: 健康成分展示",
+                        "镜头5: 品牌Logo展示"
+                    ]
+                },
+                // 更多示例数据...
+            ]
+        };
+
+        window.DATA_SCHEMA = {
+            name: "产品卖点",
+            columns: [
+                { key: "卖点", label: "产品卖点", type: "text", example: "独特的酿造工艺", required: true },
+                { key: "脚本30秒", label: "30秒脚本", type: "text", example: "欢迎来到代州黄酒的世界！...", required: true },
+                { key: "脚本60秒", label: "60秒脚本", type: "text", example: "欢迎来到代州黄酒的世界！...", required: true },
+                { key: "分镜", label: "分镜", type: "text", example: "镜头1: 代州黄酒酿造场景", required: true }
+            ],
+            sample: [
+                // 示例行数据...
+            ],
+            maxRows: 300
+        };
+
+        document.getElementById("generate-button").addEventListener("click", () => {
+            const inputs = {
+                data: window.DataIntake && window.DataIntake.isReady() ? window.DataIntake.getPayload() : null,
+                preset: getActivePreset(),
+                inputText: document.getElementById("input-text").value
+            };
+            fetch("/api/generate", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ inputs })
+            })
+            .then(response => response.json())
+            .then(data => {
+                renderResults(data);
+            })
+            .catch(error => {
+                console.error("Error:", error);
+                alert("生成失败，请稍后重试。");
+            });
+        });
+
+        document.getElementById("copy-button").addEventListener("click", () => {
+            const resultsPanel = document.getElementById("results-panel");
+            const text = resultsPanel.textContent || resultsPanel.innerText;
+            navigator.clipboard.writeText(text)
+                .then(() => {
+                    alert("结果已复制到剪贴板。");
+                })
+                .catch(error => {
+                    console.error("Copy failed:", error);
+                    alert("复制失败，请手动复制。");
+                });
+        });
+
+        document.getElementById("export-json-button").addEventListener("click", () => {
+            const resultsPanel = document.getElementById("results-panel");
+            const text = resultsPanel.textContent || resultsPanel.innerText;
+            const blob = new Blob([text], { type: "application/json" });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement("a");
+            a.href = url;
+            a.download = "script.json";
+            a.click();
+            URL.revokeObjectURL(url);
+        });
+
+        document.getElementById("clear-button").addEventListener("click", () => {
+            document.getElementById("input-text").value = "";
+            document.getElementById("results-panel").innerHTML = "<p>点击“生成”按钮后，这里将显示生成的短视频脚本。</p>";
+        });
+
+        document.getElementById("random-button").addEventListener("click", () => {
+            const presets = Object.keys(SEED);
+            const randomPreset = presets[Math.floor(Math.random() * presets.length)];
+            setActivePreset(randomPreset);
+            const randomData = SEED[randomPreset][Math.floor(Math.random() * SEED[randomPreset].length)];
+            document.getElementById("input-text").value = randomData["卖点"];
+            renderResults({
+                "30秒脚本": randomData["脚本30秒"],
+                "60秒脚本": randomData["脚本60秒"],
+                "分镜": randomData["分镜"]
+            });
+        });
+
+        function getActivePreset() {
+            const buttons = document.querySelectorAll(".seed-data-buttons button");
+            for (let button of buttons) {
+                if (button.classList.contains("active")) {
+                    return button.id.replace("preset", "");
+                }
+            }
+            return null;
+        }
+
+        function setActivePreset(preset) {
+            const buttons = document.querySelectorAll(".seed-data-buttons button");
+            for (let button of buttons) {
+                if (button.id === `preset${preset}`) {
+                    button.classList.add("active");
+                } else {
+                    button.classList.remove("active");
+                }
+            }
+        }
+
+        function renderResults(data) {
+            const resultsPanel = document.getElementById("results-panel");
+            resultsPanel.classList.remove("example");
+            resultsPanel.innerHTML = `
+                <h3>30秒脚本</h3>
+                <p>${data["30秒脚本"]}</p>
+                <h3>60秒脚本</h3>
+                <p>${data["60秒脚本"]}</p>
+                <h3>分镜</h3>
+                <ul>
+                    ${data["分镜"].map(item => `<li>${item}</li>`).join("")}
+                </ul>
+            `;
+        }
+
+        // 预设按钮事件
+        const presetButtons = document.querySelectorAll(".seed-data-buttons button");
+        for (let button of presetButtons) {
+            button.addEventListener("click", () => {
+                setActivePreset(button.id.replace("preset", ""));
+                const presetData = SEED[button.id.replace("preset", "")];
+                if (presetData) {
+                    const randomData = presetData[Math.floor(Math.random() * presetData.length)];
+                    document.getElementById("input-text").value = randomData["卖点"];
+                    renderResults({
+                        "30秒脚本": randomData["脚本30秒"],
+                        "60秒脚本": randomData["脚本60秒"],
+                        "分镜": randomData["分镜"]
+                    });
+                    resultsPanel.classList.add("example");
+                }
+            });
+        }
+
+        // 初始化示例结果面板
+        const initialData = SEED["场景A"][0];
+        document.getElementById("input-text").value = initialData["卖点"];
+        renderResults({
+            "30秒脚本": initialData["脚本30秒"],
+            "60秒脚本": initialData["脚本60秒"],
+            "分镜": initialData["分镜"]
+        });
+        resultsPanel.classList.add("example");
+    </script>
+</body>
+</html>
