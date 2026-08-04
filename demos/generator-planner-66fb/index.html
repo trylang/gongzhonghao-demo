@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <title>代州黄酒短视频脚本批量生成器</title>
+    <style>
+:root{
+  --bg:#f6f3ee; --card:#fffdfa; --ink:#3a352f; --ink-soft:#756c64;
+  --accent:#a65d4c; --accent-deep:#6d453a; --accent-soft:#f3e7e1;
+  --line:#e6ded3; --line-strong:#d8cdbc;
+  --ok:#4f7a4f; --warn:#b42318;
+  --radius:16px; --radius-sm:10px;
+  --shadow:0 10px 30px rgba(109,69,58,.08);
+  --maxw:1080px;
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);
+  font-family:-apple-system,BlinkMacSystemFont,"PingFang SC","Microsoft YaHei",sans-serif;
+  line-height:1.65;-webkit-font-smoothing:antialiased}
+.wrap{max-width:var(--maxw);margin:0 auto;padding:0 20px}
+/* hero（顶部价值主张，禁止只放一个孤零零的 h1） */
+.hero{background:linear-gradient(135deg,var(--accent-deep),var(--accent));color:#fbf4ee;padding:46px 0 38px;text-align:center}
+.hero .kicker{letter-spacing:2px;font-size:12.5px;opacity:.85;margin:0 0 10px}
+.hero h1{font-size:clamp(24px,4.5vw,36px);margin:0 0 12px;font-weight:600}
+.hero .sub{max-width:720px;margin:0 auto;opacity:.92;font-size:14.5px}
+.hero .sub strong{color:#ffe2d3}
+main{padding:30px 0 56px}
+/* 双栏布局：左输入卡 / 右结果卡 */
+.layout{display:grid;grid-template-columns:380px 1fr;gap:20px;align-items:start}
+@media(max-width:860px){.layout{grid-template-columns:1fr}}
+/* 卡片 */
+.card{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);padding:22px 24px;box-shadow:var(--shadow)}
+.card h2{margin:0 0 4px;font-size:17px;color:var(--accent-deep)}
+.card .hint{font-size:12.5px;color:var(--ink-soft);margin:0 0 14px}
+/* 表单（最小必要字段，优先 select/预设） */
+.form-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.field{display:flex;flex-direction:column;gap:6px}
+.field.wide{grid-column:1/-1}
+.field>span{font-size:13px;color:var(--ink-soft)}
+.field input,.field textarea,.field select{padding:10px 12px;border:1px solid var(--line);border-radius:var(--radius-sm);font:inherit;font-size:14px;background:#fff;color:var(--ink);resize:vertical}
+.field input:focus,.field textarea:focus,.field select:focus{outline:none;border-color:var(--accent);box-shadow:0 0 0 3px var(--accent-soft)}
+/* 按钮（唯一主按钮 + 少量次要 + 胶囊示例） */
+.actions{display:flex;flex-wrap:wrap;gap:10px;align-items:center;margin-top:16px}
+.btn{border:none;border-radius:var(--radius-sm);padding:11px 18px;font:inherit;font-size:14.5px;cursor:pointer;transition:transform .08s,opacity .2s}
+.btn:active{transform:translateY(1px)}
+.btn.primary{background:var(--accent);color:#fff;font-weight:600}
+.btn.primary.big{padding:13px 24px;font-size:15.5px}
+.btn.ghost{background:var(--accent-soft);color:var(--accent-deep)}
+.btn:disabled{opacity:.5;cursor:not-allowed}
+.pill{border:1px solid var(--line);background:#fff;color:var(--accent-deep);padding:5px 12px;border-radius:999px;font-size:12.5px;cursor:pointer;transition:.15s}
+.pill:hover{background:var(--accent);color:#fff;border-color:var(--accent)}
+.pill.danger{color:var(--warn);border-color:#ecc9c5}
+.pill.danger:hover{background:var(--warn);color:#fff;border-color:var(--warn)}
+/* 结果可视化（禁止死表格/纯文本） */
+.results{display:grid;gap:16px}
+.result-card{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);padding:18px 20px;box-shadow:var(--shadow);border-top:4px solid var(--accent)}
+/* 状态 */
+.status{font-size:12.5px;color:var(--ink-soft);margin-top:8px;min-height:16px}
+.loading{color:var(--ink-soft)}
+.error{color:var(--warn)}
+/* 底部理念 */
+.foot{text-align:center;font-size:12.5px;color:var(--ink-soft);padding:22px}
+.foot strong{color:var(--accent-deep)}
+@media(max-width:640px){.form-grid{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+    <div id="data-intake"></div>
+    <div class="wrap">
+        <div class="hero">
+            <div class="kicker">AI工具集</div>
+            <h1>代州黄酒短视频脚本生成器</h1>
+            <div class="sub">轻松生成30秒/60秒口播脚本和分镜，告别外包高成本，让您的内容营销更高效。</div>
+        </div>
+        <main>
+            <div class="layout">
+                <div class="card">
+                    <h2>输入产品卖点</h2>
+                    <div class="form-grid">
+                        <div class="field">
+                            <label for="product-name">产品名称</label>
+                            <input type="text" id="product-name" name="product-name" placeholder="如：代州黄酒">
+                        </div>
+                        <div class="field">
+                            <label for="product-feature">产品卖点</label>
+                            <input type="text" id="product-feature" name="product-feature" placeholder="如：传统工艺酿造">
+                        </div>
+                        <div class="field">
+                            <label for="video-duration">视频时长</label>
+                            <select id="video-duration" name="video-duration">
+                                <option value="30">30秒</option>
+                                <option value="60">60秒</option>
+                            </select>
+                        </div>
+                        <div class="field wide">
+                            <label for="additional-notes">附加说明</label>
+                            <textarea id="additional-notes" name="additional-notes" placeholder="如：突出历史传承或现代创新"></textarea>
+                        </div>
+                    </div>
+                    <div class="actions">
+                        <button class="btn primary" id="generate-btn">生成脚本</button>
+                        <button class="btn ghost" id="clear-btn">清空</button>
+                    </div>
+                </div>
+                <div class="card">
+                    <h2>生成的脚本</h2>
+                    <div class="results" id="results">
+                        <!-- 示例结果面板 -->
+                        <div class="result-card">
+                            <h3>30秒口播脚本</h3>
+                            <p>示例脚本内容...</p>
+                            <div class="status">示例结果</div>
+                        </div>
+                        <div class="result-card">
+                            <h3>60秒口播脚本</h3>
+                            <p>示例脚本内容...</p>
+                            <div class="status">示例结果</div>
+                        </div>
+                        <div class="result-card">
+                            <h3>分镜脚本</h3>
+                            <p>示例分镜内容...</p>
+                            <div class="status">示例结果</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+        <div class="foot">
+            <strong>AI工具集</strong> 让您的内容营销更高效。
+        </div>
+    </div>
+    <script>
+        const SEED = {
+            "productName": "代州黄酒",
+            "productFeature": "传统工艺酿造",
+            "videoDuration": "30",
+            "additionalNotes": "突出历史传承"
+        };
+
+        document.getElementById('generate-btn').addEventListener('click', () => {
+            const productName = document.getElementById('product-name').value || SEED.productName;
+            const productFeature = document.getElementById('product-feature').value || SEED.productFeature;
+            const videoDuration = document.getElementById('video-duration').value || SEED.videoDuration;
+            const additionalNotes = document.getElementById('additional-notes').value || SEED.additionalNotes;
+
+            const inputs = {
+                "productName": productName,
+                "productFeature": productFeature,
+                "videoDuration": videoDuration,
+                "additionalNotes": additionalNotes
+            };
+
+            fetch('/api/generate', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ "inputs": inputs })
+            })
+            .then(response => response.json())
+            .then(data => {
+                renderResults(data);
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('生成失败，请稍后重试');
+            });
+        });
+
+        function renderResults(data) {
+            const resultsDiv = document.getElementById('results');
+            resultsDiv.innerHTML = '';
+
+            if (data.scripts) {
+                for (let script of data.scripts) {
+                    const resultCard = document.createElement('div');
+                    resultCard.className = 'result-card';
+                    resultCard.innerHTML = `
+                        <h3>${script.title}</h3>
+                        <p>${script.content}</p>
+                        <div class="status">生成成功</div>
+                    `;
+                    resultsDiv.appendChild(resultCard);
+                }
+            } else {
+                const resultCard = document.createElement('div');
+                resultCard.className = 'result-card';
+                resultCard.innerHTML = `
+                    <h3>错误</h3>
+                    <p>无法生成脚本，请稍后重试。</p>
+                    <div class="status">生成失败</div>
+                `;
+                resultsDiv.appendChild(resultCard);
+            }
+        }
+
+        document.getElementById('clear-btn').addEventListener('click', () => {
+            document.getElementById('product-name').value = '';
+            document.getElementById('product-feature').value = '';
+            document.getElementById('video-duration').value = '30';
+            document.getElementById('additional-notes').value = '';
+            document.getElementId('results').innerHTML = '';
+        });
+
+        // 初始化示例数据
+        window.onload = () => {
+            document.getElementById('product-name').value = SEED.productName;
+            document.getElementById('product-feature').value = SEED.productFeature;
+            document.getElementById('video-duration').value = SEED.videoDuration;
+            document.getElementById('additional-notes').value = SEED.additionalNotes;
+
+            // 初始化示例结果
+            const resultsDiv = document.getElementById('results');
+            resultsDiv.innerHTML = `
+                <div class="result-card">
+                    <h3>30秒口播脚本</h3>
+                    <p>示例脚本内容...</p>
+                    <div class="status">示例结果</div>
+                </div>
+                <div class="result-card">
+                    <h3>60秒口播脚本</h3>
+                    <p>示例脚本内容...</p>
+                    <div class="status">示例结果</div>
+                </div>
+                <div class="result-card">
+                    <h3>分镜脚本</h3>
+                    <p>示例分镜内容...</p>
+                    <div class="status">示例结果</div>
+                </div>
+            `;
+        };
+    </script>
+</body>
+</html>

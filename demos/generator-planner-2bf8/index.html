@@ -1,0 +1,403 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <title>代州黄酒短视频脚本批量生成器</title>
+    <style>
+        :root {
+            --main-color: #4A90E2;
+            --background-color: #f5f5f5;
+            --text-color: #333;
+            --border-radius: 8px;
+            --box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            --button-color: #4A90E2;
+            --button-hover-color: #357ABD;
+            --button-text-color: #fff;
+            --input-background: #fff;
+            --input-border: #ddd;
+            --input-focus-border: #4A90E2;
+        }
+        body {
+            font-family: Arial, sans-serif;
+            background-color: var(--background-color);
+            color: var(--text-color);
+            margin: 0;
+            padding: 0;
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+        }
+        header {
+            background-color: var(--main-color);
+            color: #fff;
+            padding: 20px;
+            text-align: center;
+        }
+        main {
+            flex: 1;
+            padding: 20px;
+            max-width: 800px;
+            margin: 0 auto;
+            background-color: #fff;
+            box-shadow: var(--box-shadow);
+            border-radius: var(--border-radius);
+        }
+        .controls {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+        .controls button {
+            flex: 1 1 100px;
+            padding: 10px;
+            border: none;
+            background-color: var(--button-color);
+            color: var(--button-text-color);
+            border-radius: var(--border-radius);
+            cursor: pointer;
+            font-size: 16px;
+            transition: background-color 0.3s;
+        }
+        .controls button:hover {
+            background-color: var(--button-hover-color);
+        }
+        .input-group {
+            margin-bottom: 20px;
+        }
+        .input-group label {
+            display: block;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+        .input-group input, .input-group textarea {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid var(--input-border);
+            border-radius: var(--border-radius);
+            background-color: var(--input-background);
+            font-size: 16px;
+            box-sizing: border-box;
+            transition: border-color 0.3s;
+        }
+        .input-group input:focus, .input-group textarea:focus {
+            border-color: var(--input-focus-border);
+            outline: none;
+        }
+        .results {
+            margin-top: 30px;
+        }
+        .results h2 {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        .results .card {
+            border: 1px solid #ddd;
+            padding: 15px;
+            border-radius: var(--border-radius);
+            background-color: #fafafa;
+            margin-bottom: 15px;
+        }
+        .results .card h3 {
+            margin-top: 0;
+        }
+        .results .table-container {
+            max-width: 100%;
+            overflow-x: auto;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 15px;
+        }
+        table th, table td {
+            padding: 10px;
+            border: 1px solid #ddd;
+            text-align: left;
+        }
+        table th {
+            background-color: #eee;
+        }
+        footer {
+            text-align: center;
+            padding: 15px;
+            background-color: var(--main-color);
+            color: #fff;
+        }
+        @media (max-width: 600px) {
+            .controls {
+                flex-direction: column;
+            }
+            .controls button {
+                flex: 1 1 100%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div id="data-intake"></div>
+    <header>
+        <h1>代州黄酒短视频脚本批量生成器</h1>
+    </header>
+    <main>
+        <div class="controls">
+            <button id="generate-btn">生成脚本</button>
+            <button id="clear-btn">清空 / 重填</button>
+            <button id="copy-btn">复制结果</button>
+            <button id="export-btn">导出 JSON</button>
+            <button id="random-btn">随机示例</button>
+            <button id="preset-a-btn">场景预设A</button>
+            <button id="preset-b-btn">场景预设B</button>
+            <button id="preset-c-btn">场景预设C</button>
+        </div>
+        <div class="input-group">
+            <label for="product-feature">产品卖点</label>
+            <input type="text" id="product-feature" placeholder="例如：传统工艺酿造">
+        </div>
+        <div class="input-group">
+            <label for="script-length">脚本时长</label>
+            <select id="script-length">
+                <option value="30">30秒</option>
+                <option value="60">60秒</option>
+            </select>
+        </div>
+        <div class="input-group">
+            <label for="target-audience">目标受众</label>
+            <input type="text" id="target-audience" placeholder="例如：年轻人">
+        </div>
+        <div class="input-group">
+            <label for="video-style">视频风格</label>
+            <textarea id="video-style" rows="3" placeholder="例如：轻松幽默"></textarea>
+        </div>
+        <div class="results" id="results">
+            <h2>示例结果</h2>
+            <div class="card">
+                <h3>30秒口播脚本</h3>
+                <p>（示例）大家好，今天给大家推荐一款传统工艺酿造的黄酒——代州黄酒。它采用百年传承的酿造技艺，口感醇厚，回味悠长。无论是家庭聚餐还是送礼佳品，都是您的理想选择。快来试试吧！</p>
+            </div>
+            <div class="card">
+                <h3>60秒口播脚本</h3>
+                <p>（示例）大家好，欢迎来到我们的黄酒世界。今天我要为大家介绍的是代州黄酒。这款酒采用传统工艺酿造，历经多道工序，保留了最纯正的风味。它不仅口感醇厚，而且营养丰富，是您日常饮用和送礼的绝佳选择。代州黄酒，让每一次举杯都充满意义。快来加入我们，体验这份独特的传统魅力吧！</p>
+            </div>
+            <div class="card">
+                <h3>分镜脚本</h3>
+                <div class="table-container">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>镜头</th>
+                                <th>描述</th>
+                                <th>时长</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>1</td>
+                                <td>展示代州黄酒的瓶身和包装</td>
+                                <td>10秒</td>
+                            </tr>
+                            <tr>
+                                <td>2</td>
+                                <td>展示黄酒的酿造过程</td>
+                                <td>20秒</td>
+                            </tr>
+                            <tr>
+                                <td>3</td>
+                                <td>展示黄酒的品尝场景</td>
+                                <td>15秒</td>
+                            </tr>
+                            <tr>
+                                <td>4</td>
+                                <td>展示品牌Logo和口号</td>
+                                <td>5秒</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </main>
+    <footer>
+        <p>© 2023 代州黄酒短视频脚本批量生成器</p>
+    </footer>
+    <script>
+        // 示例数据
+        const SEED = {
+            "product_feature": "传统工艺酿造",
+            "script_length": "30",
+            "target_audience": "年轻人",
+            "video_style": "轻松幽默"
+        };
+
+        // 场景预设数据
+        const PRESETS = {
+            "A": {
+                "product_feature": "百年传承工艺",
+                "script_length": "30",
+                "target_audience": "中年人",
+                "video_style": "传统典雅"
+            },
+            "B": {
+                "product_feature": "健康养生",
+                "script_length": "60",
+                "target_audience": "老年人",
+                "video_style": "温馨感人"
+            },
+            "C": {
+                "product_feature": "创新口味",
+                "script_length": "45",
+                "target_audience": "年轻人",
+                "video_style": "时尚潮流"
+            }
+        };
+
+        // 填充示例数据
+        function fillSeedData() {
+            document.getElementById('product-feature').value = SEED.product_feature;
+            document.getElementById('script-length').value = SEED.script_length;
+            document.getElementById('target-audience').value = SEED.target_audience;
+            document.getElementById('video-style').value = SEED.video_style;
+        }
+
+        // 填充预设数据
+        function fillPresetData(preset) {
+            document.getElementById('product-feature').value = PRESETS[preset].product_feature;
+            document.getElementById('script-length').value = PRESETS[preset].script_length;
+            document.getElementById('target-audience').value = PRESETS[preset].target_audience;
+            document.getElementById('video-style').value = PRESETS[preset].video_style;
+        }
+
+        // 清空数据
+        function clearData() {
+            document.getElementById('product-feature').value = '';
+            document.getElementById('script-length').value = '30';
+            document.getElementById('target-audience').value = '';
+            document.getElementById('video-style').value = '';
+        }
+
+        // 复制结果
+        function copyResults() {
+            const results = document.getElementById('results').innerText;
+            navigator.clipboard.writeText(results).then(() => {
+                alert('结果已复制到剪贴板');
+            }).catch(() => {
+                alert('复制失败');
+            });
+        }
+
+        // 导出 JSON
+        function exportJSON() {
+            const inputs = {
+                "product_feature": document.getElementById('product-feature').value,
+                "script_length": document.getElementById('script-length').value,
+                "target_audience": document.getElementById('target-audience').value,
+                "video_style": document.getElementById('video-style').value
+            };
+            const json = JSON.stringify(inputs, null, 2);
+            const blob = new Blob([json], { type: "application/json" });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = "script_data.json";
+            a.click();
+            URL.revokeObjectURL(url);
+        }
+
+        // 随机示例
+        function randomPreset() {
+            const presets = Object.keys(PRESETS);
+            const randomPreset = presets[Math.floor(Math.random() * presets.length)];
+            fillPresetData(randomPreset);
+        }
+
+        // 事件绑定
+        document.getElementById('generate-btn').addEventListener('click', () => {
+            const inputs = {
+                "product_feature": document.getElementById('product-feature').value,
+                "script_length": document.getElementById('script-length').value,
+                "target_audience": document.getElementById('target-audience').value,
+                "video_style": document.getElementById('video-style').value
+            };
+            if (window.DataIntake && window.DataIntake.isReady()) {
+                inputs.data = window.DataIntake.getPayload();
+            }
+            fetch('/api/generate', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ "inputs": inputs })
+            }).then(response => response.json()).then(data => {
+                document.getElementById('results').innerHTML = `
+                    <h2>生成结果</h2>
+                    <div class="card">
+                        <h3>30秒口播脚本</h3>
+                        <p>${data['30秒口播脚本']}</p>
+                    </div>
+                    <div class="card">
+                        <h3>60秒口播脚本</h3>
+                        <p>${data['60秒口播脚本']}</p>
+                    </div>
+                    <div class="card">
+                        <h3>分镜脚本</h3>
+                        <div class="table-container">
+                            <table>
+                                <thead>
+                                    <tr>
+                                        <th>镜头</th>
+                                        <th>描述</th>
+                                        <th>时长</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    ${data['分镜脚本'].map(shot => `
+                                        <tr>
+                                            <td>${shot.lens}</td>
+                                            <td>${shot.description}</td>
+                                            <td>${shot.duration}</td>
+                                        </tr>
+                                    `).join('')}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                `;
+            }).catch(error => {
+                console.error('Error:', error);
+                alert('生成失败');
+            });
+        });
+
+        document.getElementById('clear-btn').addEventListener('click', () => {
+            clearData();
+        });
+
+        document.getElementById('copy-btn').addEventListener('click', () => {
+            copyResults();
+        });
+
+        document.getElementById('export-btn').addEventListener('click', () => {
+            exportJSON();
+        });
+
+        document.getElementById('random-btn').addEventListener('click', () => {
+            randomPreset();
+        });
+
+        document.getElementById('preset-a-btn').addEventListener('click', () => {
+            fillPresetData('A');
+        });
+
+        document.getElementById('preset-b-btn').addEventListener('click', () => {
+            fillPresetData('B');
+        });
+
+        document.getElementById('preset-c-btn').addEventListener('click', () => {
+            fillPresetData('C');
+        });
+
+        // 初始化填充示例数据
+        fillSeedData();
+    </script>
+</body>
+</html>

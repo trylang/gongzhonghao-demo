@@ -1,0 +1,414 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>代州黄酒短视频脚本批量生成器</title>
+    <style>
+        :root {
+            --main-color: #DAA520;
+            --background-color: #fdfdfd;
+            --text-color: #333;
+            --border-radius: 8px;
+            --shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        body {
+            font-family: Arial, sans-serif;
+            background-color: var(--background-color);
+            color: var(--text-color);
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        h1 {
+            color: var(--main-color);
+        }
+        .container {
+            width: 100%;
+            max-width: 800px;
+            margin-top: 20px;
+        }
+        .data-intake {
+            margin-bottom: 20px;
+        }
+        .buttons {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+        button {
+            padding: 10px 15px;
+            border: none;
+            border-radius: var(--border-radius);
+            background-color: var(--main-color);
+            color: #fff;
+            cursor: pointer;
+            box-shadow: var(--shadow);
+            transition: background-color 0.3s;
+        }
+        button:hover {
+            background-color: #c99e1a;
+        }
+        .example-result {
+            border: 1px solid #ddd;
+            padding: 15px;
+            border-radius: var(--border-radius);
+            background-color: #fff;
+            box-shadow: var(--shadow);
+        }
+        .example-result h2 {
+            margin-top: 0;
+            color: var(--main-color);
+        }
+        .result {
+            margin-top: 20px;
+            width: 100%;
+        }
+        .result pre {
+            background-color: #f5f5f5;
+            padding: 15px;
+            border-radius: var(--border-radius);
+            overflow-x: auto;
+        }
+        .loading {
+            margin-top: 20px;
+            font-size: 1.2em;
+            color: var(--main-color);
+        }
+        .error {
+            margin-top: 20px;
+            color: red;
+        }
+    </style>
+</head>
+<body>
+    <div id="data-intake"></div>
+    <div class="container">
+        <h1>代州黄酒短视频脚本批量生成器</h1>
+        <div class="buttons">
+            <button id="generate">生成脚本</button>
+            <button id="clear">清空/重填</button>
+            <button id="copy">复制结果</button>
+            <button id="export">导出 JSON</button>
+            <button id="random">随机示例</button>
+            <button id="scenarioA">场景A</button>
+            <button id="scenarioB">场景B</button>
+            <button id="scenarioC">场景C</button>
+        </div>
+        <div class="example-result" id="example-result" style="display: none;">
+            <h2>示例结果</h2>
+            <p>（这是一个示例结果面板，展示预期的模型输出。点击“生成”后将用真实结果覆盖。）</p>
+            <pre>
+{
+  "scripts": [
+    {
+      "duration": "30秒",
+      "content": "大家好，今天给大家推荐一款传统佳酿——代州黄酒。它采用古法酿造，口感醇厚，回味悠长，是您餐桌上不可或缺的美酒。"
+    },
+    {
+      "duration": "60秒",
+      "content": "大家好，今天给大家推荐一款传承百年的佳酿——代州黄酒。它不仅有着悠久的历史，还采用了独特的古法酿造工艺。代州黄酒口感醇厚，香气扑鼻，是您宴请宾客、馈赠亲友的理想选择。无论是搭配中式佳肴，还是作为餐后饮品，它都能为您的生活增添一份独特的韵味。"
+    }
+  ],
+  "storyboard": [
+    {
+      "scene": 1,
+      "description": "展示代州黄酒的产品外观和包装，突出其传统工艺和历史感。",
+      "duration": "5秒"
+    },
+    {
+      "scene": 2,
+      "description": "展示黄酒倒入杯中的过程，强调其色泽和质感。",
+      "duration": "7秒"
+    },
+    {
+      "scene": 3,
+      "description": "展示人们在餐桌上享用黄酒的场景，传递其作为佐餐酒的文化内涵。",
+      "duration": "10秒"
+    },
+    {
+      "scene": 4,
+      "description": "展示黄酒的酿造过程，强调其传统工艺和匠心精神。",
+      "duration": "15秒"
+    },
+    {
+      "scene": 5,
+      "description": "展示代州黄酒的多种饮用方式，如纯饮、搭配中式餐点等。",
+      "duration": "8秒"
+    },
+    {
+      "scene": 6,
+      "description": "结束画面，展示品牌Logo和口号。",
+      "duration": "5秒"
+    }
+  ]
+}
+            </pre>
+        </div>
+        <div class="result" id="result"></div>
+    </div>
+    <script>
+        const SEED = {
+            "scripts": [
+                {
+                    "duration": "30秒",
+                    "content": "大家好，今天给大家推荐一款传统佳酿——代州黄酒。它采用古法酿造，口感醇厚，回味悠长，是您餐桌上不可或缺的美酒。"
+                },
+                {
+                    "duration": "60秒",
+                    "content": "大家好，今天给大家推荐一款传承百年的佳酿——代州黄酒。它不仅有着悠久的历史，还采用了独特的古法酿造工艺。代州黄酒口感醇厚，香气扑鼻，是您宴请宾客、馈赠亲友的理想选择。无论是搭配中式佳肴，还是作为餐后饮品，它都能为您的生活增添一份独特的韵味。"
+                }
+            ],
+            "storyboard": [
+                {
+                    "scene": 1,
+                    "description": "展示代州黄酒的产品外观和包装，突出其传统工艺和历史感。",
+                    "duration": "5秒"
+                },
+                {
+                    "scene": 2,
+                    "description": "展示黄酒倒入杯中的过程，强调其色泽和质感。",
+                    "duration": "7秒"
+                },
+                {
+                    "scene": 3,
+                    "description": "展示人们在餐桌上享用黄酒的场景，传递其作为佐餐酒的文化内涵。",
+                    "duration": "10秒"
+                },
+                {
+                    "scene": 4,
+                    "description": "展示黄酒的酿造过程，强调其传统工艺和匠心精神。",
+                    "duration": "15秒"
+                },
+                {
+                    "scene": 5,
+                    "description": "展示代州黄酒的多种饮用方式，如纯饮、搭配中式餐点等。",
+                    "duration": "8秒"
+                },
+                {
+                    "scene": 6,
+                    "description": "结束画面，展示品牌Logo和口号。",
+                    "duration": "5秒"
+                }
+            ]
+        };
+
+        let currentData = SEED;
+
+        window.DATA_SCHEMA = {
+            name: "黄酒卖点",
+            columns: [
+                { key: "卖点", label: "卖点", type: "text", example: "古法酿造", required: true },
+                { key: "产品名称", label: "产品名称", type: "text", example: "代州黄酒", required: true },
+                { key: "目标受众", label: "目标受众", type: "text", example: "所有年龄段", required: false },
+                { key: "饮用场景", label: "饮用场景", type: "text", example: "家庭聚餐", required: false }
+            ],
+            sample: [
+                { "卖点": "古法酿造", "产品名称": "代州黄酒", "目标受众": "所有年龄段", "饮用场景": "家庭聚餐" },
+                { "卖点": "传统工艺", "产品名称": "代州黄酒", "目标受众": "中年人", "饮用场景": "商务宴请" },
+                { "卖点": "历史悠久", "产品名称": "代州黄酒", "目标受众": "老年人", "饮用场景": "节日庆典" }
+            ],
+            maxRows: 300
+        };
+
+        const generateButton = document.getElementById('generate');
+        const clearButton = document.getElementById('clear');
+        const copyButton = document.getElementById('copy');
+        const exportButton = document.getElementById('export');
+        const randomButton = document.getElementById('random');
+        const scenarioAButton = document.getElementById('scenarioA');
+        const scenarioBButton = document.getElementById('scenarioB');
+        const scenarioCButton = document.getElementById('scenarioC');
+        const exampleResult = document.getElementById('example-result');
+        const resultDiv = document.getElementById('result');
+
+        scenarioAButton.addEventListener('click', () => {
+            currentData = {
+                "scripts": [
+                    {
+                        "duration": "30秒",
+                        "content": "大家好，今天给大家推荐一款传统佳酿——代州黄酒。它采用古法酿造，口感醇厚，回味悠长，是您餐桌上不可或缺的美酒。"
+                    },
+                    {
+                        "duration": "60秒",
+                        "content": "大家好，今天给大家推荐一款传承百年的佳酿——代州黄酒。它不仅有着悠久的历史，还采用了独特的古法酿造工艺。代州黄酒口感醇厚，香气扑鼻，是您宴请宾客、馈赠亲友的理想选择。无论是搭配中式佳肴，还是作为餐后饮品，它都能为您的生活增添一份独特的韵味。"
+                    }
+                ],
+                "storyboard": [
+                    {
+                        "scene": 1,
+                        "description": "展示代州黄酒的产品外观和包装，突出其传统工艺和历史感。",
+                        "duration": "5秒"
+                    },
+                    {
+                        "scene": 2,
+                        "description": "展示黄酒倒入杯中的过程，强调其色泽和质感。",
+                        "duration": "7秒"
+                    },
+                    {
+                        "scene": 3,
+                        "description": "展示人们在餐桌上享用黄酒的场景，传递其作为佐餐酒的文化内涵。",
+                        "duration": "10秒"
+                    },
+                    {
+                        "scene": 4,
+                        "description": "展示黄酒的酿造过程，强调其传统工艺和匠心精神。",
+                        "duration": "15秒"
+                    },
+                    {
+                        "scene": 5,
+                        "description": "展示代州黄酒的多种饮用方式，如纯饮、搭配中式餐点等。",
+                        "duration": "8秒"
+                    },
+                    {
+                        "scene": 6,
+                        "description": "结束画面，展示品牌Logo和口号。",
+                        "duration": "5秒"
+                    }
+                ]
+            };
+            exampleResult.style.display = 'block';
+            resultDiv.innerHTML = '';
+        });
+
+        scenarioBButton.addEventListener('click', () => {
+            currentData = {
+                "scripts": [
+                    {
+                        "duration": "30秒",
+                        "content": "大家好，今天给大家介绍一款经典黄酒——代州黄酒。它以优质糯米为原料，经过多道传统工序酿造而成，口感丰富，回味无穷。"
+                    },
+                    {
+                        "duration": "60秒",
+                        "content": "大家好，今天给大家介绍一款经典黄酒——代州黄酒。它以优质糯米为原料，经过多道传统工序酿造而成，口感丰富，回味无穷。无论是作为佐餐酒，还是作为礼物赠送，都是绝佳的选择。"
+                    }
+                ],
+                "storyboard": [
+                    {
+                        "scene": 1,
+                        "description": "展示代州黄酒的产品外观和包装，突出其经典和优雅。",
+                        "duration": "5秒"
+                    },
+                    {
+                        "scene": 2,
+                        "description": "展示黄酒酿造原料和工艺，强调其传统和优质。",
+                        "duration": "10秒"
+                    },
+                    {
+                        "scene": 3,
+                        "description": "展示黄酒在餐桌上的使用场景，传递其作为佐餐酒的价值。",
+                        "duration": "10秒"
+                    },
+                    {
+                        "scene": 4,
+                        "description": "展示黄酒的饮用方式，如纯饮、搭配美食等。",
+                        "duration": "8秒"
+                    },
+                    {
+                        "scene": 5,
+                        "description": "展示品牌Logo和口号。",
+                        "duration": "5秒"
+                    }
+                ]
+            };
+            exampleResult.style.display = 'block';
+            resultDiv.innerHTML = '';
+        });
+
+        scenarioCButton.addEventListener('click', () => {
+            currentData = {
+                "scripts": [
+                    {
+                        "duration": "30秒",
+                        "content": "大家好，今天给大家推荐一款健康饮品——代州黄酒。它富含多种营养成分，有助于促进新陈代谢，增强免疫力。"
+                    },
+                    {
+                        "duration": "60秒",
+                        "content": "大家好，今天给大家推荐一款健康饮品——代州黄酒。它富含多种营养成分，有助于促进新陈代谢，增强免疫力。无论是作为日常饮品，还是作为保健饮品，都是您的理想选择。"
+                    }
+                ],
+                "storyboard": [
+                    {
+                        "scene": 1,
+                        "description": "展示代州黄酒的营养成分和健康益处。",
+                        "duration": "10秒"
+                    },
+                    {
+                        "scene": 2,
+                        "description": "展示黄酒在日常生活中的应用场景，如早餐、下午茶等。",
+                        "duration": "10秒"
+                    },
+                    {
+                        "scene": 3,
+                        "description": "展示黄酒的饮用方式，如纯饮、搭配水果等。",
+                        "duration": "8秒"
+                    },
+                    {
+                        "scene": 4,
+                        "description": "展示品牌Logo和口号。",
+                        "duration": "5秒"
+                    }
+                ]
+            };
+            exampleResult.style.display = 'block';
+            resultDiv.innerHTML = '';
+        });
+
+        clearButton.addEventListener('click', () => {
+            currentData = SEED;
+            exampleResult.style.display = 'block';
+            resultDiv.innerHTML = '';
+        });
+
+        copyButton.addEventListener('click', () => {
+            const result = document.getElementById('result').innerText;
+            navigator.clipboard.writeText(result).then(() => {
+                alert('结果已复制到剪贴板');
+            }).catch(() => {
+                alert('复制失败');
+            });
+        });
+
+        exportButton.addEventListener('click', () => {
+            const result = document.getElementById('result').innerText;
+            const blob = new Blob([result], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = '脚本结果.json';
+            a.click();
+            URL.revokeObjectURL(url);
+        });
+
+        randomButton.addEventListener('click', () => {
+            const scenarios = [scenarioAButton, scenarioBButton, scenarioCButton];
+            const randomScenario = scenarios[Math.floor(Math.random() * scenarios.length)];
+            randomScenario.click();
+        });
+
+        generateButton.addEventListener('click', () => {
+            exampleResult.style.display = 'none';
+            resultDiv.innerHTML = '<div class="loading">生成中...</div>';
+            const payload = {
+                inputs: {
+                    data: window.DataIntake && window.DataIntake.isReady() ? window.DataIntake.getPayload() : currentData
+                }
+            };
+            fetch('/api/generate', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(payload)
+            }).then(response => response.json()).then(data => {
+                resultDiv.innerHTML = `<pre>${JSON.stringify(data, null, 2)}</pre>`;
+            }).catch(error => {
+                resultDiv.innerHTML = `<div class="error">生成失败: ${error.message}</div>`;
+            });
+        });
+    </script>
+</body>
+</html>

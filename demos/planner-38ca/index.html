@@ -1,0 +1,328 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <title>电商数据智能看板生成器</title>
+    <style>
+        :root {
+            --primary-color: #4a90e2;
+            --background-color: #f5f5f5;
+            --text-color: #333333;
+            --button-color: #ffffff;
+            --button-bg: var(--primary-color);
+            --border-radius: 8px;
+            --box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        }
+        body {
+            font-family: Arial, sans-serif;
+            background-color: var(--background-color);
+            color: var(--text-color);
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100vh;
+        }
+        h1 {
+            margin-bottom: 20px;
+        }
+        .container {
+            background-color: #ffffff;
+            padding: 20px 30px;
+            border-radius: var(--border-radius);
+            box-shadow: var(--box-shadow);
+            width: 100%;
+            max-width: 800px;
+        }
+        .section {
+            margin-bottom: 20px;
+        }
+        .buttons {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+        button {
+            background-color: var(--button-bg);
+            color: var(--button-color);
+            border: none;
+            padding: 10px 15px;
+            border-radius: var(--border-radius);
+            cursor: pointer;
+            font-size: 14px;
+        }
+        button:hover {
+            opacity: 0.9;
+        }
+        .data-section {
+            margin-bottom: 20px;
+        }
+        .result-section {
+            margin-top: 20px;
+        }
+        .result-card {
+            background-color: #fafafa;
+            padding: 15px;
+            border-radius: var(--border-radius);
+            box-shadow: var(--box-shadow);
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 10px;
+        }
+        table th, table td {
+            padding: 8px 12px;
+            border: 1px solid #e0e0e0;
+            text-align: left;
+        }
+        table th {
+            background-color: #f0f0f0;
+        }
+        .hidden {
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <div id="data-intake"></div>
+    <div class="container">
+        <h1>电商数据智能看板生成器</h1>
+        <div class="section">
+            <div class="buttons">
+                <button id="presetA">场景A: 微信订单</button>
+                <button id="presetB">场景B: 抖音小店</button>
+                <button id="presetC">场景C: 快递100</button>
+                <button id="randomExample">随机示例</button>
+            </div>
+            <div class="data-section">
+                <label for="dataInput">请输入或上传您的数据：</label>
+                <!-- 平台会注入数据入口组件到 #data-intake -->
+            </div>
+            <button id="generate">生成分析</button>
+            <button id="clear">清空/重填</button>
+        </div>
+        <div class="result-section hidden" id="result">
+            <h2>分析结果</h2>
+            <div id="resultContent">
+                <!-- 示例结果面板 -->
+                <div class="result-card">
+                    <h3>示例发货量趋势</h3>
+                    <p>（图表：发货量随时间变化的折线图）</p>
+                    <h3>关键指标</h3>
+                    <table>
+                        <tr>
+                            <th>指标</th>
+                            <th>数值</th>
+                        </tr>
+                        <tr>
+                            <td>总发货量</td>
+                            <td>1,200 件</td>
+                        </tr>
+                        <tr>
+                            <td>复购率</td>
+                            <td>15%</td>
+                        </tr>
+                        <tr>
+                            <td>平均客单价</td>
+                            <td>¥ 150</td>
+                        </tr>
+                    </table>
+                    <p><em>（以上数据为示例，仅供参考）</em></p>
+                </div>
+            </div>
+            <div class="buttons">
+                <button id="copyResult">复制结果</button>
+                <button id="exportJSON">导出 JSON</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // SEED 数据
+        const SEEDS = {
+            presetA: [
+                { order_no: "SO1001", date: "2023-09-01", amount: 150, customer_id: "CUST1001" },
+                { order_no: "SO1002", date: "2023-09-02", amount: 200, customer_id: "CUST1002" },
+                // ... 13 more records
+                { order_no: "SO1015", date: "2023-09-15", amount: 180, customer_id: "CUST1015" }
+            ],
+            presetB: [
+                { order_no: "DS2001", date: "2023-09-05", amount: 220, customer_id: "CUST2001" },
+                { order_no: "DS2002", date: "2023-09-06", amount: 180, customer_id: "CUST2002" },
+                // ... 13 more records
+                { order_no: "DS2015", date: "2023-09-19", amount: 160, customer_id: "CUST2015" }
+            ],
+            presetC: [
+                { order_no: "EX3001", date: "2023-09-10", amount: 130, customer_id: "CUST3001" },
+                { order_no: "EX3002", date: "2023-09-11", amount: 170, customer_id: "CUST3002" },
+                // ... 13 more records
+                { order_no: "EX3015", date: "2023-09-25", amount: 190, customer_id: "CUST3015" }
+            ]
+        };
+
+        let currentSeed = null;
+
+        // 切换场景预设
+        document.getElementById("presetA").addEventListener("click", () => {
+            loadSeed("presetA");
+        });
+        document.getElementById("presetB").addEventListener("click", () => {
+            loadSeed("presetB");
+        });
+        document.getElementById("presetC").addEventListener("click", () => {
+            loadSeed("presetC");
+        });
+        document.getElementById("randomExample").addEventListener("click", () => {
+            const presets = Object.keys(SEEDS);
+            const randomPreset = presets[Math.floor(Math.random() * presets.length)];
+            loadSeed(randomPreset);
+        });
+
+        function loadSeed(seedKey) {
+            currentSeed = SEEDS[seedKey];
+            // Populate data input component
+            if (window.DataIntake && window.DataIntake.setPayload) {
+                window.DataIntake.setPayload(currentSeed);
+            }
+            // Optionally, you can highlight the selected preset
+        }
+
+        // 清空/重填
+        document.getElementById("clear").addEventListener("click", () => {
+            currentSeed = null;
+            if (window.DataIntake && window.DataIntake.clear) {
+                window.DataIntake.clear();
+            }
+            document.getElementById("result").classList.add("hidden");
+        });
+
+        // 生成分析
+        document.getElementById("generate").addEventListener("click", () => {
+            let inputs = {};
+            if (window.DataIntake && window.DataIntake.isReady() && window.DataIntake.getPayload) {
+                inputs.data = window.DataIntake.getPayload();
+            } else if (currentSeed) {
+                inputs.data = currentSeed;
+            } else {
+                alert("请先提供数据或选择一个预设场景。");
+                return;
+            }
+            fetch("/api/generate", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify({ inputs: inputs })
+            })
+            .then(response => response.json())
+            .then(data => {
+                renderResult(data);
+            })
+            .catch(error => {
+                console.error("Error:", error);
+                alert("生成失败，请稍后重试。");
+            });
+        });
+
+        function renderResult(data) {
+            const resultDiv = document.getElementById("result");
+            const resultContent = document.getElementById("resultContent");
+            resultContent.innerHTML = "";
+            if (data.analysis && data.analysis.summary) {
+                const summary = data.analysis.summary;
+                const chartData = data.analysis.chart;
+                // Render summary
+                const summaryCard = document.createElement("div");
+                summaryCard.className = "result-card";
+                summaryCard.innerHTML = `
+                    <h3>${summary.title}</h3>
+                    <p>${summary.description}</p>
+                    <h3>关键指标</h3>
+                    <table>
+                        <tr>
+                            <th>指标</th>
+                            <th>数值</th>
+                        </tr>
+                        ${summary.metrics.map(metric => `<tr><td>${metric.name}</td><td>${metric.value}</td></tr>`).join("")}
+                    </table>
+                `;
+                resultContent.appendChild(summaryCard);
+                // Render chart
+                if (chartData) {
+                    const chartCard = document.createElement("div");
+                    chartCard.className = "result-card";
+                    chartCard.innerHTML = `
+                        <h3>${chartData.title}</h3>
+                        <p>${chartData.description}</p>
+                        <img src="${chartData.imageUrl}" alt="Chart" style="width: 100%; height: auto;"/>
+                    `;
+                    resultContent.appendChild(chartCard);
+                }
+            } else {
+                resultContent.innerHTML = "<p>暂无结果，请稍后重试。</p>";
+            }
+            resultDiv.classList.remove("hidden");
+        }
+
+        // 复制结果
+        document.getElementById("copyResult").addEventListener("click", () => {
+            const resultText = document.getElementById("resultContent").innerText;
+            navigator.clipboard.writeText(resultText).then(() => {
+                alert("结果已复制到剪贴板。");
+            }).catch(() => {
+                alert("复制失败，请手动复制。");
+            });
+        });
+
+        // 导出 JSON
+        document.getElementById("exportJSON").addEventListener("click", () => {
+            const resultData = {
+                // 假设返回的数据结构
+                summary: {
+                    title: "示例标题",
+                    description: "示例描述",
+                    metrics: [
+                        { name: "总发货量", value: 1200 },
+                        { name: "复购率", value: "15%" },
+                        { name: "平均客单价", value: "¥ 150" }
+                    ]
+                },
+                chart: {
+                    title: "示例图表",
+                    description: "示例图表描述",
+                    imageUrl: "https://via.placeholder.com/400x200"
+                }
+            };
+            const jsonString = JSON.stringify(resultData, null, 2);
+            const blob = new Blob([jsonString], { type: "application/json" });
+            const url = URL.createObjectURL(blob);
+            const link = document.createElement("a");
+            link.href = url;
+            link.download = "analysis_result.json";
+            link.click();
+            URL.revokeObjectURL(url);
+        });
+
+        // 声明数据结构
+        window.DATA_SCHEMA = {
+            name: "订单明细",
+            columns: [
+                { key: "order_no", label: "订单号", type: "text", example: "SO1001", required: true },
+                { key: "date", label: "日期", type: "date", example: "2023-09-01", required: true },
+                { key: "amount", label: "金额", type: "number", example: "150", required: true },
+                { key: "customer_id", label: "客户ID", type: "text", example: "CUST1001", required: false }
+            ],
+            sample: [
+                { order_no: "SO1001", date: "2023-09-01", amount: 150, customer_id: "CUST1001" },
+                { order_no: "SO1002", date: "2023-09-02", amount: 200, customer_id: "CUST1002" },
+                // ... 28 more records
+                { order_no: "SO1030", date: "2023-09-30", amount: 220, customer_id: "CUST1030" }
+            ],
+            maxRows: 300
+        };
+    </script>
+</body>
+</html>

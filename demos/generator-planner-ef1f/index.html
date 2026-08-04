@@ -1,0 +1,480 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <title>代州黄酒短视频脚本批量生成器</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>
+        :root {
+            --primary-color: #8B0000;
+            --secondary-color: #FFC107;
+            --background-color: #F5F5F5;
+            --text-color: #333333;
+            --border-radius: 8px;
+            --box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            --button-color: #4CAF50;
+            --button-hover-color: #45a049;
+        }
+        body {
+            font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+            background-color: var(--background-color);
+            color: var(--text-color);
+            margin: 0;
+            padding: 0;
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+        }
+        header {
+            background-color: var(--primary-color);
+            color: white;
+            padding: 20px;
+            text-align: center;
+        }
+        main {
+            flex: 1;
+            padding: 20px;
+            max-width: 1200px;
+            margin: 0 auto;
+            box-sizing: border-box;
+        }
+        .section {
+            margin-bottom: 40px;
+        }
+        .section-title {
+            font-size: 1.5em;
+            margin-bottom: 20px;
+            color: var(--primary-color);
+        }
+        .input-group {
+            margin-bottom: 20px;
+        }
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: bold;
+        }
+        input[type="text"], textarea {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #cccccc;
+            border-radius: var(--border-radius);
+            box-sizing: border-box;
+        }
+        textarea {
+            resize: vertical;
+            height: 150px;
+        }
+        .button-group {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+        .button-group button {
+            flex: 1;
+            padding: 12px;
+            background-color: var(--button-color);
+            color: white;
+            border: none;
+            border-radius: var(--border-radius);
+            cursor: pointer;
+            font-size: 1em;
+            transition: background-color 0.3s;
+        }
+        .button-group button:hover {
+            background-color: var(--button-hover-color);
+        }
+        .preset-buttons {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+        .preset-buttons button {
+            flex: 1;
+            padding: 10px;
+            background-color: var(--secondary-color);
+            border: none;
+            border-radius: var(--border-radius);
+            cursor: pointer;
+            font-size: 1em;
+            transition: background-color 0.3s;
+        }
+        .preset-buttons button:hover {
+            background-color: #e0a800;
+        }
+        .example-result {
+            border: 1px solid #dddddd;
+            padding: 20px;
+            border-radius: var(--border-radius);
+            background-color: white;
+            position: relative;
+        }
+        .example-result::before {
+            content: "示例结果";
+            position: absolute;
+            top: -10px;
+            left: 20px;
+            background-color: var(--background-color);
+            padding: 0 10px;
+            font-size: 0.9em;
+            color: var(--primary-color);
+        }
+        .example-result h3 {
+            margin-top: 0;
+            color: var(--primary-color);
+        }
+        .example-result table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 10px;
+        }
+        .example-result table th, .example-result table td {
+            border: 1px solid #dddddd;
+            padding: 8px;
+            text-align: left;
+        }
+        .example-result table th {
+            background-color: #f9f9f9;
+        }
+        .export-buttons {
+            display: flex;
+            gap: 10px;
+        }
+        .export-buttons button {
+            flex: 1;
+            padding: 10px;
+            background-color: var(--secondary-color);
+            border: none;
+            border-radius: var(--border-radius);
+            cursor: pointer;
+            font-size: 1em;
+            transition: background-color 0.3s;
+        }
+        .export-buttons button:hover {
+            background-color: #e0a800;
+        }
+        footer {
+            background-color: var(--primary-color);
+            color: white;
+            text-align: center;
+            padding: 15px;
+            font-size: 0.9em;
+        }
+        @media (max-width: 768px) {
+            .button-group, .preset-buttons, .export-buttons {
+                flex-direction: column;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div id="data-intake"></div>
+    <header>
+        <h1>代州黄酒短视频脚本批量生成器</h1>
+    </header>
+    <main>
+        <div class="section">
+            <div class="section-title">输入卖点信息</div>
+            <div class="input-group">
+                <label for="product-feature">产品卖点</label>
+                <textarea id="product-feature" placeholder="请输入产品的核心卖点，例如：纯手工酿造，传统工艺，独特口感等"></textarea>
+            </div>
+            <div class="input-group">
+                <label for="target-duration">目标时长</label>
+                <select id="target-duration">
+                    <option value="30">30秒</option>
+                    <option value="60">60秒</option>
+                </select>
+            </div>
+        </div>
+        <div class="section">
+            <div class="section-title">场景预设</div>
+            <div class="preset-buttons">
+                <button id="preset-a">场景A：传统工艺</button>
+                <button id="preset-b">场景B：独特口感</button>
+                <button id="preset-c">场景C：文化传承</button>
+            </div>
+        </div>
+        <div class="section">
+            <div class="section-title">操作按钮</div>
+            <div class="button-group">
+                <button id="generate-button">生成脚本</button>
+                <button id="clear-button">清空/重填</button>
+                <button id="copy-button">复制结果</button>
+                <button id="export-button">导出 JSON</button>
+                <button id="random-button">随机示例</button>
+            </div>
+        </div>
+        <div class="section">
+            <div class="section-title">脚本生成结果</div>
+            <div class="example-result" id="result-panel" style="display: none;">
+                <h3>30秒口播脚本</h3>
+                <p id="script-30s">这是示例脚本内容...</p>
+                <h3>60秒口播脚本</h3>
+                <p id="script-60s">这是示例脚本内容...</p>
+                <h3>分镜描述</h3>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>镜头号</th>
+                            <th>画面描述</th>
+                            <th>时长</th>
+                        </tr>
+                    </thead>
+                    <tbody id="storyboard">
+                        <tr>
+                            <td>1</td>
+                            <td>展示产品细节</td>
+                            <td>5秒</td>
+                        </tr>
+                        <tr>
+                            <td>2</td>
+                            <td>酿酒师手工酿造</td>
+                            <td>10秒</td>
+                        </tr>
+                        <tr>
+                            <td>3</td>
+                            <td>产品特写</td>
+                            <td>5秒</td>
+                        </tr>
+                        <tr>
+                            <td>4</td>
+                            <td>消费者品尝场景</td>
+                            <td>10秒</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </main>
+    <footer>
+        © 2023 代州黄酒短视频脚本批量生成器
+    </footer>
+    <script>
+        const SEED = {
+            "productFeature": "纯手工酿造，传统工艺，独特口感",
+            "targetDuration": "30",
+            "script30s": "欢迎来到代州黄酒的世界！我们坚持纯手工酿造，传承传统工艺，为您带来无与伦比的独特口感。每一瓶酒都蕴含着匠心与热情，让您的味蕾体验非凡。",
+            "script60s": "欢迎来到代州黄酒的世界！我们坚持纯手工酿造，传承传统工艺，为您带来无与伦比的独特口感。每一瓶酒都蕴含着匠心与热情，让您的味蕾体验非凡。我们的酿酒师们用心酿造，确保每一滴酒都达到最高品质。代州黄酒，不仅是一种饮品，更是一种文化的传承。让代州黄酒为您的每一次聚会增添色彩！",
+            "storyboard": [
+                {"镜头号": 1, "画面描述": "展示产品细节", "时长": "5秒"},
+                {"镜头号": 2, "画面描述": "酿酒师手工酿造", "时长": "10秒"},
+                {"镜头号": 3, "画面描述": "产品特写", "时长": "5秒"},
+                {"镜头号": 4, "画面描述": "消费者品尝场景", "时长": "10秒"}
+            ]
+        };
+
+        const SEED_SCENES = {
+            "场景A": {
+                "productFeature": "纯手工酿造，传统工艺",
+                "targetDuration": "30",
+                "script30s": "代州黄酒，传承百年工艺，纯手工酿造，保留最原始的醇香。每一瓶都是匠心之作，让您的每一次品尝都成为享受。",
+                "script60s": "代州黄酒，传承百年工艺，纯手工酿造，保留最原始的醇香。每一瓶都是匠心之作，让您的每一次品尝都成为享受。我们的酿酒师们用心酿造，确保每一滴酒都达到最高品质。代州黄酒，不仅是一种饮品，更是一种文化的传承。让代州黄酒为您的每一次聚会增添色彩！",
+                "storyboard": [
+                    {"镜头号": 1, "画面描述": "展示传统酿酒工具", "时长": "5秒"},
+                    {"镜头号": 2, "画面描述": "酿酒师手工搅拌", "时长": "10秒"},
+                    {"镜头号": 3, "画面描述": "产品特写", "时长": "5秒"},
+                    {"镜头号": 4, "画面描述": "消费者品尝场景", "时长": "10秒"}
+                ]
+            },
+            "场景B": {
+                "productFeature": "独特口感，回味无穷",
+                "targetDuration": "60",
+                "script30s": "代州黄酒，以其独特的口感而闻名。入口醇厚，回味悠长，是您餐桌上不可或缺的佳酿。",
+                "script60s": "代州黄酒，以其独特的口感而闻名。入口醇厚，回味悠长，是您餐桌上不可或缺的佳酿。我们的酿酒师们精心调配，确保每一瓶酒都达到完美的平衡。无论是搭配美食还是单独品尝，代州黄酒都能带给您无与伦比的味觉体验。让代州黄酒为您的每一次用餐增添一份特别。",
+                "storyboard": [
+                    {"镜头号": 1, "画面描述": "展示产品瓶身", "时长": "5秒"},
+                    {"镜头号": 2, "画面描述": "倒入酒杯", "时长": "10秒"},
+                    {"镜头号": 3, "画面描述": "消费者品尝场景", "时长": "5秒"},
+                    {"镜头号": 4, "画面描述": "特写酒杯中酒的色泽", "时长": "10秒"}
+                ]
+            },
+            "场景C": {
+                "productFeature": "文化传承，历史悠久",
+                "targetDuration": "30",
+                "script30s": "代州黄酒，承载着丰富的文化底蕴。作为历史悠久的传统佳酿，它不仅是一种饮品，更是一种文化的象征。",
+                "script60s": "代州黄酒，承载着丰富的文化底蕴。作为历史悠久的传统佳酿，它不仅是一种饮品，更是一种文化的象征。代州黄酒的历史可以追溯到数百年前，传承至今，象征着代州人民的智慧与勤劳。无论是作为礼物还是自用，代州黄酒都是您的不二选择。让代州黄酒带您领略传统文化的魅力。",
+                "storyboard": [
+                    {"镜头号": 1, "画面描述": "展示历史遗迹", "时长": "5秒"},
+                    {"镜头号": 2, "画面描述": "展示传统酿酒场景", "时长": "10秒"},
+                    {"镜头号": 3, "画面描述": "产品特写", "时长": "5秒"},
+                    {"镜头号": 4, "画面描述": "展示品牌标志", "时长": "10秒"}
+                ]
+            }
+        };
+
+        document.getElementById('generate-button').addEventListener('click', () => {
+            const productFeature = document.getElementById('product-feature').value;
+            const targetDuration = document.getElementById('target-duration').value;
+            const inputs = {
+                "productFeature": productFeature,
+                "targetDuration": targetDuration
+            };
+            if (window.DataIntake && window.DataIntake.isReady()) {
+                inputs.data = window.DataIntake.getPayload();
+            } else {
+                inputs.data = SEED;
+            }
+            fetch('/api/generate', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ "inputs": inputs })
+            })
+            .then(response => response.json())
+            .then(data => {
+                document.getElementById('script-30s').innerText = data.script30s;
+                document.getElementById('script-60s').innerText = data.script60s;
+                const storyboard = document.getElementById('storyboard');
+                storyboard.innerHTML = '';
+                data.storyboard.forEach(item => {
+                    const row = document.createElement('tr');
+                    const cell1 = document.createElement('td');
+                    cell1.innerText = item.镜头号;
+                    const cell2 = document.createElement('td');
+                    cell2.innerText = item.画面描述;
+                    const cell3 = document.createElement('td');
+                    cell3.innerText = item.时长;
+                    row.appendChild(cell1);
+                    row.appendChild(cell2);
+                    row.appendChild(cell3);
+                    storyboard.appendChild(row);
+                });
+                document.getElementById('result-panel').style.display = 'block';
+            })
+            .catch(error => {
+                console.error('Error:', error);
+            });
+        });
+
+        document.getElementById('clear-button').addEventListener('click', () => {
+            document.getElementById('product-feature').value = '';
+            document.getElementById('target-duration').value = '30';
+            document.getElementById('result-panel').style.display = 'none';
+        });
+
+        document.getElementById('copy-button').addEventListener('click', () => {
+            const script30s = document.getElementById('script-30s').innerText;
+            const script60s = document.getElementById('script-60s').innerText;
+            const storyboard = document.getElementById('storyboard').innerText;
+            const result = `30秒脚本:\n${script30s}\n\n60秒脚本:\n${script60s}\n\n分镜描述:\n${storyboard}`;
+            navigator.clipboard.writeText(result);
+            alert('结果已复制到剪贴板');
+        });
+
+        document.getElementById('export-button').addEventListener('click', () => {
+            const script30s = document.getElementById('script-30s').innerText;
+            const script60s = document.getElementById('script-60s').innerText;
+            const storyboard = document.getElementById('storyboard').innerText;
+            const result = {
+                "script30s": script30s,
+                "script60s": script60s,
+                "storyboard": storyboard
+            };
+            const blob = new Blob([JSON.stringify(result, null, 2)], { type: "application/json" });
+            const url  = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = '脚本结果.json';
+            a.click();
+            URL.revokeObjectURL(url);
+        });
+
+        document.getElementById('random-button').addEventListener('click', () => {
+            const randomScene = SEED_SCENES[Object.keys(SEED_SCENES)[Math.floor(Math.random() * Object.keys(SEEN_SCENES).length)]];
+            document.getElementById('product-feature').value = randomScene.productFeature;
+            document.getElementById('target-duration').value = randomScene.targetDuration;
+            document.getElementById('script-30s').innerText = randomScene.script30s;
+            document.getElementById('script-60s').innerText = randomScene.script60s;
+            const storyboard = document.getElementById('storyboard');
+            storyboard.innerHTML = '';
+            randomScene.storyboard.forEach(item => {
+                const row = document.createElement('tr');
+                const cell1 = document.createElement('td');
+                cell1.innerText = item.镜头号;
+                const cell2 = document.createElement('td');
+                cell2.innerText = item.画面描述;
+                const cell3 = document.createElement('td');
+                cell3.innerText = item.时长;
+                row.appendChild(cell1);
+                row.appendChild(cell2;
+                row.appendChild(cell3);
+                storyboard.appendChild(row);
+            });
+            document.getElementById('result-panel').style.display = 'block';
+        });
+
+        // Handle preset buttons
+        document.getElementById('preset-a').addEventListener('click', () => {
+            const preset = SEED_SCENES['场景A'];
+            document.getElementById('product-feature').value = preset.productFeature;
+            document.getElementById('target-duration').value = preset.targetDuration;
+            document.getElementById('script-30s').innerText = preset.script30s;
+            document.getElementById('script-60s').innerText = preset.script60s;
+            const storyboard = document.getElementById('storyboard');
+            storyboard.innerHTML = '';
+            preset.storyboard.forEach(item => {
+                const row = document.createElement('tr');
+                const cell1 = document.createElement('td');
+                cell1.innerText = item.镜头号;
+                const cell2 = document.createElement('td');
+                cell2.innerText = item.画面描述;
+                const cell3 = document.createElement('td');
+                cell3.innerText = item.时长;
+                row.appendChild(cell1);
+                row.appendChild(cell2);
+                row.appendChild(cell3);
+                storyboard.appendChild(row);
+            });
+            document.getElementById('result-panel').style.display = 'block';
+        });
+
+        document.getElementById('preset-b').addEventListener('click', () => {
+            const preset = SEED_SCENES['场景B'];
+            document.getElementById('product-feature').value = preset.productFeature;
+            document.getElementById('target-duration').value = preset.targetDuration;
+            document.getElementById('script-30s').innerText = preset.script30s;
+            document.getElementById('script-60s').innerText = preset.script60s;
+            const storyboard = document.getElementById('storyboard');
+            storyboard.innerHTML = '';
+            preset.storyboard.forEach(item => {
+                const row = document.createElement('tr');
+                const cell1 = document.createElement('td');
+                cell1.innerText = item.镜头号;
+                const cell2 = document.createElement('td');
+                cell2.innerText = item.画面描述;
+                const cell3 = document.createElement('td');
+            cell3.innerText = item.时长;
+            row.appendChild(cell1);
+            row.appendChild(cell2);
+            row.appendChild(cell3);
+            storyboard.appendChild(row);
+        });
+        document.getElementById('preset-c').addEventListener('click', () => {
+            const preset = SEED_SCENES['场景C'];
+            document.getElementById('product-feature').value = preset.productFeature;
+            document.getElementById('target-duration').value = preset.targetDuration;
+            document.getElementById('script-30s').innerText = preset.script30s;
+            document.getElementById('script-60s').innerText = preset.script60s;
+            const storyboard = document.getElementById('storyboard');
+            storyboard.innerHTML = '';
+            preset.storyboard.forEach(item => {
+                const row = document.createElement('tr');
+                const cell1 = document.createElement('td');
+                cell1.innerText = item.镜头号;
+                const cell2 = document.getElementById('cell2');
+                cell2.innerText = item.画面描述;
+                const cell3 = document.getElementById('cell3');
+                cell3.innerText = item.时长;
+                row.appendChild(cell1);
+                row.appendChild(cell2);
+                row.appendChild(cell3);
+                storyboard.appendChild(row);
+            });
+            document.getElementById('result-panel').style.display = 'block';
+        });
+    </script>
+</body>
+</html>

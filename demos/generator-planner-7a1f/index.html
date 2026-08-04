@@ -1,0 +1,273 @@
+```html
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<title>代州黄酒短视频脚本批量生成器</title>
+<style>
+:root{
+  --bg:#f6f3ee; --card:#fffdfa; --ink:#3a352f; --ink-soft:#756c64; --muted:#8a7f76;
+  --accent:#a65d4c; --accent-deep:#6d453a; --accent-soft:#f3e7e1;
+  --line:#e6ded3; --line-strong:#d8cdbc;
+  --ok:#4a7c59; --warn:#b42318; --info:#4f8cff;
+  --radius:16px; --radius-sm:10px;
+  --shadow:0 10px 30px rgba(109,69,58,.08);
+  --maxw:1080px;
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);
+  font-family:-apple-system,BlinkMacSystemFont,"PingFang SC","Microsoft YaHei","Songti SC",serif;
+  line-height:1.7;-webkit-font-smoothing:antialiased}
+.wrap{max-width:var(--maxw);margin:0 auto;padding:0 20px}
+
+/* hero 顶部价值主张（禁止只放一个孤零零的 h1） */
+.hero{background:linear-gradient(135deg,var(--accent-deep),var(--accent));color:#fbf4ee;padding:46px 0 38px;text-align:center}
+.hero .kicker{letter-spacing:2px;font-size:12.5px;opacity:.85;margin:0 0 10px}
+.hero h1{font-size:clamp(24px,4.5vw,36px);margin:0 0 12px;font-weight:600}
+.hero .sub{max-width:720px;margin:0 auto;opacity:.92;font-size:14.5px}
+.hero .sub strong{color:#ffe2d3}
+
+/* 区块 / 卡片 */
+main{padding:30px 0 56px}
+.panel,.card{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);padding:22px 24px;box-shadow:var(--shadow);margin-bottom:22px}
+.card h2,.panel h2{margin:0 0 4px;font-size:17px;color:var(--accent-deep)}
+.card .hint,.panel .hint{font-size:12.5px;color:var(--ink-soft);margin:0 0 14px}
+
+/* 双栏布局：左输入卡 / 右结果卡 */
+.layout{display:grid;grid-template-columns:380px 1fr;gap:20px;align-items:start}
+@media(max-width:860px){.layout{grid-template-columns:1fr}}
+
+/* 表单（最小必要字段，优先 select/预设） */
+.form-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.field{display:flex;flex-direction:column;gap:6px}
+.field.wide{grid-column:1/-1}
+.field>span,.field>label{font-size:13px;color:var(--ink-soft)}
+.field input,.field textarea,.field select{padding:10px 12px;border:1px solid var(--line);border-radius:var(--radius-sm);font:inherit;font-size:14px;background:#fff;color:var(--ink);resize:vertical}
+.field input:focus,.field textarea:focus,.field select:focus{outline:none;border-color:var(--accent);box-shadow:0 0 0 3px var(--accent-soft)}
+
+/* 按钮（唯一主按钮 + 少量次要 + 胶囊示例） */
+.actions{display:flex;flex-wrap:wrap;gap:10px;align-items:center;margin-top:16px}
+.btn{border:none;border-radius:var(--radius-sm);padding:11px 18px;font:inherit;font-size:14.5px;cursor:pointer;transition:transform .08s,opacity .2s}
+.btn:active{transform:translateY(1px)}
+.btn.primary{background:var(--accent);color:#fff;font-weight:600}
+.btn.primary.big{padding:13px 24px;font-size:15.5px}
+.btn.ghost{background:var(--accent-soft);color:var(--accent-deep)}
+.btn:disabled{opacity:.5;cursor:not-allowed}
+
+/* 胶囊 / 选项卡 / 标签（标杆通用交互件） */
+.pill,.tab,.chip{border:1px solid var(--line);background:#fff;color:var(--accent-deep);padding:6px 13px;border-radius:999px;font-size:12.5px;cursor:pointer;font-family:inherit;transition:.15s}
+.pill:hover,.tab:hover,.chip:hover{background:var(--accent);color:#fff;border-color:var(--accent)}
+.tab.active,.chip.on{background:var(--accent);color:#fff;border-color:var(--accent)}
+.tag{display:inline-block;font-size:12px;padding:2px 9px;border-radius:999px;background:var(--accent-soft);color:var(--accent-deep)}
+.tag.ok{background:rgba(74,124,89,.16);color:var(--ok)}
+.tag.warn{background:rgba(180,35,24,.14);color:var(--warn)}
+.tag.muted{background:#eee3d6;color:var(--muted)}
+
+/* 结果可视化（禁止死表格/纯文本） */
+.results{display:flex;flex-direction:column;gap:16px}
+.result-card{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);padding:18px 20px;box-shadow:var(--shadow);border-top:4px solid var(--accent)}
+.result-card h3,.result-card h4{margin:0 0 8px;color:var(--accent-deep)}
+.result-card .rc-body{white-space:pre-wrap;font-size:14.5px;line-height:1.75}
+
+/* 时间线（流程类 demo 标杆件） */
+.timeline{position:relative;margin-left:14px}
+.timeline::before{content:"";position:absolute;left:7px;top:6px;bottom:6px;width:2px;background:var(--accent-soft)}
+.tl-step{position:relative;padding:0 0 18px 30px}
+.tl-step::before{content:"";position:absolute;left:0;top:5px;width:16px;height:16px;border-radius:50%;background:var(--accent);border:3px solid var(--accent-soft)}
+.tl-step .tl-name{font-weight:600;font-size:15px}
+.tl-step .tl-body{margin-top:6px;font-size:13.5px;color:var(--ink-soft)}
+</style>
+</head>
+<body>
+<div id="data-intake"></div>
+<div class="wrap">
+  <div class="hero">
+    <div class="kicker">AI 脚本生成工具</div>
+    <h1>代州黄酒短视频脚本批量生成器</h1>
+    <div class="sub">一键生成30秒/60秒口播脚本及分镜，提升内容营销效率，降低外包成本。</div>
+  </div>
+  <main>
+    <div class="layout">
+      <div class="card">
+        <h2>输入</h2>
+        <div class="form-grid">
+          <div class="field">
+            <label for="product">产品卖点</label>
+            <select id="product" name="product">
+              <option value="纯手工酿造">纯手工酿造</option>
+              <option value="传统工艺">传统工艺</option>
+              <option value="历史悠久">历史悠久</option>
+              <option value="独特风味">独特风味</option>
+            </select>
+          </div>
+          <div class="field">
+            <label for="duration">时长</label>
+            <select id="duration" name="duration">
+              <option value="30秒">30秒</option>
+              <option value="60秒">60秒</option>
+            </select>
+          </div>
+          <div class="field wide">
+            <label for="tone">语气</label>
+            <select id="tone" name="tone">
+              <option value="专业">专业</option>
+              <option value="亲和">亲和</option>
+              <option value="幽默">幽默</option>
+              <option value="激情">激情</option>
+            </select>
+          </div>
+          <div class="field">
+            <label for="format">格式</label>
+            <select id="format" name="format">
+              <option value="口播">口播</option>
+              <option value="分镜脚本">分镜脚本</option>
+            </select>
+          </div>
+        </div>
+        <div class="actions">
+          <button id="generate-btn" class="btn primary big">生成脚本</button>
+          <button id="clear-btn" class="btn ghost">清空</button>
+        </div>
+        <div class="pill-container" style="margin-top:16px;display:flex;gap:8px;">
+          <button class="pill" data-value="场景A">场景A</button>
+          <button class="pill" data-value="场景B">场景B</button>
+          <button class="pill" data-value="场景C">场景C</button>
+        </div>
+      </div>
+      <div class="card">
+        <h2>结果</h2>
+        <div id="results" class="results">
+          <div id="example-result" class="result-card">
+            <h3>示例脚本</h3>
+            <div class="rc-body">
+              <p>欢迎来到代州黄酒的世界！今天，我们将为您介绍我们的明星产品——纯手工酿造的代州黄酒。</p>
+              <p>代州黄酒，历史悠久，采用传统工艺酿造，口感醇厚，回味无穷。</p>
+              <p>立即品尝代州黄酒，感受纯正的中国黄酒文化。</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+  <div class="foot">
+    <strong>AI 不给结论性动作，最后那一下由你点</strong>
+  </div>
+</div>
+<script>
+const SEED = {
+  "product": "纯手工酿造",
+  "duration": "30秒",
+  "tone": "专业",
+  "format": "口播"
+};
+
+const EXAMPLES = {
+  "场景A": {
+    "product": "纯手工酿造",
+    "duration": "30秒",
+    "tone": "专业",
+    "format": "口播"
+  },
+  "场景B": {
+    "product": "传统工艺",
+    "duration": "60秒",
+    "tone": "亲和",
+    "format": "分镜脚本"
+  },
+  "场景C": {
+    "product": "历史悠久",
+    "duration": "30秒",
+    "tone": "幽默",
+    "format": "口播"
+  }
+};
+
+const pillButtons = document.querySelectorAll('.pill');
+const generateBtn = document.getElementById('generate-btn');
+const clearBtn = document.getElementById('clear-btn');
+const resultsContainer = document.getElementById('results');
+const exampleResult = document.getElementById('example-result');
+
+pillButtons.forEach(button => {
+  button.addEventListener('click', () => {
+    const value = button.getAttribute('data-value');
+    const data = EXAMPLES[value];
+    for (let key in data) {
+      document.getElementById(key).value = data[key];
+    }
+  });
+});
+
+clearBtn.addEventListener('click', () => {
+  document.getElementById('product').value = '';
+  document.getElementById('duration').value = '';
+  document.getElementById('tone').value = '';
+  document.getElementById('format').value = '';
+  resultsContainer.removeChild(exampleResult);
+});
+
+generateBtn.addEventListener('click', () => {
+  const product = document.getElementById('product').value;
+  const duration = document.getElementById('duration').value;
+  const tone = document.getElementById('tone').value;
+  const format = document.getElementById('format').value;
+  const inputs = { product, duration, tone, format };
+
+  // 如果 DataIntake 已加载，使用 DataIntake 数据
+  if (window.DataIntake && window.DataIntake.isReady()) {
+    inputs.data = window.DataIntake.getPayload();
+  } else {
+    // 否则使用 SEED 数据
+    inputs.data = SEED;
+  }
+
+  fetch('/api/generate', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify({ "inputs": inputs })
+  })
+  .then(response => response.json())
+  .then(data => {
+    // 假设返回 JSON 对象
+    const script = data.script;
+    const timeline = data.timeline;
+
+    // 清空示例结果
+    resultsContainer.removeChild(exampleResult);
+
+    // 创建新的结果卡片
+    const resultCard = document.createElement('div');
+    resultCard.className = 'result-card';
+    resultCard.innerHTML = `<h3>生成的脚本</h3>
+                            <div class="rc-body">
+                              <p>${script}</p>
+                            </div>`;
+    resultsContainer.appendChild(resultCard);
+
+    // 如果有 timeline结果，可以在这里添加更多逻辑
+    // 例如生成时间线
+    if (timeline) {
+      const timelineCard = document.createElement('div');
+      timelineCard.className = 'result-card';
+      timelineCard.innerHTML = `<h3>分镜时间线</h3>
+                                <div class="rc-body">
+                                  <div class="timeline">
+                                    ${timeline.map(step => `<div class="tl-step">
+                                                              <div class="tl-name">${step.name}</div>
+                                                              <div class="tl-body">${step.body}</div>
+                                                            </div>`).join('')}
+                                  </div>
+                                </div>`;
+      resultsContainer.appendChild(timelineCard);
+    }
+  })
+  .catch(error => {
+    console.error('Error:', error);
+  });
+});
+</script>
+</body>
+</html>
+```
