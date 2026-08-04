@@ -1,0 +1,258 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<title>AI 复购率与客单价看板生成器</title>
+<style>
+:root{
+  --bg:#f6f3ee; --card:#fffdfa; --ink:#3a352f; --ink-soft:#756c64; --muted:#8a7f76;
+  --accent:#a65d4c; --accent-deep:#6d453a; --accent-soft:#f3e7e1;
+  --line:#e6ded3; --line-strong:#d8cdbc;
+  --ok:#4a7c59; --warn:#b42318; --info:#4f8cff;
+  --radius:16px; --radius-sm:10px;
+  --shadow:0 10px 30px rgba(109,69,58,.08);
+  --maxw:1080px;
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);
+  font-family:-apple-system,BlinkMacSystemFont,"PingFang SC","Microsoft YaHei","Songti SC",serif;
+  line-height:1.7;-webkit-font-smoothing:antialiased}
+.wrap{max-width:var(--maxw);margin:0 auto;padding:0 20px}
+
+/* hero 顶部价值主张 */
+.hero{background:linear-gradient(135deg,var(--accent-deep),var(--accent));color:#fbf4ee;padding:46px 0 38px;text-align:center}
+.hero .kicker{letter-spacing:2px;font-size:12.5px;opacity:.85;margin:0 0 10px}
+.hero h1{font-size:clamp(24px,4.5vw,36px);margin:0 0 12px;font-weight:600}
+.hero .sub{max-width:720px;margin:0 auto;opacity:.92;font-size:14.5px}
+.hero .sub strong{color:#ffe2d3}
+
+/* 区块 / 卡片 */
+main{padding:30px 0 56px}
+.panel,.card{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);padding:22px 24px;box-shadow:var(--shadow);margin-bottom:22px}
+.card h2,.panel h2{margin:0 0 4px;font-size:17px;color:var(--accent-deep)}
+.card .hint,.panel .hint{font-size:12.5px;color:var(--ink-soft);margin:0 0 14px}
+
+/* 双栏布局：左输入卡 / 右结果卡 */
+.layout{display:grid;grid-template-columns:380px 1fr;gap:20px;align-items:start}
+@media(max-width:860px){.layout{grid-template-columns:1fr}}
+
+/* 表单 */
+.form-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.field{display:flex;flex-direction:column;gap:6px}
+.field.wide{grid-column:1/-1}
+.field>span,.field>label{font-size:13px;color:var(--ink-soft)}
+.field input,.field textarea,.field select{padding:10px 12px;border:1px solid var(--line);border-radius:var(--radius-sm);font:inherit;font-size:14px;background:#fff;color:var(--ink);resize:vertical}
+.field input:focus,.field textarea:focus,.field select:focus{outline:none;border-color:var(--accent);box-shadow:0 0 0 3px var(--accent-soft)}
+
+/* 按钮 */
+.actions{display:flex;flex-wrap:wrap;gap:10px;align-items:center;margin-top:16px}
+.btn{border:none;border-radius:var(--radius-sm);padding:11px 18px;font:inherit;font-size:14.5px;cursor:pointer;transition:transform .08s,opacity .2s}
+.btn:active{transform:translateY(1px)}
+.btn.primary{background:var(--accent);color:#fff;font-weight:600}
+.btn.primary.big{padding:13px 24px;font-size:15.5px}
+.btn.ghost{background:var(--accent-soft);color:var(--accent-deep)}
+.btn:disabled{opacity:.5;cursor:not-allowed}
+
+/* 胶囊 / 标签 */
+.pill,.chip{border:1px solid var(--line);background:#fff;color:var(--accent-deep);padding:6px 13px;border-radius:999px;font-size:12.5px;cursor:pointer;font-family:inherit;transition:.15s}
+.pill:hover,.chip:hover{background:var(--accent);color:#fff;border-color:var(--accent)}
+.chip.on{background:var(--accent);color:#fff;border-color:var(--accent)}
+
+/* 结果可视化 */
+.results{display:grid;gap:16px}
+.result-card{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);padding:18px 20px;box-shadow:var(--shadow);border-top:4px solid var(--accent)}
+.result-card h3,.result-card h4{margin:0 0 8px;color:var(--accent-deep)}
+.result-card .rc-body{white-space:pre-wrap;font-size:14.5px;line-height:1.75}
+
+/* 状态 / 加载 */
+.status{font-size:12.5px;color:var(--ink-soft);margin-top:8px;min-height:16px}
+.loading{color:var(--ink-soft)}
+.error{color:var(--warn)}
+.spinner{display:inline-block;width:14px;height:14px;border:2px solid rgba(168,65,42,.25);border-top-color:var(--accent);border-radius:50%;animation:spin .8s linear infinite;vertical-align:middle;margin-right:6px}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+/* 底部理念 */
+.foot{text-align:center;font-size:12.5px;color:var(--ink-soft);padding:22px}
+.foot strong{color:var(--accent-deep)}
+</style>
+</head>
+<body>
+<div id="data-intake"></div>
+<div class="wrap">
+  <div class="hero">
+    <div class="kicker">AI 驱动的电商数据分析</div>
+    <h1>AI 复购率与客单价看板生成器</h1>
+    <div class="sub">无需昂贵 BI 系统，用 AI 分析微信订单/抖音小店/快递 100 数据，生成每日发货+复购率+客单价看板</div>
+  </div>
+  <div class="layout">
+    <div class="card">
+      <h2>输入数据</h2>
+      <div class="form-grid">
+        <div class="field">
+          <label>数据源</label>
+          <select>
+            <option>微信订单</option>
+            <option>抖音小店</option>
+            <option>快递 100</option>
+          </select>
+        </div>
+        <div class="field">
+          <label>日期范围</label>
+          <input type="date" value="2023-01-01">
+          <input type="date" value="2023-12-31">
+        </div>
+        <div class="field wide">
+          <label>订单数据</label>
+          <textarea placeholder="粘贴您的订单数据..." rows="5"></textarea>
+        </div>
+      </div>
+      <div class="actions">
+        <button class="btn primary" id="generate">生成看板</button>
+        <button class="btn ghost" id="clear">清空</button>
+        <div class="pill" id="preset1">场景A</div>
+        <div class="pill" id="preset2">场景B</div>
+      </div>
+      <div class="status" id="status"></div>
+    </div>
+    <div class="card">
+      <h2>分析结果</h2>
+      <div class="results" id="results">
+        <div class="result-card">
+          <h3>示例结果</h3>
+          <div class="rc-body">
+            <p>总订单数：12,345</p>
+            <p>复购率：15%</p>
+            <p>平均客单价：¥123.45</p>
+            <p>每日发货量：412 件</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="foot">
+    <strong>AI 不提供结论性动作，最后那一下由你点。</strong> 用数据驱动决策，而不是被数据淹没。
+  </div>
+</div>
+<script>
+const SEED = {
+  dataSource: "微信订单",
+  dateRange: ["2023-01-01", "2023-12-31"],
+  orderData: `订单号,客户名称,日期,金额,商品名称,数量
+SO1001,张三,2023-01-15,¥100,商品A,2
+SO1002,李四,2023-02-20,¥200,商品B,1
+SO1003,王五,2023-03-25,¥150,商品C,3
+SO1004,赵六,2023-04-30,¥120,商品D,2
+SO1005,钱七,2023-05-05,¥180,商品E,1
+SO1006,孙八,2023-06-10,¥220,商品F,4
+SO1007,周九,2023-07-15,¥130,商品G,2
+SO1008,吴十,2023-08-20,¥160,2023-08-20,3
+SO1009,郑十一,2023-09-25,¥210,商品I,1
+SO1010,冯十二,2023-10-30,¥190,商品J,2
+SO1011,陈十三,2023-11-05,¥170,商品K,3
+SO1012,褚十四,2023-12-10,¥140,商品L,2
+SO1013,卫十五,2023-01-15,¥150,商品M,1
+SO1014,蒋十六,2023-02-20,¥230,商品N,4
+SO1015,沈十七,2023-03-25,¥160,商品O,2`,
+  preset1: {
+    dataSource: "微信订单",
+    dateRange: ["2023-01-01", "2023-12-31"],
+    orderData: `订单号,客户名称,日期,金额,商品名称,数量
+SO2001,张三,2023-01-15,¥100,商品A,2
+SO2002,李四,2023-02-20,¥200,商品B,1
+SO2003,王五,2023-03-25,¥150,商品C,3
+SO2004,赵六,2023-04-30,¥120,商品D,2
+SO2005,钱七,2023-05-05,¥180,商品E,1
+SO2006,孙八,2023-06-10,¥220,商品F,4`
+  },
+  preset2: {
+    dataSource: "抖音小店",
+    dateRange: ["2023-01-01", "2023-12-31"],
+    orderData: `订单号,客户名称,日期,金额,商品名称,数量
+SO3001,张三,2023-01-15,¥100,商品A,2
+SO3002,李四,2023-02-20,¥200,商品B,1
+SO3003,王五,2023-03-25,¥150,商品C,3`
+  }
+};
+
+window.DATA_SCHEMA = {
+  name: "订单明细",
+  columns: [
+    {key:"order_no", label:"订单号", type:"text", example:"SO...", required:true},
+    {key:"customer_name", label:"客户名称", type:"text", example:"张三", required:true},
+    {key:"date", label:"日期", type:"date", example:"2023-01-15", required:true},
+    {key:"amount", label:"金额", type:"currency", example:"¥100", required:true},
+    {key:"product_name", label:"商品名称", type:"text", example:"商品A", required:true},
+    {key:"quantity", label:"数量", type:"number", example:"2", required:true}
+  ],
+  sample: SEED.orderData.trim().split("\n").slice(1),
+  maxRows: 300
+};
+
+document.getElementById("generate").addEventListener("click", () => {
+  const dataSource = document.querySelector("select").value;
+  const dateRange = Array.from(document.querySelectorAll("input[type=date]")).map(input => input.value);
+  const orderData = document.querySelector("textarea").value.trim();
+  const inputs = {
+    dataSource,
+    dateRange,
+    orderData
+  };
+  fetch("/api/generate", {
+    method: "POST",
+    headers: {"Content-Type": "application/json"},
+    body: JSON.stringify({inputs})
+  }).then(response => response.json()).then(data => {
+    document.getElementById("results").innerHTML = `
+      <div class="result-card">
+        <h3>分析结果</h3>
+        <div class="rc-body">
+          ${data.result}
+        </div>
+      </div>
+    `;
+    document.getElementById("status").innerHTML = "";
+  }).catch(error => {
+    document.getElementById("status").innerHTML = "发生错误，请重试";
+    console.error(error);
+  });
+});
+
+document.getElementById("clear").addEventListener("click", () => {
+  document.querySelector("select").value = "微信订单";
+  document.querySelectorAll("input[type=date]").forEach(input => input.value = "");
+  document.querySelector("textarea").value = "";
+  document.getElementById("results").innerHTML = `
+    <div class="result-card">
+      <h3>示例结果</h3>
+      <div class="rc-body">
+        <p>总订单数：12,345</p>
+        <p>复购率：15%</p>
+        <p>平均客单价：¥123.45</p>
+        <p>每日发货量：412 件</p>
+      </div>
+    </div>
+  `;
+  document.getElementById("status").innerHTML = "";
+});
+
+document.querySelectorAll(".pill").forEach(pill => {
+  pill.addEventListener("click", () => {
+    const preset = SEED[pill.id];
+    document.querySelector("select").value = preset.dataSource;
+    const [startDate, endDate] = preset.dateRange;
+    document.querySelectorAll("input[type=date]").forEach((input, index) => input.value = preset.dateRange[index]);
+    document.querySelector("textarea").value = preset.orderData;
+    document.getElementById("results").innerHTML = `
+      <div class="result-card">
+        <h3>示例结果</h3>
+        <div class="rc-body">
+          ${data.result}
+        </div>
+      </div>
+    `;
+    document.getElementById("status").innerHTML = "";
+  });
+});
+</script>
+</body>
+</html>

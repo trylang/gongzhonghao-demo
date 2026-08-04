@@ -1,0 +1,262 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <title>代州黄酒短视频脚本批量生成器</title>
+    <style>
+        /* 粘贴设计系统 CSS */
+        :root{
+          --bg:#f6f3ee; --card:#fffdfa; --ink:#3a352f; --ink-soft:#756c64; --muted:#8a7f76;
+          --accent:#a65d4c; --accent-deep:#6d453a; --accent-soft:#f3e7e1;
+          --line:#e6ded3; --line-strong:#d8cdbc;
+          --ok:#4a7c59; --warn:#b42318; --info:#4f8cff;
+          --radius:16px; --radius-sm:10px;
+          --shadow:0 10px 30px rgba(109,69,58,.08);
+          --maxw:1080px;
+        }
+        *{box-sizing:border-box}
+        body{margin:0;background:var(--bg);color:var(--ink);
+          font-family:-apple-system,BlinkMacSystemFont,"PingFang SC","Microsoft YaHei","Songti SC",serif;
+          line-height:1.7;-webkit-font-smoothing:antialiased}
+        .wrap{max-width:var(--maxw);margin:0 auto;padding:0 20px}
+
+        /* hero 顶部价值主张 */
+        .hero{background:linear-gradient(135deg,var(--accent-deep),var(--accent));color:#fbf4ee;padding:46px 0 38px;text-align:center}
+        .hero .kicker{letter-spacing:2px;font-size:12.5px;opacity:.85;margin:0 0 10px}
+        .hero h1{font-size:clamp(24px,4.5vw,36px);margin:0 0 12px;font-weight:600}
+        .hero .sub{max-width:720px;margin:0 auto;opacity:.92;font-size:14.5px}
+        .hero .sub strong{color:#ffe2d3}
+
+        /* 区块 / 卡片 */
+        main{padding:30px 0 56px}
+        .panel,.card{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);padding:22px 24px;box-shadow:var(--shadow);margin-bottom:22px}
+        .card h2,.panel h2{margin:0 0 4px;font-size:17px;color:var(--accent-deep)}
+        .card .hint,.panel .hint{font-size:12.5px;color:var(--ink-soft);margin:0 0 14px}
+
+        /* 双栏布局 */
+        .layout{display:grid;grid-template-columns:380px 1fr;gap:20px;align-items:start}
+        @media(max-width:860px){.layout{grid-template-columns:1fr}}
+
+        /* 输入表单 */
+        .form-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+        .field{display:flex;flex-direction:column;gap:6px}
+        .field.wide{grid-column:1/-1}
+        .field>span,.field>label{font-size:13px;color:var(--ink-soft)}
+        .field input,.field textarea,.field select{padding:10px 12px;border:1px solid var(--line);border-radius:var(--radius-sm);font:inherit;font-size:14px;background:#fff;color:var(--ink);resize:vertical}
+        .field input:focus,.field textarea:focus,.field select:focus{outline:none;border-color:var(--accent);box-shadow:0 0 0 3px var(--accent-soft)}
+
+        /* 按钮 */
+        .actions{display:flex;flex-wrap:wrap;gap:10px;align-items:center;margin-top:16px}
+        .btn{border:none;border-radius:var(--radius-sm);padding:11px 18px;font:inherit;font-size:14.5px;cursor:pointer;transition:transform .08s,opacity .2s}
+        .btn:active{transform:translateY(1px)}
+        .btn.primary{background:var(--accent);color:#fff;font-weight:600}
+        .btn.primary.big{padding:13px 24px;font-size:15.5px}
+        .btn.ghost{background:var(--accent-soft);color:var(--accent-deep)}
+        .btn:disabled{opacity:.5;cursor:not-allowed}
+
+        /* 结果可视化 */
+        .results{display:grid;gap:16px}
+        .result-card{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);padding:18px 20px;box-shadow:var(--shadow);border-top:4px solid var(--accent)}
+        .result-card h3,.result-card h4{margin:0 0 8px;color:var(--accent-deep)}
+        .result-card .rc-body{white-space:pre-wrap;font-size:14.5px;line-height:1.75}
+
+        /* 胶囊按钮 */
+        .pill{background:var(--accent-soft);color:var(--accent-deep);padding:6px 13px;border-radius:999px;font-size:12.5px;cursor:pointer;transition:.15s}
+        .pill:hover{background:var(--accent);color:#fff;border-color:var(--accent)}
+        .pill.active{background:var(--accent);color:#fff;border-color:var(--accent)}
+
+        /* 底部理念 */
+        .foot{text-align:center;font-size:12.5px;color:var(--ink-soft);padding:22px}
+        .foot strong{color:var(--accent-deep)}
+        @media(max-width:640px){.form-grid{grid-template-columns:1fr}}
+    </style>
+</head>
+<body>
+    <div id="data-intake"></div>
+    <div class="wrap">
+        <div class="hero">
+            <div class="kicker">AI 工具</div>
+            <h1>代州黄酒短视频脚本生成器</h1>
+            <div class="sub">
+                输入一个卖点，自动生成30秒/60秒口播脚本和分镜，让您的内容营销更高效。
+            </div>
+        </div>
+        <main>
+            <div class="layout">
+                <div class="card">
+                    <h2>输入您的产品卖点</h2>
+                    <div class="form-grid">
+                        <div class="field">
+                            <label for="product-name">产品名称</label>
+                            <input type="text" id="product-name" placeholder="例如：代州黄酒">
+                        </div>
+                        <div class="field">
+                            <label for="product-slogan">产品口号</label>
+                            <input type="text" id="product-slogan" placeholder="例如：传承千年，品味经典">
+                        </div>
+                        <div class="field wide">
+                            <label for="product-feature">产品卖点</label>
+                            <textarea id="product-feature" rows="4" placeholder="例如：采用传统工艺酿造，口感醇厚，回味悠长"></textarea>
+                        </div>
+                        <div class="field">
+                            <label for="video-duration">视频时长</label>
+                            <select id="video-duration">
+                                <option value="30">30秒</option>
+                                <option value="60">60秒</option>
+                            </select>
+                        </div>
+                        <div class="field">
+                            <label for="video-style">视频风格</label>
+                            <select id="video-style">
+                                <option value="口播">口播</option>
+                                <option value="剧情">剧情</option>
+                                <option value="动画">动画</option>
+                            </select>
+                        </div>
+                        <div class="field">
+                            <label for="target-audience">目标受众</label>
+                            <input type="text" id="target-audience" placeholder="例如：25-40岁白领">
+                        </div>
+                    </div>
+                    <div class="actions">
+                        <button class="btn primary" id="generate-btn">生成脚本</button>
+                        <button class="btn ghost" id="clear-btn">清空</button>
+                        <button class="btn ghost" id="copy-btn" disabled>复制结果</button>
+                    </div>
+                    <div class="status" id="status"></div>
+                </div>
+                <div class="card">
+                    <h2>生成的短视频脚本</h2>
+                    <div class="results" id="results">
+                        <!-- 示例结果 -->
+                        <div class="result-card">
+                            <h3>示例脚本</h3>
+                            <div class="rc-body">
+                                <p>【画面】代州黄酒的酿造场景</p>
+                                <p>【旁白】传承千年，品味经典。代州黄酒，采用传统工艺酿造，口感醇厚，回味悠长。</p>
+                                <p>【画面】产品特写</p>
+                                <p>【旁白】选择代州黄酒，让您的每一次品尝都成为享受。</p>
+                                <p>【画面】品牌 logo</p>
+                                <p>【旁白】代州黄酒，传承经典，品味不凡。</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+        <div class="foot">
+            <strong>AI 不给结论性动作，最后那一下由你点</strong>
+        </div>
+    </div>
+    <script>
+        // 种子数据
+        const SEED = {
+            productName: "代州黄酒",
+            productSlogan: "传承千年，品味经典",
+            productFeature: "采用传统工艺酿造，口感醇厚，回味悠长",
+            videoDuration: "30",
+            videoStyle: "口播",
+            targetAudience: "25-40岁白领"
+        };
+
+        // 填充示例数据
+        document.getElementById("product-name").value = SEED.productName;
+        document.getElementById("product-slogan").value = SEED.productSlogan;
+        document.getElementById("product-feature").value = SEED.productFeature;
+        document.getElementById("video-duration").value = SEED.videoDuration;
+        document.getElementById("video-style").value = SEED.videoStyle;
+        document.getElementById("target-audience").value = SEED.targetAudience;
+
+        // 数据入口组件
+        window.DATA_SCHEMA = {
+            name: "产品卖点",
+            columns: [
+                { key: "productName", label: "产品名称", type: "text", example: "代州黄酒", required: true },
+                { key: "productSlogan", label: "产品口号", type: "text", example: "传承千年，品味经典", required: true },
+                { key: "productFeature", label: "产品卖点", type: "text", example: "采用传统工艺酿造，口感醇厚，回味悠长", required: true },
+                { key: "videoDuration", label: "视频时长", type: "select", options: ["30", "60"], required: true },
+                { key: "videoStyle", label: "视频风格", type: "select", options: ["口播", "剧情", "动画"], required: true },
+                { key: "targetAudience", label: "目标受众", type: "text", example: "25-40岁白领", required: true }
+            ],
+            sample: [
+                {
+                    productName: "代州黄酒",
+                    productSlogan: "传承千年，品味经典",
+                    productFeature: "采用传统工艺酿造，口感醇厚，回味悠长",
+                    videoDuration: "30",
+                    videoStyle: "口播",
+                    targetAudience: "25-40岁白领"
+                }
+            ],
+            maxRows: 300
+        };
+
+        // 获取数据入口组件数据
+        function getDataIntakePayload() {
+            if (window.DataIntake && window.DataIntake.isReady()) {
+                return window.DataIntake.getPayload();
+            } else {
+                return SEED;
+            }
+        }
+
+        // 生成按钮点击事件
+        document.getElementById("generate-btn").addEventListener("click", function () {
+            const payload = getDataIntakePayload();
+            const status = document.getElementById("status");
+            status.innerText = "生成中...";
+            status.className = "status loading";
+            document.getElementById("copy-btn").disabled = true;
+
+            fetch("/api/generate", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify({ inputs: payload })
+            })
+            .then(response => response.json())
+            .then(data => {
+                const results = document.getElementById("results");
+                results.innerHTML = "";
+                if (data.result) {
+                    results.innerHTML = `<div class="result-card"><h3>${data.result.title}</h3><div class="rc-body">${data.result.script}</div></div>`;
+                } else {
+                    results.innerHTML = `<div class="result-card"><h3>错误</h3><div class="rc-body">${data.error}</div></div>`;
+                }
+                status.innerText = "";
+                document.getElementById("copy-btn").disabled = false;
+            })
+            .catch(error => {
+                const results = document.getElementById("results");
+                results.innerHTML = `<div class="result-card"><h3>错误</h3><div class="rc-body">${error.message}</div></div>`;
+                status.innerText = "";
+                document.getElementById("copy-btn").disabled = false;
+            });
+        });
+
+        // 清空按钮点击事件
+        document.getElementById("clear-btn").addEventListener("click", function () {
+            document.getElementById("product-name").value = "";
+            document.getElementById("product-slogan").value = "";
+            document.getElementById("product-feature").value = "";
+            document.getElementById("video-duration").value = "30";
+            document.getElementById("video-style").value = "口播";
+            document.getElementById("target-audience").value = "";
+            document.getElementById("results").innerHTML = "";
+            document.getElementById("copy-btn").disabled = true;
+            document.getElementById("status").innerText = "";
+        });
+
+        // 复制按钮点击事件
+        document.getElementById("copy-btn").addEventListener("click", function () {
+            const results = document.getElementById("results").innerText;
+            navigator.clipboard.writeText(results).then(() => {
+                document.getElementById("status").innerText = "已复制到剪贴板";
+            }).catch(() => {
+                document.getElementById("status").innerText = "复制失败";
+            });
+        });
+    </script>
+</body>
+</html>
