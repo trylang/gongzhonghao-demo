@@ -1,0 +1,320 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<title>电商复购率与用户画像分析工具</title>
+<style>
+:root{
+  --bg:#f6f3ee; --card:#fffdfa; --ink:#3a352f; --ink-soft:#756c64; --muted:#8a7f76;
+  --accent:#a65d4c; --accent-deep:#6d453a; --accent-soft:#f3e7e1;
+  --line:#e6ded3; --line-strong:#d8cdbc;
+  --ok:#4a7c59; --warn:#b42318; --info:#4f8cff;
+  --radius:16px; --radius-sm:10px;
+  --shadow:0 10px 30px rgba(109,69,58,.08);
+  --maxw:1080px;
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);
+  font-family:-apple-system,BlinkMacSystemFont,"PingFang SC","Microsoft YaHei","Songti SC",serif;
+  line-height:1.7;-webkit-font-smoothing:antialiased}
+.wrap{max-width:var(--maxw);margin:0 auto;padding:0 20px}
+
+/* hero 顶部价值主张（禁止只放一个孤零零的 h1） */
+.hero{background:linear-gradient(135deg,var(--accent-deep),var(--accent));color:#fbf4ee;padding:46px 0 38px;text-align:center}
+.hero .kicker{letter-spacing:2px;font-size:12.5px;opacity:.85;margin:0 0 10px}
+.hero h1{font-size:clamp(24px,4.5vw,36px);margin:0 0 12px;font-weight:600}
+.hero .sub{max-width:720px;margin:0 auto;opacity:.92;font-size:14.5px}
+.hero .sub strong{color:#ffe2d3}
+
+/* 区块 / 卡片 */
+main{padding:30px 0 56px}
+.panel,.card{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);padding:22px 24px;box-shadow:var(--shadow);margin-bottom:22px}
+.card h2,.panel h2{margin:0 0 4px;font-size:17px;color:var(--accent-deep)}
+.card .hint,.panel .hint{font-size:12.5px;color:var(--ink-soft);margin:0 0 14px}
+
+/* 双栏布局：左输入卡 / 右结果卡 */
+.layout{display:grid;grid-template-columns:380px 1fr;gap:20px;align-items:start}
+@media(max-width:860px){.layout{grid-template-columns:1fr}}
+
+/* 表单（最小必要字段，优先 select/预设） */
+.form-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.field{display:flex;flex-direction:column;gap:6px}
+.field.wide{grid-column:1/-1}
+.field>span,.field>label{font-size:13px;color:var(--ink-soft)}
+.field input,.field textarea,.field select{padding:10px 12px;border:1px solid var(--line);border-radius:var(--radius-sm);font:inherit;font-size:14px;background:#fff;color:var(--ink);resize:vertical}
+.field input:focus,.field textarea:focus,.field select:focus{outline:none;border-color:var(--accent);box-shadow:0 0 0 3px var(--accent-soft)}
+
+/* 按钮（唯一主按钮 + 少量次要 + 胶囊示例） */
+.actions{display:flex;flex-wrap:wrap;gap:10px;align-items:center;margin-top:16px}
+.btn{border:none;border-radius:var(--radius-sm);padding:11px 18px;font:inherit;font-size:14.5px;cursor:pointer;transition:transform .08s,opacity .2s}
+.btn:active{transform:translateY(1px)}
+.btn.primary{background:var(--accent);color:#fff;font-weight:600}
+.btn.primary.big{padding:13px 24px;font-size:15.5px}
+.btn.ghost{background:var(--accent-soft);color:var(--accent-deep)}
+.btn:disabled{opacity:.5;cursor:not-allowed}
+
+/* 胶囊 / 选项卡 / 标签（标杆通用交互件） */
+.pill,.tab,.chip{border:1px solid var(--line);background:#fff;color:var(--accent-deep);padding:6px 13px;border-radius:999px;font-size:12.5px;cursor:pointer;font-family:inherit;transition:.15s}
+.pill:hover,.tab:hover,.chip:hover{background:var(--accent);color:#fff;border-color:var(--accent)}
+.tab.active,.chip.on{background:var(--accent);color:#fff;border-color:var(--accent)}
+.tag{display:inline-block;font-size:12px;padding:2px 9px;border-radius:999px;background:var(--accent-soft);color:var(--accent-deep)}
+.tag.ok{background:rgba(74,124,89,.16);color:var(--ok)}
+.tag.warn{background:rgba(180,35,24,.14);color:var(--warn)}
+.tag.muted{background:#eee3d6;color:var(--muted)}
+
+/* 结果可视化（禁止死表格/纯文本） */
+.results{display:grid;gap:16px}
+.result-card{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);padding:18px 20px;box-shadow:var(--shadow);border-top:4px solid var(--accent)}
+.result-card h3,.result-card h4{margin:0 0 8px;color:var(--accent-deep)}
+.result-card .rc-body{white-space:pre-wrap;font-size:14.5px;line-height:1.75}
+
+/* 对比矩阵（标杆通用：ai-landing 等） */
+.matrix{width:100%;border-collapse:collapse;margin:10px 0;font-size:13px}
+.matrix th,.matrix td{border:1px solid var(--line);padding:8px 10px;text-align:left;vertical-align:top}
+.matrix th{background:var(--accent-soft);color:var(--accent-deep);font-weight:600}
+.matrix tr:nth-child(even) td{background:#fdfbf7}
+
+/* 节点流 / 时间线（流程类 demo 标杆件） */
+.node-flow{display:flex;flex-wrap:wrap;align-items:center;gap:6px;margin:6px 0 14px}
+.node-flow .arrow{color:var(--muted);font-weight:700}
+.node{border:1px solid var(--line);border-radius:10px;padding:8px 10px;background:#fff;min-width:92px;text-align:center}
+.node .node-name{font-size:13px;font-weight:600;margin-bottom:4px}
+.timeline{position:relative;margin-left:14px}
+.timeline::before{content:"";position:absolute;left:7px;top:6px;bottom:6px;width:2px;background:var(--accent-soft)}
+.tl-step{position:relative;padding:0 0 18px 30px}
+.tl-step::before{content:"";position:absolute;left:0;top:5px;width:16px;height:16px;border-radius:50%;background:var(--accent);border:3px solid var(--accent-soft)}
+.tl-step .tl-name{font-weight:600;font-size:15px}
+.tl-step .tl-body{margin-top:6px;font-size:13.5px;color:var(--ink-soft)}
+
+/* 汇总卡 / 结论条 */
+.summary-card{display:flex;flex-wrap:wrap;gap:10px;margin:10px 0}
+.summary-card>div{flex:1;min-width:120px;background:var(--accent-soft);border:1px solid var(--line);border-radius:10px;padding:12px;text-align:center}
+.summary-card .big{display:block;font-size:18px;font-weight:700;color:var(--accent-deep)}
+.summary-card label{font-size:12px;color:var(--muted)}
+.conclusion{background:rgba(74,124,89,.12);border-left:4px solid var(--ok);padding:10px 14px;border-radius:8px;font-weight:600;color:#36543f}
+
+/* 状态 / 加载 */
+.status{font-size:12.5px;color:var(--ink-soft);margin-top:8px;min-height:16px}
+.loading{color:var(--ink-soft)}
+.error{color:var(--warn)}
+.spinner{display:inline-block;width:14px;height:14px;border:2px solid rgba(168,65,42,.25);border-top-color:var(--accent);border-radius:50%;animation:spin .8s linear infinite;vertical-align:middle;margin-right:6px}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+/* 底部理念 */
+.foot{text-align:center;font-size:12.5px;color:var(--ink-soft);padding:22px}
+.foot strong{color:var(--accent-deep)}
+@media(max-width:640px){.form-grid{grid-template-columns:1fr}}
+
+</style>
+</head>
+<body>
+<div id="data-intake"></div>
+<div class="wrap">
+  <div class="hero">
+    <div class="kicker">电商数据分析工具</div>
+    <h1>可视化复购率与用户画像</h1>
+    <div class="sub">通过自动化的数据整合与智能分析，帮助您快速掌握用户行为趋势，优化营销策略，提升复购率。</div>
+  </div>
+  <main>
+    <div class="layout">
+      <div class="card">
+        <h2>输入参数</h2>
+        <div class="form-grid">
+          <div class="field">
+            <label>数据来源</label>
+            <select>
+              <option>微信订单</option>
+              <option>抖音小店</option>
+              <option>快递100</option>
+            </select>
+          </div>
+          <div class="field">
+            <label>时间范围</label>
+            <input type="date" placeholder="开始日期">
+            <input type="date" placeholder="结束日期">
+          </div>
+          <div class="field">
+            <label>复购周期</label>
+            <select>
+              <option>7天</option>
+              <option>14天</option>
+              <option>30天</option>
+            </select>
+          </div>
+          <div class="field wide">
+            <label>自定义筛选</label>
+            <input type="text" placeholder="例如：地区/年龄/性别">
+          </div>
+        </div>
+        <div class="actions">
+          <button class="btn primary" id="generate-btn">生成分析</button>
+          <button class="btn ghost" id="clear-btn">清空</button>
+        </div>
+        <div class="status" id="status-msg"></div>
+      </div>
+      <div class="card">
+        <h2>结果展示</h2>
+        <div id="results" class="results"></div>
+      </div>
+    </div>
+  </main>
+  <div class="foot">
+    <strong>AI + 数据智能</strong> 让您的电商运营更高效
+  </div>
+</div>
+<script>
+const SEED = {
+  "复购率": "15%",
+  "客单价": "¥120",
+  "总订单数": "500",
+  "新客户数": "120",
+  "老客户数": "380",
+  "复购周期分析": {
+    "7天": "5%",
+    "14天": "7%",
+    "30天": "3%",
+    "其他": "85%"
+  },
+  "用户画像": {
+    "性别": {
+      "男性": "40%",
+      "女性": "60%"
+    },
+    "年龄": {
+      "18-25": "25%",
+      "26-35": "40%",
+      "36-45": "20%",
+      "46+": "15%"
+    },
+    "地域": {
+      "一线城市": "30%",
+      "二线城市": "40%",
+      "三线城市": "20%",
+      "其他": "10%"
+    }
+  },
+  "可视化图表": {
+    "复购率趋势": "图表数据",
+    "客单价分布": "图表数据",
+    "用户画像分布": "图表数据"
+  }
+};
+
+// 模拟 /api/generate 调用
+async function fetchAnalysis(inputs) {
+  return new Promise((resolve, reject) => {
+    setTimeout(() => {
+      resolve({data: SEED});
+    }, 1000);
+  });
+}
+
+document.getElementById("generate-btn").addEventListener("click", async () => {
+  const status = document.getElementById("status-msg");
+  status.innerText = "加载中...";
+  status.className = "status loading";
+  const results = document.getElementById("results");
+  results.innerHTML = "";
+
+  const inputs = {
+    data: window.DataIntake && window.DataIntake.isReady() ? window.DataIntake.getPayload() : null,
+    inputs: {
+      dataSource: document.querySelector("select").value,
+      dateRange: {
+        start: document.querySelectorAll("input[type='date']")[0].value,
+        end: document.querySelectorAll("input[type='date']")[1].value
+      },
+      repurchaseCycle: document.querySelectorAll("select")[1].value,
+      customFilters: document.querySelector("input[type='text']").value
+    }
+  };
+
+  try {
+    const response = await fetch("/api/generate", {
+      method: "POST",
+      headers: {"Content-Type": "application/json"},
+      body: JSON.stringify(inputs)
+    });
+    const data = await response.json();
+    renderResults(data);
+    status.innerText = "";
+    status.className = "status";
+  } catch (error) {
+    status.innerText = "生成失败，请重试";
+    status.className = "status error";
+  }
+});
+
+function renderResults(data) {
+  const results = document.getElementById("results");
+  results.innerHTML = "";
+
+  const repurchaseRate = data.data["复购率"];
+  const customerUnitPrice = data.data["客单价"];
+  const totalOrders = data.data["总订单数"];
+  const newCustomers = data.data["新客户数"];
+  const oldCustomers = data.data["老客户数"];
+  const repurchaseCycleAnalysis = data.data["复购周期分析"];
+  const userProfile = data.data["用户画像"];
+  const visualizationCharts = data.data["可视化图表"];
+
+  const summary = document.createElement("div");
+  summary.className = "summary-card";
+  summary.innerHTML = `
+    <div>
+      <span class="big">${repurchaseRate}</span>
+      <label>复购率</label>
+    </div>
+    <div>
+      <span class="big">${customerUnitPrice}</span>
+      <label>客单价</label>
+    </div>
+    <div>
+      <span class="big">${totalOrders}</span>
+      <label>总订单数</label>
+    </div>
+    <div>
+      <span class="big">${newCustomers}</span>
+      <label>新客户数</label>
+    </div>
+    <div>
+      <span class="big">${oldCustomers}</span>
+      <label>老客户数</label>
+    </div>
+  `;
+  results.appendChild(summary);
+
+  const repurchaseAnalysis = document.createElement("div");
+  repurchaseAnalysis.className = "conclusion";
+  repurchaseAnalysis.innerText = `复购周期分析：${repurchaseCycleAnalysis["7天"]} (7天), ${repurchaseCycleAnalysis["14天"]} (14天), ${repurchaseCycleAnalysis["30天"]} (30天), ${repurchaseCycleAnalysis["其他"]} (其他)`;
+  results.appendChild(repurchaseAnalysis);
+
+  const userProfileAnalysis = document.createElement("div");
+  userProfileAnalysis.className = "conclusion";
+  userProfileAnalysis.innerText = `用户画像分析：性别 - 男性 ${userProfile["性别"]["男性"]}, 女性 ${userProfile["性别"]["女性"]}; 年龄 - 18-25 ${userProfile["年龄"]["18-25"]}, 26-35 ${userProfile["年龄"]["26-35"]}, 36-45 ${userProfile["年龄"]["36-45"]}, 46+ ${userProfile["年龄"]["46+"]}; 地域 - 一线城市 ${userProfile["地域"]["一线城市"]}, 二线城市 ${userProfile["地域"]["二线城市"]}, 三线城市 ${user领域"]["三线城市"]}, 其他 ${userProfile["地域"]["其他"]}`;
+  results.appendChild(userProfileAnalysis);
+
+  const visualization = document.createElement("div");
+  visualization.className = "visualization";
+  visualization.innerText = "可视化图表：";
+  results.appendChild(visualization);
+  for (const key in visualizationCharts) {
+    const chart = document.createElement("div");
+    chart.className = "result-card";
+    chart.innerText = `${key}: ${visualizationCharts[key]}`;
+    results.appendChild(chart);
+  }
+}
+
+document.getElementById("clear-btn").addEventListener("click", () => {
+  document.querySelector("select").value = "微信订单";
+  document.querySelectorAll("input[type='date']")[0].value = "";
+  document.querySelectorAll("input[type='date']")[1].value = "";
+  document.querySelectorAll("select")[1].value = "7天";
+  document.querySelector("input[type='text']").value = "";
+  document.getElementById("results").innerHTML = "";
+  document.getElementById("status-msg").innerText = "";
+});
+</script>
+</body>
+</html>

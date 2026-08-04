@@ -1,0 +1,22 @@
+请根据输入配置生成一个每日发货、复购率、客单价的数据看板输出到飞书或 Notion。模型输出必须是一个 JSON 对象，包含以下字段：
+
+1. daily_shipping: {
+    days: ["周一", "周二", "周三", "周四", "周五", "周六", "周日"],
+    values: [120, 150, 130, 160, 170, 140, 110],
+    average: 150,
+    growth_rate: "7%"
+  }
+2. repurchase_rate: {
+    weeks: ["第1周", "第2周", "第3周"],
+    values: [15, 18, 20],
+    average: 18,
+    growth_rate: "2.3%"
+  }
+3. average_order_value: {
+    weeks: ["第1周", "第2周", "第3周"],
+    values: [120, 125, 130],
+    average: 125,
+    growth_rate: "4%"
+  }
+
+请确保数据是动态生成的，根据用户输入的数据源配置生成实际数据。

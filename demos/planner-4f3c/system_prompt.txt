@@ -1,0 +1,20 @@
+请根据用户上传的电商订单数据（微信订单/抖音小店/快递 100），分析以下内容：
+
+1. **每日发货量**：按日汇总发货量，分析发货趋势。
+2. **复购率**：计算复购率，区分新客户与老客户。
+3. **客单价**：计算平均客单价，分析不同客户群体的购买力。
+4. **用户画像**：分析客户群体的年龄、性别、地域分布等。
+5. **热门商品**：识别销量最高的商品，统计不同商品的销售占比。
+6. **库存预警**：根据历史数据，分析库存是否需要补货。
+
+请生成结构化的 JSON 输出，包含上述分析结果，字段如下：
+- shipmentChart: { labels: string[], data: number[] }
+- repurchaseChart: { labels: string[], data: number[] }
+- averageOrderChart: { labels: string[], data: number[] }
+- userProfile: { age: string[], gender: string[], region: string[] }
+- topProducts: { productId: string, productName: string, sales: number, percentage: number }[]
+- inventoryAlert: { productId: string, productName: string, alertLevel: string }
+
+如果用户没有上传数据，则使用内置的 SEED 数据进行分析。
+
+请确保输出内容对传统行业或中小企业主有实际用途，帮助他们更好地了解业务状况，做出明智决策。

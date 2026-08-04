@@ -1,0 +1,288 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <title>代州黄酒短视频脚本批量生成器</title>
+    <style>
+        /* 粘贴设计系统 CSS */
+        :root{
+          --bg:#f6f3ee; --card:#fffdfa; --ink:#3a352f; --ink-soft:#756c64; --muted:#8a7f76;
+          --accent:#a65d4c; --accent-deep:#6d453a; --accent-soft:#f3e7e1;
+          --line:#e6ded3; --line-strong:#d8cdbc;
+          --ok:#4a7c59; --warn:#b42318; --info:#4f8cff;
+          --radius:16px; --radius-sm:10px;
+          --shadow:0 10px 30px rgba(109,69,58,.08);
+          --maxw:1080px;
+        }
+        *{box-sizing:border-box}
+        body{margin:0;background:var(--bg);color:var(--ink);
+          font-family:-apple-system,BlinkMacSystemFont,"PingFang SC","Microsoft YaHei","Songti SC",serif;
+          line-height:1.7;-webkit-font-smoothing:antialiased}
+        .wrap{max-width:var(--maxw);margin:0 auto;padding:0 20px}
+
+        /* hero 顶部价值主张 */
+        .hero{background:linear-gradient(135deg,var(--accent-deep),var(--accent));color:#fbf4ee;padding:46px 0 38px;text-align:center}
+        .hero .kicker{letter-spacing:2px;font-size:12.5px;opacity:.85;margin:0 0 10px}
+        .hero h1{font-size:clamp(24px,4.5vw,36px);margin:0 0 12px;font-weight:600}
+        .hero .sub{max-width:720px;margin:0 auto;opacity:.92;font-size:14.5px}
+        .hero .sub strong{color:#ffe2d3}
+
+        /* 区块 / 卡片 */
+        main{padding:30px 0 56px}
+        .panel,.card{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);padding:22px 24px;box-shadow:var(--shadow);margin-bottom:22px}
+        .card h2,.panel h2{margin:0 0 4px;font-size:17px;color:var(--accent-deep)}
+        .card .hint,.panel .hint{font-size:12.5px;color:var(--ink-soft);margin:0 0 14px}
+
+        /* 双栏布局 */
+        .layout{display:grid;grid-template-columns:380px 1fr;gap:20px;align-items:start}
+        @media(max-width:860px){.layout{grid-template-columns:1fr}}
+
+        /* 表单 */
+        .form-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+        .field{display:flex;flex-direction:column;gap:6px}
+        .field.wide{grid-column:1/-1}
+        .field>span,.field>label{font-size:13px;color:var(--ink-soft)}
+        .field input,.field textarea,.field select{padding:10px 12px;border:1px solid var(--line);border-radius:var(--radius-sm);font:inherit;font-size:14px;background:#fff;color:var(--ink);resize:vertical}
+        .field input:focus,.field textarea:focus,.field select:focus{outline:none;border-color:var(--accent);box-shadow:0 0 0 3px var(--accent-soft)}
+
+        /* 按钮 */
+        .actions{display:flex;flex-wrap:wrap;gap:10px;align-items:center;margin-top:16px}
+        .btn{border:none;border-radius:var(--radius-sm);padding:11px 18px;font:inherit;font-size:14.5px;cursor:pointer;transition:transform .08s,opacity .2s}
+        .btn:active{transform:translateY(1px)}
+        .btn.primary{background:var(--accent);color:#fff;font-weight:600}
+        .btn.primary.big{padding:13px 24px;font-size:15.5px}
+        .btn.ghost{background:var(--accent-soft);color:var(--accent-deep)}
+        .btn:disabled{opacity:.5;cursor:not-allowed}
+
+        /* 结果可视化 */
+        .results{display:grid;gap:16px}
+        .result-card{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);padding:18px 20px;box-shadow:var(--shadow);border-top:4px solid var(--accent)}
+        .result-card h3,.result-card h4{margin:0 0 8px;color:var(--accent-deep)}
+        .result-card .rc-body{white-space:pre-wrap;font-size:14.5px;line-height:1.75}
+
+        /* 底部理念 */
+        .foot{text-align:center;font-size:12.5px;color:var(--ink-soft);padding:22px}
+        .foot strong{color:var(--accent-deep)}
+        @media(max-width:640px){.form-grid{grid-template-columns:1fr}}
+
+        /* 额外样式 */
+        .tag{margin-right:6px}
+    </style>
+</head>
+<body>
+    <div id="data-intake"></div>
+    <div class="wrap">
+        <!-- Hero Section -->
+        <div class="hero">
+            <div class="kicker">AI赋能黄酒营销</div>
+            <h1>代州黄酒短视频脚本批量生成器</h1>
+            <div class="sub">
+                传统酒企内容营销成本高？输入一个卖点，<strong>AI自动生成30秒/60秒口播脚本和分镜</strong>，无需外包，效率提升10倍！
+            </div>
+        </div>
+
+        <!-- Main Content -->
+        <main>
+            <div class="layout">
+                <!-- 输入卡 -->
+                <div class="card">
+                    <h2>输入卖点信息</h2>
+                    <div class="form-grid">
+                        <div class="field">
+                            <label for="product">产品名称</label>
+                            <input type="text" id="product" name="product" placeholder="代州黄酒">
+                        </div>
+                        <div class="field">
+                            <label for="feature">产品卖点</label>
+                            <input type="text" id="feature" name="feature" placeholder="手工酿造，传统工艺">
+                        </div>
+                        <div class="field">
+                            <label for="duration">视频时长</label>
+                            <select id="duration" name="duration">
+                                <option value="30">30秒</option>
+                                <option value="60">60秒</option>
+                            </select>
+                        </div>
+                        <div class="field wide">
+                            <label for="scenario">场景预设</label>
+                            <div class="actions">
+                                <button class="pill" onclick="selectScenario('social')">社交媒体</button>
+                                <button class="pill" onclick="selectScenario('ecommerce')">电商平台</button>
+                                <button class="pill" onclick="selectScenario('offline')">线下活动</button>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="actions">
+                        <button class="btn primary" onclick="generateScripts()">生成脚本</button>
+                        <button class="btn ghost" onclick="clearInputs()">清空</button>
+                    </div>
+                </div>
+
+                <!-- 结果卡 -->
+                <div class="card">
+                    <h2>生成的脚本</h2>
+                    <div id="results" class="results">
+                        <!-- 示例结果 -->
+                        <div class="result-card">
+                            <h3>30秒口播脚本 (示例)</h3>
+                            <div class="rc-body">
+                                代州黄酒，传承百年工艺，匠心酿造。每一滴都是对传统的致敬，对品质的追求。立即选购，体验纯正黄酒之美！
+                            </div>
+                        </div>
+                        <div class="result-card">
+                            <h3>60秒口播脚本 (示例)</h3>
+                            <div class="rc-body">
+                                代州黄酒，源自代州，传承百年。手工酿造，保留传统工艺的精髓。每一口都是对品质的承诺，对文化的传承。代州黄酒，让每一次品尝都成为难忘的体验。立即选购，感受代州黄酒的独特魅力！
+                            </div>
+                        </div>
+                        <div class="result-card">
+                            <h3>分镜脚本 (示例)</h3>
+                            <div class="rc-body">
+                                1. 开场镜头：代州黄酒瓶身特写，背景音乐柔和。
+                                2. 中景镜头：酿酒师手工酿造过程。
+                                3. 特写镜头：酒液倒入杯中，色泽金黄。
+                                4. 结尾镜头：产品包装展示，品牌Logo出现。
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+
+        <!-- Footer -->
+        <div class="foot">
+            <strong>AI不做结论性动作，最后那一下由你点。</strong> 让我们一起用AI提升营销效率！
+        </div>
+    </div>
+
+    <script>
+        // 示例数据
+        const SEED = {
+            product: "代州黄酒",
+            feature: "手工酿造，传统工艺",
+            duration: "30",
+            scenario: "social"
+        };
+
+        // 预填示例数据
+        document.getElementById("product").value = SEED.product;
+        document.getElementById("feature").value = SEED.feature;
+        document.getElementById("duration").value = SEED.duration;
+
+        // 场景预设按钮
+        function selectScenario(scenario) {
+            document.getElementById("scenario").value = scenario;
+        }
+
+        // 清空输入
+        function clearInputs() {
+            document.getElementById("product").value = "";
+            document.getElementById("feature").value = "";
+            document.getElementById("duration").value = "";
+            document.getElementById("scenario").value = "";
+        }
+
+        // 生成脚本
+        function generateScripts() {
+            const product = document.getElementById("product").value;
+            const feature = document.getElementById("feature").value;
+            const duration = document.getElementById("duration").value;
+            const scenario = document.getElementById("scenario")?.value || "social";
+
+            const inputs = {
+                product,
+                feature,
+                duration,
+                scenario
+            };
+
+            // 禁用按钮并显示加载状态
+            document.querySelector(".primary").disabled = true;
+            document.querySelector(".primary").innerText = "生成中...";
+            document.querySelector(".ghost").disabled = true;
+
+            fetch("/api/generate", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify({ inputs })
+            })
+            .then(response => response.json())
+            .then(data => {
+                // 解析并渲染结果
+                renderResults(data);
+            })
+            .catch(error => {
+                console.error("Error:", error);
+                alert("生成失败，请稍后再试。");
+            })
+            .finally(() => {
+                // 恢复按钮状态
+                document.querySelector(".primary").disabled = false;
+                document.querySelector(".primary").innerText = "生成脚本";
+                document.querySelector(".ghost").disabled = false;
+            });
+        }
+
+        // 渲染结果
+        function renderResults(data) {
+            const resultsDiv = document.getElementById("results");
+            resultsDiv.innerHTML = "";
+
+            if (data.scripts) {
+                data.scripts.forEach(script => {
+                    const resultCard = document.createElement("div");
+                    resultCard.className = "result-card";
+                    resultCard.innerHTML = `
+                        <h3>${script.title}</h3>
+                        <div class="rc-body">${script.content}</div>
+                    `;
+                    resultsDiv.appendChild(resultCard);
+                });
+            }
+
+            if (data.storyboard) {
+                const storyboardCard = document.createElement("div");
+                storyboardCard.className = "result-card";
+                storyboardCard.innerHTML = `
+                    <h3>分镜脚本</h3>
+                    <div class="rc-body">${data.storyboard}</div>
+                `;
+                resultsDemo.appendChild(storyboardCard);
+            }
+        }
+
+        // 示例结果
+        function loadDemo() {
+            const resultsDiv = document.getElementById("results");
+            resultsDiv.innerHTML = `
+                <div class="result-card">
+                    <h3>30秒口播脚本 (示例)</h3>
+                    <div class="rc-body">
+                        代州黄酒，传承百年工艺，匠心酿造。每一滴都是对传统的致敬，对品质的追求。立即选购，体验纯正黄酒之美！
+                    </div>
+                </div>
+                <div class="result-card">
+                    <h3>60秒口播脚本 (示例)</h3>
+                    <div class="rc-body">
+                        代州黄酒，源自代州，传承百年。手工酿造，保留传统工艺的精髓。每一口都是对品质的承诺，对文化的传承。代州黄酒，让每一次品尝都成为难忘的体验。立即选购，感受代州黄酒的独特魅力！
+                    </div>
+                </div>
+                <div class="result-card">
+                    <h3>分镜脚本 (示例)</h3>
+                    <div class="rc-body">
+                        1. 开场镜头：代州黄酒瓶身特景，背景音乐柔和。
+                        2. 中景镜头：酿酒师手工酿造过程。
+                        3. 特写镜头：酒液倒入杯中，色泽金黄。
+                        4. 结尾镜头：产品包装展示，品牌Logo出现。
+                    </div>
+                </div>
+            `;
+        }
+
+        // 加载示例结果
+        window.onload = loadDemo;
+    </script>
+</body>
+</html>

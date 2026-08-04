@@ -1,0 +1,279 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <title>中小企业AI工具自选货架</title>
+    <style>
+:root{
+  --bg:#f6f3ee; --card:#fffdfa; --ink:#3a352f; --ink-soft:#756c64; --muted:#8a7f76;
+  --accent:#a65d4c; --accent-deep:#6d453a; --accent-soft:#f3e7e1;
+  --line:#e6ded3; --line-strong:#d8cdbc;
+  --ok:#4a7c59; --warn:#b42318; --info:#4f8cff;
+  --radius:16px; --radius-sm:10px;
+  --shadow:0 10px 30px rgba(109,69,58,.08);
+  --maxw:1080px;
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);
+  font-family:-apple-system,BlinkMacSystemFont,"PingFang SC","Microsoft YaHei","Songti SC",serif;
+  line-height:1.7;-webkit-font-smoothing:antialiased}
+.wrap{max-width:var(--maxw);margin:0 auto;padding:0 20px}
+
+/* hero 顶部价值主张（禁止只放一个孤零零的 h1） */
+.hero{background:linear-gradient(135deg,var(--accent-deep),var(--accent));color:#fbf4ee;padding:46px 0 38px;text-align:center}
+.hero .kicker{letter-spacing:2px;font-size:12.5px;opacity:.85;margin:0 0 10px}
+.hero h1{font-size:clamp(24px,4.5vw,36px);margin:0 0 12px;font-weight:600}
+.hero .sub{max-width:720px;margin:0 auto;opacity:.92;font-size:14.5px}
+.hero .sub strong{color:#ffe2d3}
+
+/* 区块 / 卡片 */
+main{padding:30px 0 56px}
+.panel,.card{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);padding:22px 24px;box-shadow:var(--shadow);margin-bottom:22px}
+.card h2,.panel h2{margin:0 0 4px;font-size:17px;color:var(--accent-deep)}
+.card .hint,.panel .hint{font-size:12.5px;color:var(--ink-soft);margin:0 0 14px}
+
+/* 双栏布局：左输入卡 / 右结果卡 */
+.layout{display:grid;grid-template-columns:380px 1fr;gap:20px;align-items:start}
+@media(max-width:860px){.layout{grid-template-columns:1fr}}
+
+/* 表单（最小必要字段，优先 select/预设） */
+.form-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.field{display:flex;flex-direction:column;gap:6px}
+.field.wide{grid-column:1/-1}
+.field>span,.field>label{font-size:13px;color:var(--ink-soft)}
+.field input,.field textarea,.field select{padding:10px 12px;border:1px solid var(--line);border-radius:var(--radius-sm);font:inherit;font-size:14px;background:#fff;color:var(--ink);resize:vertical}
+.field input:focus,.field textarea:focus,.field select:focus{outline:none;border-color:var(--accent);box-shadow:0 0 0 3px var(--accent-soft)}
+
+/* 按钮（唯一主按钮 + 少量次要 + 胶囊示例） */
+.actions{display:flex;flex-wrap:wrap;gap:10px;align-items:center;margin-top:16px}
+.btn{border:none;border-radius:var(--radius-sm);padding:11px 18px;font:inherit;font-size:14.5px;cursor:pointer;transition:transform .08s,opacity .2s}
+.btn:active{transform:translateY(1px)}
+.btn.primary{background:var(--accent);color:#fff;font-weight:600}
+.btn.primary.big{padding:13px 24px;font-size:15.5px}
+.btn.ghost{background:var(--accent-soft);color:var(--accent-deep)}
+.btn:disabled{opacity:.5;cursor:not-allowed}
+
+/* 胶囊 / 选项卡 / 标签（标杆通用交互件） */
+.pill,.tab,.chip{border:1px solid var(--line);background:#fff;color:var(--accent-deep);padding:6px 13px;border-radius:999px;font-size:12.5px;cursor:pointer;font-family:inherit;transition:.15s}
+.pill:hover,.tab:hover,.chip:hover{background:var(--accent);color:#fff;border-color:var(--accent)}
+.tab.active,.chip.on{background:var(--accent);color:#fff;border-color:var(--accent)}
+.tag{display:inline-block;font-size:12px;padding:2px 9px;border-radius:999px;background:var(--accent-soft);color:var(--accent-deep)}
+.tag.ok{background:rgba(74,124,89,.16);color:var(--ok)}
+.tag.warn{background:rgba(180,35,24,.14);color:var(--warn)}
+.tag.muted{background:#eee3d6;color:var(--muted)}
+
+/* 结果可视化（禁止死表格/纯文本） */
+.results{display:grid;gap:16px}
+.result-card{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);padding:18px 20px;box-shadow:var(--shadow);border-top:4px solid var(--accent)}
+.result-card h3,.result-card h4{margin:0 0 8px;color:var(--accent-deep)}
+.result-card .rc-body{white-space:pre-wrap;font-size:14.5px;line-height:1.75}
+
+/* 对比矩阵（标杆通用：ai-landing 等） */
+.matrix{width:100%;border-collapse:collapse;margin:10px 0;font-size:13px}
+.matrix th,.matrix td{border:1px solid var(--line);padding:8px 10px;text-align:left;vertical-align:top}
+.matrix th{background:var(--accent-soft);color:var(--accent-deep);font-weight:600}
+.matrix tr:nth-child(even) td{background:#fdfbf7}
+
+/* 节点流 / 时间线（流程类 demo 标杆件） */
+.node-flow{display:flex;flex-wrap:wrap;align-items:center;gap:6px;margin:6px 0 14px}
+.node-flow .arrow{color:var(--muted);font-weight:700}
+.node{border:1px solid var(--line);border-radius:10px;padding:8px 10px;background:#fff;min-width:92px;text-align:center}
+.node .node-name{font-size:13px;font-weight:600;margin-bottom:4px}
+.timeline{position:relative;margin-left:14px}
+.timeline::before{content:"";position:absolute;left:7px;top:6px;bottom:6px;width:2px;background:var(--accent-soft)}
+.tl-step{position:relative;padding:0 0 18px 30px}
+.tl-step::before{content:"";position:absolute;left:0;top:5px;width:16px;height:16px;border-radius:50%;background:var(--accent);border:3px solid var(--accent-soft)}
+.tl-step .tl-name{font-weight:600;font-size:15px}
+.tl-step .tl-body{margin-top:6px;font-size:13.5px;color:var(--ink-soft)}
+
+/* 汇总卡 / 结论条 */
+.summary-card{display:flex;flex-wrap:wrap;gap:10px;margin:10px 0}
+.summary-card>div{flex:1;min-width:120px;background:var(--accent-soft);border:1px solid var(--line);border-radius:10px;padding:12px;text-align:center}
+.summary-card .big{display:block;font-size:18px;font-weight:700;color:var(--accent-deep)}
+.summary-card label{font-size:12px;color:var(--muted)}
+.conclusion{background:rgba(74,124,89,.12);border-left:4px solid var(--ok);padding:10px 14px;border-radius:8px;font-weight:600;color:#36543f}
+
+/* 状态 / 加载 */
+.status{font-size:12.5px;color:var(--ink-soft);margin-top:8px;min-height:16px}
+.loading{color:var(--ink-soft)}
+.error{color:var(--warn)}
+.spinner{display:inline-block;width:14px;height:14px;border:2px solid rgba(168,65,42,.25);border-top-color:var(--accent);border-radius:50%;animation:spin .8s linear infinite;vertical-align:middle;margin-right:6px}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+/* 底部理念 */
+.foot{text-align:center;font-size:12.5px;color:var(--ink-soft);padding:22px}
+.foot strong{color:var(--accent-deep)}
+@media(max-width:640px){.form-grid{grid-template-columns:1fr}}
+    </style>
+</head>
+<body>
+    <div id="data-intake"></div>
+    <div class="wrap">
+        <div class="hero">
+            <div class="kicker">AI工具推荐</div>
+            <h1>中小企业AI工具自选货架</h1>
+            <div class="sub">
+                降本/获客/合规三大类AI工具，助你轻松找到最适合的解决方案
+            </div>
+        </div>
+        <main>
+            <div class="layout">
+                <div class="card">
+                    <h2>筛选AI工具</h2>
+                    <div class="form-grid">
+                        <div class="field">
+                            <label>分类</label>
+                            <select>
+                                <option value="降本">降本</option>
+                                <option value="获客">获客</option>
+                                <option value="合规">合规</option>
+                            </select>
+                        </div>
+                        <div class="field">
+                            <label>预算范围</label>
+                            <select>
+                                <option value="0-1000">0-1000元/月</option>
+                                <option value="1000-5000">1000-5000元/月</option>
+                                <option value="5000-10000">5000-10000元/月</option>
+                                <option value="10000+">10000元以上/月</option>
+                            </select>
+                        </div>
+                        <div class="field">
+                            <label>上手难度</label>
+                            <select>
+                                <option value="低">低</option>
+                                <option value="中">中</option>
+                                <option value="高">高</option>
+                            </select>
+                        </div>
+                        <div class="field wide">
+                            <label>关键词</label>
+                            <input type="text" placeholder="例如：客服、营销、数据分析">
+                        </div>
+                    </div>
+                    <div class="actions">
+                        <button class="btn primary" id="generate">生成工具推荐</button>
+                        <button class="btn ghost" id="reset">清空</button>
+                    </div>
+                    <div class="status" id="status"></div>
+                </div>
+                <div class="card" id="results">
+                    <h2>AI工具推荐</h2>
+                    <div class="results" id="results-content">
+                        <!-- 示例结果 -->
+                        <div class="result-card">
+                            <h3>示例工具1</h3>
+                            <p>这是一个示例AI工具，用于演示效果。</p>
+                        </div>
+                        <div class="result-card">
+                            <h3>示例工具2</h3>
+                            <p>这是另一个示例AI工具，展示不同的内容。</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+        <div class="foot">
+            <strong>AI工具推荐系统</strong> - 让您的企业更高效、更智能
+        </div>
+    </div>
+
+    <script>
+        const SEED = {
+            "分类": "降本",
+            "预算范围": "0-1000",
+            "上手难度": "低",
+            "关键词": "客服"
+        };
+
+        function generateResults(inputs) {
+            const results = [
+                {
+                    "工具名称": "智能客服机器人",
+                    "分类": "降本",
+                    "预算范围": "1000-5000",
+                    "上手难度": "低",
+                    "描述": "一个基于AI的智能客服机器人，能够自动处理常见客户查询，提高客户服务效率。"
+                },
+                {
+                    "工具名称": "营销自动化平台",
+                    "分类": "获客",
+                    "预算范围": "5000-10000",
+                    "上手难度": "中",
+                    "描述": "一个AI驱动的营销自动化平台，帮助企业自动化营销活动并优化客户获取策略。"
+                },
+                {
+                    "工具名称": "合规性检查工具",
+                    "分类": "合规",
+                    "预算范围": "0-1000",
+                    "上手难度": "低",
+                    "描述": "一个AI驱动的合规性检查工具，帮助企业快速识别和解决合规性问题。"
+                }
+            ];
+
+            return results;
+        }
+
+        document.getElementById("generate").addEventListener("click", function() {
+            const inputs = {
+                "分类": document.querySelector("select").value,
+                "预算范围": document.querySelectorAll("select")[1].value,
+                "上手难度": document.querySelectorAll("select")[2].value,
+                "关键词": document.querySelector("input").value
+            };
+
+            document.getElementById("status").innerText = "加载中...";
+            document.getElementById("results-content").innerHTML = "";
+
+            fetch("/api/generate", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify({ "inputs": inputs })
+            })
+            .then(response => response.json())
+            .then(data => {
+                const results = data.results || generateResults(inputs);
+                document.getElementById("results-content").innerHTML = "";
+                results.forEach(result => {
+                    const resultCard = document.createElement("div");
+                    resultCard.className = "result-card";
+                    resultCard.innerHTML = `<h3>${result["工具名称"]}</h3><p>${result["描述"]}</p>`;
+                    document.getElementById("results-content").appendChild(resultCard);
+                });
+                document.getElementById("status").innerText = "";
+            })
+            .catch(error => {
+                document.getElementById("status").innerText = "发生错误，请稍后重试。";
+                console.error(error);
+            });
+        });
+
+        document.getElementById("reset").addEventListener("click", function() {
+            document.querySelector("select").value = SEED["分类"];
+            document.querySelectorAll("select")[1].value = SEED["预算范围"];
+            document.querySelectorAll("select")[2].value = SEED["上手难度"];
+            document.querySelector("input").value = SEED["关键词"];
+            document.getElementById("results-content").innerHTML = "";
+            document.getElementById("status").innerText = "";
+        });
+
+        window.DATA_SCHEMA = {
+            "name": "AI工具推荐",
+            "columns": [
+                { "key": "分类", "label": "分类", "type": "text", "example": "降本", "required": true },
+                { "key": "预算范围", "label": "预算范围", "type": "text", "example": "0-1000", "required": true },
+                { "key": "上手难度", "label": "上手难度", "type": "text", "example": "低", "required": true },
+                { "key": "关键词", "label": "关键词", "type": "text", "example": "客服", "required": false }
+            ],
+            "sample": [
+                { "分类": "降本", "预算范围": "0-1000", "上手难度": "低", "关键词": "客服" },
+                { "分类": "获客", "预算范围": "5000-10000", "上手难度": "中", "关键词": "营销" },
+                { "分类": "合规", "预算范围": "0-1000", "上手难度": "低", "关键词": "合规" }
+            ],
+            "maxRows": 300
+        };
+    </script>
+</body>
+</html>

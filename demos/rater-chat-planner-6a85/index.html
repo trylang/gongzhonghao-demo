@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <title>中小企业AI工具自选货架</title>
+  <style>
+:root{
+  --bg:#f6f3ee; --card:#fffdfa; --ink:#3a352f; --ink-soft:#756c64; --muted:#8a7f76;
+  --accent:#a65d4c; --accent-deep:#6d453a; --accent-soft:#f3e7e1;
+  --line:#e6ded3; --line-strong:#d8cdbc;
+  --ok:#4a7c59; --warn:#b42318; --info:#4f8cff;
+  --radius:16px; --radius-sm:10px;
+  --shadow:0 10px 30px rgba(109,69,58,.08);
+  --maxw:1080px;
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);
+  font-family:-apple-system,BlinkMacSystemFont,"PingFang SC","Microsoft YaHei","Songti SC",serif;
+  line-height:1.7;-webkit-font-smoothing:antialiased}
+.wrap{max-width:var(--maxw);margin:0 auto;padding:0 20px}
+
+/* hero 顶部价值主张 */
+.hero{background:linear-gradient(135deg,var(--accent-deep),var(--accent));color:#fbf4ee;padding:46px 0 38px;text-align:center}
+.hero .kicker{letter-spacing:2px;font-size:12.5px;opacity:.85;margin:0 0 10px}
+.hero h1{font-size:clamp(24px,4.5vw,36px);margin:0 0 12px;font-weight:600}
+.hero .sub{max-width:720px;margin:0 auto;opacity:.92;font-size:14.5px}
+.hero .sub strong{color:#ffe2d3}
+
+/* 区块 / 卡片 */
+main{padding:30px 0 56px}
+.panel,.card{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);padding:22px 24px;box-shadow:var(--shadow);margin-bottom:22px}
+.card h2,.panel h2{margin:0 0 4px;font-size:17px;color:var(--accent-deep)}
+.card .hint,.panel .hint{font-size:12.5px;color:var(--ink-soft);margin:0 0 14px}
+
+/* 双栏布局：左输入卡 / 右结果卡 */
+.layout{display:grid;grid-template-columns:380px 1fr;gap:20px;align-items:start}
+@media(max-width:860px){.layout{grid-template-columns:1fr}}
+
+/* 表单 */
+.form-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.field{display:flex;flex-direction:column;gap:6px}
+.field.wide{grid-column:1/-1}
+.field>span,.field>label{font-size:13px;color:var(--ink-soft)}
+.field input,.field textarea,.field select{padding:10px 12px;border:1px solid var(--line);border-radius:var(--radius-sm);font:inherit;font-size:14px;background:#fff;color:var(--ink);resize:vertical}
+.field input:focus,.field textarea:focus,.field select:focus{outline:none;border-color:var(--accent);box-shadow:0 0 0 3px var(--accent-soft)}
+
+/* 按钮 */
+.actions{display:flex;flex-wrap:wrap;gap:10px;align-items:center;margin-top:16px}
+.btn{border:none;border-radius:var(--radius-sm);padding:11px 18px;font:inherit;font-size:14.5px;cursor:pointer;transition:transform .08s,opacity .2s}
+.btn:active{transform:translateY(1px)}
+.btn.primary{background:var(--accent);color:#fff;font-weight:600}
+.btn.primary.big{padding:13px 24px;font-size:15.5px}
+.btn.ghost{background:var(--accent-soft);color:var(--accent-deep)}
+.btn:disabled{opacity:.5;cursor:not-allowed}
+
+/* 结果可视化 */
+.results{display:grid;gap:16px}
+.result-card{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);padding:18px 20px;box-shadow:var(--shadow);border-top:4px solid var(--accent)}
+.result-card h3,.result-card h4{margin:0 0 8px;color:var(--accent-deep)}
+.result-card .rc-body{white-space:pre-wrap;font-size:14.5px;line-height:1.75}
+
+/* 胶囊 / 选项卡 / 标签 */
+.pill,.tab,.chip{border:1px solid var(--line);background:#fff;color:var(--accent-deep);padding:6px 13px;border-radius:999px;font-size:12.5px;cursor:pointer;font-family:inherit;transition:.15s}
+.pill:hover,.tab:hover,.chip:hover{background:var(--accent);color:#fff;border-color:var(--accent)}
+.tab.active,.chip.on{background:var(--accent);color:#fff;border-color:var(--accent)}
+
+/* 底部理念 */
+.foot{text-align:center;font-size:12.5px;color:var(--ink-soft);padding:22px}
+.foot strong{color:var(--accent-deep)}
+</style>
+</head>
+<body>
+  <div id="data-intake"></div>
+  <div class="wrap">
+    <div class="hero">
+      <div class="kicker">AI工具推荐</div>
+      <h1>中小企业AI工具自选货架</h1>
+      <div class="sub">轻松找到适合您业务的AI解决方案，<strong>降本、获客、合规</strong>，一站式搞定！</div>
+    </div>
+
+    <main>
+      <div class="layout">
+        <!-- 输入卡 -->
+        <div class="card">
+          <h2>筛选条件</h2>
+          <div class="form-grid">
+            <div class="field">
+              <label for="category">分类</label>
+              <select id="category" name="category">
+                <option value="">全部</option>
+                <option value="降本">降本</option>
+                <option value="获客">获客</option>
+                <option value="合规">合规</option>
+              </select>
+            </div>
+            <div class="field">
+              <label for="difficulty">上手难度</label>
+              <select id="difficulty" name="difficulty">
+                <option value="">全部</option>
+                <option value="低">低</option>
+                <option value="中">中</option>
+                <option value="高">高</option>
+              </select>
+            </div>
+            <div class="field wide">
+              <label for="keywords">关键词</label>
+              <input type="text" id="keywords" name="keywords" placeholder="例如：CRM、自动化">
+            </div>
+          </div>
+          <div class="actions">
+            <button class="btn primary" id="generate">生成</button>
+            <button class="btn ghost" id="clear">清空</button>
+          </div>
+        </div>
+
+        <!-- 结果卡 -->
+        <div class="card">
+          <h2>推荐工具</h2>
+          <div class="results" id="results">
+            <!-- 示例结果 -->
+            <div class="result-card">
+              <h3>示例工具：AI驱动的CRM系统</h3>
+              <div class="rc-body">
+                <p>这是一个AI驱动的CRM系统，能够自动分析客户数据，提供个性化的客户互动建议。</p>
+                <p><strong>成本估算：</strong>每月$50 - $500</p>
+                <p><strong>上手难度：</strong>中</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <div class="foot">
+    <strong>AI工具推荐</strong>：让AI成为您业务增长的助手，而不是负担。
+  </div>
+
+  <script>
+const SEED = {
+  category: "",
+  difficulty: "",
+  keywords: "",
+  data: []
+};
+
+const resultsContainer = document.getElementById("results");
+const generateBtn = document.getElementById("generate");
+const clearBtn = document.getElementById("clear");
+
+// 示例数据
+const sampleData = {
+  category: "获客",
+  difficulty: "低",
+  keywords: "CRM",
+  data: []
+};
+
+// 填充示例数据
+document.getElementById("category").value = sampleData.category;
+document.getElementById("difficulty").value = sampleData.difficulty;
+document.getElementById("keywords").value = sampleData.keywords;
+
+// 生成按钮点击事件
+generateBtn.addEventListener("click", () => {
+  const inputs = {
+    category: document.getElementById("category").value,
+    difficulty: document.getElementById("difficulty").value,
+    keywords: document.getElementById("keywords").value,
+    data: window.DataIntake && window.DataIntake.isReady() ? window.DataIntake.getPayload() : []
+  };
+
+  fetch("/api/generate", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json"
+    },
+    body: JSON.stringify({ inputs: inputs })
+  })
+  .then(response => response.json())
+  .then(data => {
+    renderResults(data);
+  })
+  .catch(error => {
+    console.error("Error:", error);
+    resultsContainer.innerHTML = "<div class='result-card'><h3>发生错误</h3><div class='rc-body'>请重试或联系技术支持。</div></div>";
+  });
+});
+
+// 清空按钮点击事件
+clearBtn.addEventListener("click", () => {
+  document.getElementById("category").value = "";
+  document.getElementById("difficulty").value = "";
+  document.getElementById("keywords").value = "";
+  resultsContainer.innerHTML = "";
+});
+
+// 渲染结果
+function renderResults(data) {
+  let html = "";
+  if (data.length === 0) {
+    html = "<div class='result-card'><h3>没有找到匹配的工具</h3></div>";
+  } else {
+    data.forEach(item => {
+      html += `
+        <div class="result-card">
+          <h3>${item.name}</h3>
+          <div class="rc-body">
+            <p>${item.description}</p>
+            <p><strong>成本估算：</strong>${item.cost}</p>
+            <p><strong>上手难度：</strong>${item.difficulty}</p>
+          </div>
+        </div>
+      `;
+    });
+  }
+  resultsContainer.innerHTML = html;
+}
+
+// 数据入口组件
+window.DATA_SCHEMA = {
+  name: "AI工具数据",
+  columns: [
+    { key: "name", label: "工具名称", type: "text", example: "AI驱动的CRM系统", required: true },
+    { key: "description", label: "描述", type: "text", example: "这是一个AI驱动的CRM系统，能够自动分析客户数据，提供个性化的客户互动建议。", required: true },
+    { key: "cost", label: "成本估算", type: "text", example: "每月$50 - $500", required: true },
+    { key: "difficulty", label: "上手难度", type: "select", options: ["低", "中", "高"], required: true }
+  ],
+  sample: [
+    { name: "AI驱动的CRM系统", description: "这是一个AI驱动的CRM系统，能够自动分析客户数据，提供个性化的客户互动建议。", cost: "每月$50 - $500", difficulty: "中" },
+    { name: "AI内容生成工具", description: "利用AI生成高质量的内容，帮助企业提升品牌知名度。", cost: "每月$20 - $200", difficulty: "低" },
+    { name: "AI财务分析工具", description: "通过AI分析财务数据，提供决策建议。", cost: "每月$100 - $1000", difficulty: "高" }
+  ],
+  maxRows: 300
+};
+  </script>
+</body>
+</html>
