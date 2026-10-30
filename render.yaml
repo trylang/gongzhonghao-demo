@@ -559,3 +559,16 @@ services:
       - key: MINIMAX_MODEL
         value: MiniMax-M3
 
+
+  # 2026-10-30 线下活动报名 demo（复刻小鹅通线下活动：票种/会员专享/名单管理/核销签到）
+  # 纯静态交互，无 AI 依赖，不需要 MINIMAX_API_KEY
+  - type: web
+    name: offline-event-signup
+    runtime: node
+    plan: free
+    branch: main
+    rootDir: demos/offline-event-signup
+    buildCommand: "echo 'no build needed'"
+    startCommand: "node server.js"
+    healthCheckPath: "/healthz"
+

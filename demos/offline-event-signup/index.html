@@ -1,0 +1,456 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>线下活动报名 · Demo</title>
+<style>
+:root{
+  --blue:#2b6de5; --blue-d:#1e5ac4; --green:#07c160; --red:#e93323;
+  --bg:#f4f6fa; --card:#fff; --line:#e8ecf2; --t1:#1a2233; --t2:#5a6577; --t3:#98a2b3;
+}
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+body{font-family:-apple-system,BlinkMacSystemFont,"PingFang SC","Microsoft YaHei",sans-serif;background:var(--bg);color:var(--t1);min-height:100vh}
+.wrap{max-width:520px;margin:0 auto;padding:0 16px 90px}
+
+/* 顶部 tab */
+.tabs{position:sticky;top:0;z-index:50;background:rgba(255,255,255,.92);backdrop-filter:blur(8px);border-bottom:1px solid var(--line)}
+.tabs-in{max-width:520px;margin:0 auto;display:flex}
+.tab{flex:1;text-align:center;padding:13px 0;font-size:15px;color:var(--t2);cursor:pointer;position:relative;user-select:none}
+.tab.on{color:var(--blue);font-weight:600}
+.tab.on::after{content:"";position:absolute;left:50%;transform:translateX(-50%);bottom:0;width:28px;height:3px;border-radius:3px;background:var(--blue)}
+
+/* 视图 */
+.view{display:none}.view.on{display:block}
+
+/* 活动头图 */
+.hero{margin-top:16px;border-radius:14px;overflow:hidden;position:relative;height:150px;background:linear-gradient(135deg,#173a75,#2b6de5 60%,#5a9bff)}
+.hero .tag-off{position:absolute;left:14px;top:14px;background:rgba(255,255,255,.18);border:1px solid rgba(255,255,255,.45);color:#fff;font-size:12px;padding:3px 10px;border-radius:20px;backdrop-filter:blur(4px)}
+.hero h1{position:absolute;left:14px;bottom:16px;color:#fff;font-size:21px;font-weight:700;letter-spacing:.5px}
+.hero .sub{position:absolute;left:14px;bottom:44px;color:rgba(255,255,255,.85);font-size:12px}
+
+/* 信息卡 */
+.card{background:var(--card);border-radius:14px;margin-top:12px;padding:16px;box-shadow:0 1px 3px rgba(20,40,80,.05)}
+.info-row{display:flex;align-items:flex-start;gap:10px;padding:7px 0;font-size:14px}
+.info-row .ic{width:18px;text-align:center;flex-shrink:0}
+.info-row .k{color:var(--t3);width:64px;flex-shrink:0}
+.info-row .v{color:var(--t1);line-height:1.5}
+.sec-title{font-size:15px;font-weight:600;margin:4px 0 8px}
+.desc{font-size:13px;color:var(--t2);line-height:1.8}
+.desc p{margin-bottom:6px}
+
+/* 票种 */
+.ticket{border:1px solid var(--line);border-radius:12px;padding:14px;margin-bottom:10px;display:flex;align-items:center;gap:12px;cursor:pointer;transition:.15s;background:#fff}
+.ticket:active{transform:scale(.985)}
+.ticket.sel{border-color:var(--blue);background:#f2f7ff}
+.tk-main{flex:1}
+.tk-name{font-size:15px;font-weight:600}
+.tk-desc{font-size:12px;color:var(--t3);margin-top:3px}
+.tk-price{text-align:right;flex-shrink:0}
+.tk-price .p{font-size:18px;font-weight:700;color:var(--red)}
+.tk-price .p.free{color:var(--green)}
+.tk-price .tag{display:inline-block;font-size:11px;padding:2px 8px;border-radius:4px;margin-top:4px}
+.tag-vip{background:#fdf3e7;color:#c8842a}
+.tag-n{background:#eef2f8;color:var(--t2)}
+.tk-lock{font-size:12px;color:var(--t3)}
+
+/* 底部条 */
+.foot{position:fixed;bottom:0;left:0;right:0;background:#fff;border-top:1px solid var(--line);padding:10px 16px;z-index:40}
+.foot-in{max-width:520px;margin:0 auto;display:flex;align-items:center;gap:12px}
+.total{flex:1;font-size:13px;color:var(--t2)}
+.total b{font-size:20px;color:var(--red);font-weight:700}
+.total b.free{color:var(--green)}
+.btn{background:var(--blue);color:#fff;border:none;border-radius:24px;padding:12px 34px;font-size:16px;font-weight:600;cursor:pointer}
+.btn:active{background:var(--blue-d)}
+.btn[disabled]{background:#c3cddf}
+
+/* 弹层 */
+.mask{position:fixed;inset:0;background:rgba(10,20,40,.5);z-index:60;display:none;align-items:flex-end;justify-content:center}
+.mask.on{display:flex}
+.sheet{background:#fff;width:100%;max-width:520px;border-radius:18px 18px 0 0;padding:20px 18px 30px;max-height:88vh;overflow:auto}
+.sheet h3{font-size:17px;margin-bottom:14px}
+.fld{margin-bottom:14px}
+.fld label{display:block;font-size:13px;color:var(--t2);margin-bottom:6px}
+.fld input{width:100%;border:1px solid var(--line);border-radius:10px;padding:12px 14px;font-size:15px;outline:none}
+.fld input:focus{border-color:var(--blue)}
+.vip-switch{display:flex;align-items:center;gap:10px;padding:12px 14px;background:#f7f9fc;border-radius:10px;margin-bottom:16px}
+.vip-switch .sw{margin-left:auto;width:44px;height:24px;border-radius:12px;background:#cdd6e3;position:relative;cursor:pointer;transition:.2s;flex-shrink:0}
+.vip-switch .sw.on{background:var(--green)}
+.vip-switch .sw::after{content:"";position:absolute;top:2px;left:2px;width:20px;height:20px;border-radius:50%;background:#fff;transition:.2s}
+.vip-switch .sw.on::after{left:22px}
+.vip-switch .vt{font-size:13px}
+.vip-switch .vt small{display:block;color:var(--t3);font-size:11px;margin-top:2px}
+.sheet .btn{width:100%}
+.err{background:#fff2f0;color:var(--red);border:1px solid #ffd6d1;font-size:13px;border-radius:10px;padding:10px 12px;margin-bottom:12px;display:none}
+.err.on{display:block}
+
+/* 成功页 */
+.ok-icon{width:64px;height:64px;border-radius:50%;background:var(--green);color:#fff;font-size:34px;display:flex;align-items:center;justify-content:center;margin:34px auto 14px}
+.ok-title{text-align:center;font-size:19px;font-weight:700}
+.ok-sub{text-align:center;font-size:13px;color:var(--t3);margin:8px 0 20px}
+.qr-card{background:#fff;border-radius:14px;padding:22px;text-align:center}
+.qr{width:190px;height:190px;margin:0 auto;display:grid;grid-template-columns:repeat(12,1fr);grid-template-rows:repeat(12,1fr);gap:2px;padding:10px;border:1px solid var(--line);border-radius:10px}
+.qr i{background:#1a2233;border-radius:1px}
+.qr i.o{background:#fff}
+.code-num{margin-top:12px;font-size:15px;letter-spacing:2px;font-weight:600;color:var(--t2)}
+.hint{font-size:11px;color:var(--t3);margin-top:8px}
+.ok-info{margin-top:14px;text-align:left}
+.ok-info .row{display:flex;font-size:13px;padding:6px 0;border-bottom:1px dashed var(--line)}
+.ok-info .row:last-child{border:none}
+.ok-info .k{color:var(--t3);width:70px}
+.linkish{color:var(--blue);font-size:13px;text-align:center;margin-top:16px;cursor:pointer}
+
+/* 管理端 */
+.stats{display:flex;gap:10px;margin-top:16px}
+.stat{flex:1;background:#fff;border-radius:12px;padding:14px 12px;text-align:center}
+.stat .n{font-size:22px;font-weight:700}
+.stat .l{font-size:11px;color:var(--t3);margin-top:4px}
+.stat .n.b{color:var(--blue)}.stat .n.g{color:var(--green)}.stat .n.r{color:var(--red)}
+.filters{display:flex;gap:8px;margin:14px 0 10px;overflow-x:auto;padding-bottom:2px}
+.chip{border:1px solid var(--line);background:#fff;border-radius:16px;padding:5px 13px;font-size:12px;color:var(--t2);cursor:pointer;white-space:nowrap}
+.chip.on{background:var(--blue);border-color:var(--blue);color:#fff}
+.rlist .rk{background:#fff;border-radius:12px;padding:13px 14px;margin-bottom:9px}
+.rk-top{display:flex;align-items:center;gap:10px}
+.avatar{width:36px;height:36px;border-radius:50%;background:linear-gradient(135deg,#7fa8ee,#4a76cf);color:#fff;display:flex;align-items:center;justify-content:center;font-size:14px;flex-shrink:0}
+.avatar.a2{background:linear-gradient(135deg,#67d09a,#2f9e63)}
+.rk-name{font-size:14px;font-weight:600}
+.rk-time{font-size:11px;color:var(--t3);margin-top:2px}
+.rk-badge{margin-left:auto;font-size:11px;padding:2px 9px;border-radius:4px;flex-shrink:0}
+.bd-ok{background:#e8f8ef;color:var(--green)}
+.bd-ck{background:#eef2f8;color:var(--t2)}
+.rk-mid{display:flex;gap:18px;margin-top:9px;padding-top:9px;border-top:1px dashed var(--line);font-size:12px;color:var(--t2);flex-wrap:wrap}
+.rk-mid b{color:var(--t1);font-weight:600}
+.rk-foot{display:flex;justify-content:flex-end;gap:8px;margin-top:9px}
+.sbtn{border:1px solid var(--line);background:#fff;border-radius:6px;padding:5px 14px;font-size:12px;color:var(--t2);cursor:pointer}
+.sbtn.main{border-color:var(--green);color:var(--green)}
+.export-row{display:flex;justify-content:space-between;align-items:center;margin:4px 0 10px}
+.export-row .t{font-size:13px;color:var(--t2)}
+.export-btn{background:#fff;border:1px solid var(--blue);color:var(--blue);border-radius:8px;padding:7px 16px;font-size:13px;cursor:pointer}
+.empty{text-align:center;color:var(--t3);font-size:13px;padding:40px 0}
+
+/* 落地说明 */
+.land{margin-top:16px}
+.land .step{display:flex;gap:12px;padding:11px 0;border-bottom:1px dashed var(--line)}
+.land .step:last-child{border:none}
+.land .no{width:22px;height:22px;border-radius:50%;background:var(--blue);color:#fff;font-size:12px;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:2px}
+.land .st{font-size:13px;line-height:1.7;color:var(--t2)}
+.land .st b{color:var(--t1)}
+.demo-note{background:#fffbe8;border:1px solid #f5e6a8;color:#8a6d1a;font-size:12px;border-radius:10px;padding:10px 12px;margin-top:14px;line-height:1.7}
+
+/* toast */
+.toast{position:fixed;top:46%;left:50%;transform:translate(-50%,-50%);background:rgba(20,28,45,.88);color:#fff;font-size:14px;padding:13px 22px;border-radius:10px;z-index:99;display:none;max-width:80%;text-align:center;line-height:1.6}
+.toast.on{display:block}
+</style>
+</head>
+<body>
+
+<div class="tabs">
+  <div class="tabs-in">
+    <div class="tab on" data-v="v-user">🎟️ 活动报名</div>
+    <div class="tab" data-v="v-admin">📋 名单管理</div>
+    <div class="tab" data-v="v-how">🏪 商家落地</div>
+  </div>
+</div>
+
+<!-- ================= 用户报名视角 ================= -->
+<div class="view on" id="v-user">
+  <div class="wrap">
+    <div class="hero">
+      <div class="tag-off">线下沙龙</div>
+      <div class="sub">2025-11-08 14:00 - 16:00 · 深圳</div>
+      <h1>格友联盟线下沙龙 · 深圳站</h1>
+    </div>
+
+    <div class="card">
+      <div class="info-row"><div class="ic">🕐</div><div class="k">活动时间</div><div class="v">2025年11月8日（周六）14:00 - 16:00</div></div>
+      <div class="info-row"><div class="ic">📍</div><div class="k">活动地点</div><div class="v">深圳市南山区 · 具体地址报名成功后短信通知</div></div>
+      <div class="info-row"><div class="ic">👥</div><div class="k">报名名额</div><div class="v">限 40 人，报满即止</div></div>
+    </div>
+
+    <div class="card">
+      <div class="sec-title">选择票种</div>
+      <div class="ticket" data-t="vip" data-p="0">
+        <div class="tk-main">
+          <div class="tk-name">格友联盟会员专享</div>
+          <div class="tk-desc">仅限有效期内格友联盟会员</div>
+        </div>
+        <div class="tk-price"><div class="p free">免费</div><div class="tag tag-vip">会员专享</div></div>
+      </div>
+      <div class="ticket" data-t="single" data-p="30">
+        <div class="tk-main">
+          <div class="tk-name">单人票</div>
+          <div class="tk-desc">含茶歇 · 现场交流环节</div>
+        </div>
+        <div class="tk-price"><div class="p">¥30</div><div class="tag tag-n">所有人可报</div></div>
+      </div>
+      <div class="ticket" data-t="double" data-p="40">
+        <div class="tk-main">
+          <div class="tk-name">双人票</div>
+          <div class="tk-desc">两人同行优惠价</div>
+        </div>
+        <div class="tk-price"><div class="p">¥40</div><div class="tag tag-n">所有人可报</div></div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="sec-title">活动介绍</div>
+      <div class="desc">
+        <p>· 格森疗法线下交流：理论分享 + 实操演示 + 答疑</p>
+        <p>· 老带新经验交流：联盟成员 Case 分享</p>
+        <p>· 现场提供咖啡灌肠器材体验与优惠订购</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="foot">
+    <div class="foot-in">
+      <div class="total">合计 <b id="totalPrice" class="free">¥0</b></div>
+      <button class="btn" id="btnSignup">立即报名</button>
+    </div>
+  </div>
+</div>
+
+<!-- ================= 报名弹层 ================= -->
+<div class="mask" id="mask">
+  <div class="sheet">
+    <h3>填写报名信息</h3>
+    <div class="err" id="formErr"></div>
+    <div class="vip-switch">
+      <div class="vt">我是格友联盟会员<small>模拟身份切换，演示会员校验</small></div>
+      <div class="sw" id="vipSw"></div>
+    </div>
+    <div class="fld"><label>姓名</label><input id="fName" placeholder="请输入真实姓名" maxlength="20"></div>
+    <div class="fld"><label>手机号码</label><input id="fPhone" placeholder="请输入 11 位手机号" maxlength="11" inputmode="numeric"></div>
+    <button class="btn" id="btnSubmit">确认报名</button>
+  </div>
+</div>
+
+<!-- ================= 报名成功 ================= -->
+<div class="view" id="v-ok">
+  <div class="wrap">
+    <div class="ok-icon">✓</div>
+    <div class="ok-title">报名成功</div>
+    <div class="ok-sub">请保存核销码，现场签到出示</div>
+    <div class="qr-card">
+      <div class="qr" id="qrBox"></div>
+      <div class="code-num" id="codeNum"></div>
+      <div class="hint">演示用模拟核销码 · 实际为小程序订单核销码</div>
+      <div class="ok-info" id="okInfo"></div>
+    </div>
+    <div class="linkish" id="backHome">← 返回活动页</div>
+  </div>
+</div>
+
+<!-- ================= 商家管理视角 ================= -->
+<div class="view" id="v-admin">
+  <div class="wrap">
+    <div class="stats">
+      <div class="stat"><div class="n b" id="stTotal">0</div><div class="l">报名成功</div></div>
+      <div class="stat"><div class="n g" id="stChecked">0</div><div class="l">已签到</div></div>
+      <div class="stat"><div class="n r" id="stRevenue">¥0</div><div class="l">报名收入</div></div>
+    </div>
+    <div class="filters" id="filters">
+      <div class="chip on" data-f="all">全部</div>
+      <div class="chip" data-f="success">报名成功</div>
+      <div class="chip" data-f="checked">已签到</div>
+      <div class="chip" data-f="vip">格友专享票</div>
+      <div class="chip" data-f="paid">付费票</div>
+    </div>
+    <div class="export-row">
+      <div class="t" id="listCount"></div>
+      <button class="export-btn" id="btnExport">导出列表</button>
+    </div>
+    <div class="rlist" id="rlist"></div>
+    <div class="demo-note">管理端对应商城「订单管理」：报名成功 = 已支付订单，签到 = 扫核销码核销。名单可按商品筛选导出，姓名电话齐全，无需发货。</div>
+  </div>
+</div>
+
+<!-- ================= 商家落地说明 ================= -->
+<div class="view" id="v-how">
+  <div class="wrap land">
+    <div class="card" style="margin-top:16px">
+      <div class="sec-title">不用小鹅通，商城也能这样搭</div>
+      <div class="desc" style="margin-bottom:6px">以下演示效果，在 CRMEB 商城内的实现路径（已验证代码链路，无需发新版小程序）：</div>
+      <div class="step"><div class="no">1</div><div class="st"><b>建核销门店</b><br>后台「门店管理」添加活动签到点，核销码最终在这里扫码作废</div></div>
+      <div class="step"><div class="no">2</div><div class="st"><b>开「到店自提」通道</b><br>商品物流方式只勾「到店」：下单必填姓名+电话、不填地址、不发货，订单自动生成核销码</div></div>
+      <div class="step"><div class="no">3</div><div class="st"><b>付费票 = 普通商品</b><br>多票种用规格实现（单人票 30 / 双人票 40），库存=名额，限购=每人限报</div></div>
+      <div class="step"><div class="no">4</div><div class="st"><b>会员免费票 = 0 元商品 + 会员校验</b><br>0 元订单自动免支付成功；后台配置专享商品 ID，非会员加购即拦截（演示里就是那个身份开关）</div></div>
+      <div class="step"><div class="no">5</div><div class="st"><b>名单导出 + 现场核销</b><br>订单导出即报名名单（姓名/电话/票种齐全）；签到 = 店员小程序扫核销码</div></div>
+    </div>
+    <div class="demo-note">💡 与小鹅通「线下活动」能力对照：票种定价 ✅ ｜ 会员专享 ✅ ｜ 姓名电话收集 ✅ ｜ 名单管理导出 ✅ ｜ 签到核销 ✅ ｜ 待审核环节 ✗（支付即成功，商家实际不需要）</div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+/* ================= 数据 ================= */
+var LS_KEY = "oes_records_v1";
+var seed = [
+  {id:"HX2509120001", buyer:"张 旭",  name:"张旭",  phone:"175****8421", ticket:"单人票", price:30, time:"11-08 09:58", status:"success"},
+  {id:"HX2509120002", buyer:"恩典久久1391", name:"张斐",  phone:"139****8360", ticket:"格友联盟会员专享", price:0,  time:"11-08 09:49", status:"success"},
+  {id:"HX2509120003", buyer:"杨晶莹", name:"林海艺", phone:"139****4360", ticket:"双人票", price:40, time:"11-08 08:13", status:"checked"},
+  {id:"HX2509120004", buyer:"杨晶莹", name:"杨志莹", phone:"139****0529", ticket:"双人票", price:40, time:"11-08 08:13", status:"success"}
+];
+function load(){ try{ var v=JSON.parse(localStorage.getItem(LS_KEY)); if(Array.isArray(v)&&v.length) return v; }catch(e){} return seed.slice(); }
+function save(v){ try{ localStorage.setItem(LS_KEY, JSON.stringify(v)); }catch(e){} }
+var records = load();
+
+/* ================= 工具 ================= */
+var $ = function(s){ return document.querySelector(s); };
+var $$ = function(s){ return document.querySelectorAll(s); };
+function toast(msg, ms){ var t=$("#toast"); t.textContent=msg; t.classList.add("on"); clearTimeout(t._tm); t._tm=setTimeout(function(){ t.classList.remove("on"); }, ms||1800); }
+function switchView(id){ $$(".view").forEach(function(v){ v.classList.remove("on"); }); $("#"+id).classList.add("on"); window.scrollTo(0,0); }
+
+/* 伪核销码：12x12 格子由订单号 hash 决定 */
+function drawQR(id){
+  var box=$("#qrBox"); box.innerHTML="";
+  var h=0; for(var i=0;i<id.length;i++){ h=(h*31+id.charCodeAt(i))>>>0; }
+  for(var r=0;r<12;r++){ for(var c=0;c<12;c++){
+    var cell=document.createElement("i");
+    var corner=(r<3&&c<3)||(r<3&&c>8)||(r>8&&c<3);
+    var bit=((h>>( (r*12+c)%27 ))&1)===1 || ((r*c+r+c*3)%7===0);
+    cell.className=(corner? (r===1&&c===1)||(r===1&&c===10)||(r===10&&c===1) : bit && !corner) ? "" : "o";
+    if(corner && !(((r===1&&c===1)||(r===1&&c===10)||(r===10&&c===1)))) cell.className="o";
+    box.appendChild(cell);
+  }}
+}
+
+/* ================= Tab 切换 ================= */
+$$(".tab").forEach(function(t){
+  t.addEventListener("click", function(){
+    $$(".tab").forEach(function(x){ x.classList.remove("on"); });
+    t.classList.add("on");
+    if(t.dataset.v==="v-user" && $("#v-ok").classList.contains("on")) return; // 成功页保持
+    switchView(t.dataset.v);
+  });
+});
+
+/* ================= 报名流程 ================= */
+var curTicket=null;
+function refreshTotal(){
+  var free = curTicket==="vip";
+  var p = curTicket ? parseInt($(".ticket[data-t='"+curTicket+"']").dataset.p) : 0;
+  var el=$("#totalPrice");
+  el.textContent = curTicket ? (free?"¥0":"¥"+p) : "¥0";
+  el.className = free?"free":"";
+}
+$$(".ticket").forEach(function(tk){
+  tk.addEventListener("click", function(){
+    if(tk.dataset.t==="vip" && !vipMode){
+      toast("该票为格友联盟会员专享，仅联盟会员可报名\n（打开身份开关后可体验）", 2400);
+      return;
+    }
+    $$(".ticket").forEach(function(x){ x.classList.remove("sel"); });
+    tk.classList.add("sel");
+    curTicket=tk.dataset.t; refreshTotal();
+  });
+});
+var vipMode=false;
+$("#vipSw").addEventListener("click", function(){
+  vipMode=!vipMode; this.classList.toggle("on", vipMode);
+  toast(vipMode?"已切换为格友联盟会员身份":"已切回普通用户身份", 1400);
+});
+$("#btnSignup").addEventListener("click", function(){
+  if(!curTicket){ toast("请先选择票种"); return; }
+  $("#formErr").classList.remove("on");
+  $("#mask").classList.add("on");
+});
+$("#mask").addEventListener("click", function(e){ if(e.target===this) this.classList.remove("on"); });
+$("#btnSubmit").addEventListener("click", function(){
+  var name=$("#fName").value.trim(), phone=$("#fPhone").value.trim();
+  var err=$("#formErr");
+  function fail(m){ err.textContent=m; err.classList.add("on"); }
+  if(!name) return fail("请填写联系人姓名");
+  if(!/^1(3|4|5|7|8|9|6)\d{9}$/.test(phone)) return fail("请输入正确的 11 位手机号");
+  if(curTicket==="vip" && !vipMode) return fail("该票为格友联盟会员专享，仅联盟会员可报名");
+  err.classList.remove("on");
+  $("#mask").classList.remove("on");
+  var tid=curTicket;
+  var names={vip:"格友联盟会员专享", single:"单人票", double:"双人票"};
+  var prices={vip:0, single:30, double:40};
+  if(tid!=="vip"){ toast("模拟微信支付中…", 900); }
+  setTimeout(function(){
+    var id="HX"+Date.now().toString().slice(-10);
+    var rec={id:id, buyer:name, name:name, phone:phone.slice(0,3)+"****"+phone.slice(7),
+             ticket:names[tid], price:prices[tid],
+             time:(new Date().getMonth()+1)+"-"+String(new Date().getDate()).padStart(2,"0")+" "+String(new Date().getHours()).padStart(2,"0")+":"+String(new Date().getMinutes()).padStart(2,"0"),
+             status:"success"};
+    records.unshift(rec); save(records); renderAdmin();
+    $("#codeNum").textContent=id;
+    drawQR(id);
+    $("#okInfo").innerHTML=
+      '<div class="row"><div class="k">票种</div><div>'+rec.ticket+'</div></div>'+
+      '<div class="row"><div class="k">姓名</div><div>'+rec.name+'</div></div>'+
+      '<div class="row"><div class="k">电话</div><div>'+rec.phone+'</div></div>'+
+      '<div class="row"><div class="k">状态</div><div style="color:#07c160">报名成功</div></div>';
+    switchView("v-ok");
+    toast(tid==="vip" ? "联盟会员校验通过，免费报名成功" : "支付成功，报名完成", 2000);
+  }, tid==="vip"?200:900);
+});
+$("#backHome").addEventListener("click", function(){ switchView("v-user"); });
+
+/* ================= 管理端 ================= */
+var curFilter="all";
+$("#filters").addEventListener("click", function(e){
+  if(!e.target.classList.contains("chip")) return;
+  $$("#filters .chip").forEach(function(c){ c.classList.remove("on"); });
+  e.target.classList.add("on");
+  curFilter=e.target.dataset.f; renderAdmin();
+});
+function renderAdmin(){
+  var total=records.length;
+  var checked=records.filter(function(r){ return r.status==="checked"; }).length;
+  var revenue=records.reduce(function(s,r){ return s+r.price; },0);
+  $("#stTotal").textContent=total;
+  $("#stChecked").textContent=checked;
+  $("#stRevenue").textContent="¥"+revenue;
+  var list=records.filter(function(r){
+    if(curFilter==="success") return r.status==="success";
+    if(curFilter==="checked") return r.status==="checked";
+    if(curFilter==="vip") return r.price===0;
+    if(curFilter==="paid") return r.price>0;
+    return true;
+  });
+  $("#listCount").textContent="共 "+list.length+" 条";
+  var box=$("#rlist");
+  if(!list.length){ box.innerHTML='<div class="empty">暂无报名记录</div>'; return; }
+  box.innerHTML=list.map(function(r,i){
+    var isCk=r.status==="checked";
+    return '<div class="rk">'+
+      '<div class="rk-top">'+
+        '<div class="avatar '+(r.price===0?"a2":"")+'">'+r.name.charAt(0)+'</div>'+
+        '<div><div class="rk-name">'+r.name+'</div><div class="rk-time">报名 '+r.time+' · 单号 '+r.id+'</div></div>'+
+        '<div class="rk-badge '+(isCk?"bd-ck":"bd-ok")+'">'+(isCk?"已签到":"报名成功")+'</div>'+
+      '</div>'+
+      '<div class="rk-mid">'+
+        '<span>票种 <b>'+r.ticket+'</b></span>'+
+        '<span>价格 <b>'+(r.price===0?'<span style="color:#07c160">免费</span>':"¥"+r.price)+'</b></span>'+
+        '<span>电话 <b>'+r.phone+'</b></span>'+
+      '</div>'+
+      '<div class="rk-foot">'+
+        (isCk?"":'<button class="sbtn main" data-i="'+records.indexOf(r)+'">扫码核销（模拟）</button>')+
+      '</div>'+
+    '</div>';
+  }).join("");
+}
+$("#rlist").addEventListener("click", function(e){
+  if(!e.target.dataset.i) return;
+  records[+e.target.dataset.i].status="checked"; save(records); renderAdmin();
+  toast("核销成功，已签到", 1400);
+});
+$("#btnExport").addEventListener("click", function(){
+  var head="购票用户,报名姓名,电话,票种,价格(元),报名时间,状态\n";
+  var rows=records.map(function(r){
+    return [r.buyer,r.name,r.phone,r.ticket,r.price,r.time,r.status==="checked"?"已签到":"报名成功"].join(",");
+  }).join("\n");
+  var blob=new Blob(["\ufeff"+head+rows],{type:"text/csv"});
+  var a=document.createElement("a");
+  a.href=URL.createObjectURL(blob); a.download="报名名单.csv"; a.click();
+  toast("已导出 CSV（对应商城订单导出）", 1800);
+});
+
+renderAdmin();
+</script>
+</body>
+</html>
